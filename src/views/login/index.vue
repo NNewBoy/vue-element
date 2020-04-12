@@ -37,13 +37,61 @@
             autocomplete="on"
             @keyup.native="checkCapslock"
             @blur="capsTooltip = false"
-            @keyup.enter.native="handleLogin"
           />
           <span class="show-pwd" @click="showPwd">
             <svg-icon :icon-class="passwordType === 'password' ? 'eye' : 'eye-open'" />
           </span>
         </el-form-item>
       </el-tooltip>
+
+      <el-row :gutter="20">
+        <el-col :span="14">
+          <el-form-item prop="frontCaptcha">
+            <span class="svg-container">
+              <svg-icon icon-class="captcha" />
+            </span>
+            <el-input
+              ref="frontCaptcha"
+              v-model="loginForm.frontCaptcha"
+              class="captcha-input"
+              type="text"
+              placeholder="frontCaptcha"
+              name="frontCaptcha"
+              tabindex="2"
+              autocomplete="on"
+            />
+          </el-form-item>
+        </el-col>
+        <el-col :span="10">
+          <front-captcha @getCaptcha="getFrontCaptcha" />
+        </el-col>
+      </el-row>
+
+      <el-row :gutter="20">
+        <el-col :span="14">
+          <el-form-item prop="backCaptcha">
+            <span class="svg-container">
+              <svg-icon icon-class="captcha" />
+            </span>
+            <el-input
+              ref="backCaptcha"
+              v-model="loginForm.backCaptcha"
+              class="captcha-input"
+              type="text"
+              placeholder="backCaptcha"
+              name="backCaptcha"
+              tabindex="2"
+              autocomplete="on"
+              @keyup.enter.native="handleLogin"
+            />
+          </el-form-item>
+        </el-col>
+        <el-col ref="one" :span="10">
+          <div class="back-Captcha">
+            <img :src="backCaptcha" @click="getBackCaptcha">
+          </div>
+        </el-col>
+      </el-row>
 
       <el-button :loading="loading" type="primary" style="width:100%;margin-bottom:30px;" @click.native.prevent="handleLogin">Login</el-button>
 
@@ -76,10 +124,12 @@
 <script>
 import { validUsername } from '@/utils/validate'
 import SocialSign from './components/SocialSignin'
+import FrontCaptcha from './components/FrontCaptcha'
+import { getCaptcha, checkCaptcha } from '../../api/captcha'
 
 export default {
   name: 'Login',
-  components: { SocialSign },
+  components: { SocialSign, FrontCaptcha },
   data() {
     const validateUsername = (rule, value, callback) => {
       if (!validUsername(value)) {
@@ -95,21 +145,44 @@ export default {
         callback()
       }
     }
+    const validateFrontCaptcha = (rule, value, callback) => {
+      if (!this.checkFrontCaptcha(value)) {
+        callback(new Error('Please enter the correct captcha'))
+      } else {
+        callback()
+      }
+    }
+    const validateBackCaptcha = (rule, value, callback) => {
+      checkCaptcha(value).then(response => {
+        if (response.data) {
+          callback()
+        } else {
+          callback(new Error('Please enter the correct captcha'))
+        }
+      })
+    }
     return {
       loginForm: {
         username: 'admin',
-        password: '111111'
+        password: '111111',
+        frontCaptcha: '',
+        backCaptcha: ''
       },
       loginRules: {
         username: [{ required: true, trigger: 'blur', validator: validateUsername }],
-        password: [{ required: true, trigger: 'blur', validator: validatePassword }]
+        password: [{ required: true, trigger: 'blur', validator: validatePassword }],
+        frontCaptcha: [{ required: true, trigger: 'blur', validator: validateFrontCaptcha }],
+        backCaptcha: [{ required: true, trigger: 'blur', validator: validateBackCaptcha }]
       },
       passwordType: 'password',
       capsTooltip: false,
       loading: false,
       showDialog: false,
       redirect: undefined,
-      otherQuery: {}
+      otherQuery: {},
+      frontCaptcha: '',
+      backCaptcha: '',
+      backLoading: false
     }
   },
   watch: {
@@ -128,16 +201,44 @@ export default {
     // window.addEventListener('storage', this.afterQRScan)
   },
   mounted() {
+    this.getBackCaptcha()
     if (this.loginForm.username === '') {
       this.$refs.username.focus()
     } else if (this.loginForm.password === '') {
       this.$refs.password.focus()
+    } else if (this.loginForm.frontCaptcha === '') {
+      this.$refs.frontCaptcha.focus()
+    } else if (this.loginForm.backCaptcha === '') {
+      this.$refs.backCaptcha.focus()
     }
   },
   destroyed() {
     // window.removeEventListener('storage', this.afterQRScan)
   },
   methods: {
+    // 设置前端验证码
+    getFrontCaptcha(data) {
+      this.frontCaptcha = data
+    },
+    // 检测前端验证码
+    checkFrontCaptcha(data) {
+      // 大小写不敏感
+      const input = String(data)
+      return this.frontCaptcha.toLowerCase() === input.toLowerCase()
+    },
+    // 设置后台验证码
+    getBackCaptcha() {
+      if (this.backLoading === false) {
+        this.backLoading = true
+        getCaptcha().then(response => {
+          this.backCaptcha = response.data.url
+          this.backLoading = false
+        }).catch(err => {
+          console.log(`err:${err}`)
+          this.backLoading = false
+        })
+      }
+    },
     checkCapslock(e) {
       const { key } = e
       this.capsTooltip = key && key.length === 1 && (key >= 'A' && key <= 'Z')
@@ -251,6 +352,24 @@ $cursor: #fff;
 $bg:#2d3a4b;
 $dark_gray:#889aa4;
 $light_gray:#eee;
+
+.back-Captcha{
+  position: relative;
+  width: 112px;
+  height: 49px;
+  line-height: 47px;
+  margin: auto;
+
+  img{
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 112px;
+    margin: auto;
+  }
+}
 
 .login-container {
   min-height: 100%;
