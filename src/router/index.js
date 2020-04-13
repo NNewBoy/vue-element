@@ -96,6 +96,26 @@ export const constantRoutes = [
     ]
   },
   {
+    path: '/one',
+    component: Layout,
+    redirect: '/one/index',
+    name: 'one',
+    meta: {
+      title: 'one',
+      icon: 'excel'
+    },
+    children: [
+      {
+        path: 'export-one',
+        component: () => import('@/views/one/index'),
+        name: 'ExportOne',
+        meta: { title: '第一' }
+      },
+      { path: 'export-selected-excel', component: () => import('@/views/excel/select-excel'), name: 'selectExcel', meta: { title: 'selectExcel' }},
+      { path: 'upload-excel', component: () => import('@/views/excel/upload-excel'), name: 'uploadExcel', meta: { title: 'uploadExcel' }}
+    ]
+  },
+  {
     path: '/guide',
     component: Layout,
     redirect: '/guide/index',
