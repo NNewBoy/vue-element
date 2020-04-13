@@ -230,6 +230,7 @@ export default {
     getBackCaptcha() {
       if (this.backLoading === false) {
         this.backLoading = true
+
         getCaptcha().then(response => {
           this.backCaptcha = response.data.url
           this.backLoading = false
