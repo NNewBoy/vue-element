@@ -1,10 +1,13 @@
 <template>
-  <div class="app-container">
+  <div ref="list_body" class="app-container">
     <div class="filter-container">
       <el-input v-model="listQuery.code" placeholder="门型" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
       <el-button v-waves class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">
         查找
       </el-button>
+      <div class="total-div">
+        <el-tag class="total-tag">Total {{ total }}</el-tag>
+      </div>
     </div>
 
     <el-table
@@ -86,18 +89,15 @@
       </el-table-column>
     </el-table>
 
-    <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.per_page" @pagination="fetchData" />
   </div>
 </template>
 
 <script>
-import { getList, setLock, del, update } from '@/api/doorshape'
+import { getList, setLock, update } from '@/api/doorshape'/* del,*/
 import waves from '@/directive/waves' // waves directive
-import Pagination from '@/components/Pagination' // secondary package based on el-pagination
-import { editDelete } from '@/utils/edit'
+// import { editDelete } from '@/utils/edit'
 
 export default {
-  components: { Pagination },
   directives: { waves },
   filters: {
     statusFilter(status) {
@@ -118,13 +118,27 @@ export default {
         page: 1,
         per_page: 20,
         code: undefined
-      }
+      },
+      nowScroll: 0
     }
   },
   created() {
     this.fetchData()
   },
+  mounted() {
+    window.addEventListener('scroll', this.freshData, true)
+  },
   methods: {
+    freshData() {
+      const scrollTop = document.documentElement.scrollTop || document.body.scrollTop
+      const scrollHeight = document.documentElement.scrollHeight || document.body.scrollHeight
+      const clientHeight = document.documentElement.clientHeight || document.body.clientHeight
+      const canScroll = scrollHeight - clientHeight
+      if (scrollTop > canScroll / 2 && this.listQuery.per_page < this.total) {
+        this.listQuery.per_page += 20
+        this.fetchData()
+      }
+    },
     async fetchData() {
       this.listLoading = true
       const { data } = await getList(this.listQuery)
@@ -140,20 +154,21 @@ export default {
     },
     handleFilter() {
       this.listQuery.page = 1
+      this.listQuery.per_page = 20
       this.fetchData()
     },
     handleDelete(row, index) {
-      editDelete(() => {
-        this.listLoading = true
-        del(row.code).then(response => {
-          this.$notify.deleteOk()
-          this.list.splice(index, 1)
+      // editDelete(() => {
+      //   this.listLoading = true
+      //   del(row.code).then(response => {
+      //     this.$notify.deleteOk()
+      //     this.list.splice(index, 1)
 
-          this.listLoading = false
-        }).catch(() => {
-          this.listLoading = false
-        })
-      })
+      //     this.listLoading = false
+      //   }).catch(() => {
+      //     this.listLoading = false
+      //   })
+      // })
     },
     cancelEdit(row) {
       row.comment = row.originalComment
@@ -193,3 +208,17 @@ export default {
   }
 }
 </script>
+
+<style scoped>
+.total-div{
+  display: inline-block;
+  height: 40px;
+  vertical-align: middle;
+  margin: 0 50px 10px;
+}
+.total-tag{
+  position: relative;
+  top:50%;
+  transform: translateY(-50%);
+}
+</style>

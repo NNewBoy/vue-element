@@ -2,14 +2,16 @@ import request from '@/utils/request'
 import { getToken } from '@/utils/auth'
 
 export function getList(query) {
-  const param = { token: getToken() }
-  for (const key in query) {
-    param[key] = query[key]
-  }
+  // const param = { token: getToken() }
+  // for (const key in query) {
+  //   param[key] = query[key]
+  // }
   return request({
     url: '/pdoor/list',
     method: 'get',
-    params: param
+    params: query
+  }).then((data) => {
+    return data.data
   })
 }
 
