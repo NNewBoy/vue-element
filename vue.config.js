@@ -30,13 +30,29 @@ module.exports = {
   lintOnSave: process.env.NODE_ENV === 'development',
   productionSourceMap: false,
   devServer: {
+    // host: 'kit.yfway.com',
+    host: 'localhost',
     port: port,
     open: true,
+    hot: true, // 开启热点
+    inline: true, // 开启页面自动刷新
     overlay: {
       warnings: false,
       errors: true
     },
-    before: require('./mock/mock-server.js')
+    proxy: {
+      '/cors-api': {
+        target: 'https://tx-wsai-cdn.yfway.com',
+        // target: 'https://zx0108-develop.yfway.com',
+        changeOrigin: true,
+        ws: true,
+        secure: false,
+        pathRewrite: {
+          '^/cors-api': ''
+        }
+      }
+    },
+    after: require('./mock/mock-server.js')
   },
   configureWebpack: {
     // provide the app's title in webpack's name field, so that

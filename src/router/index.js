@@ -96,6 +96,32 @@ export const constantRoutes = [
     ]
   },
   {
+    path: '/scrollList',
+    component: Layout,
+    redirect: '/scrollList/index',
+    children: [
+      {
+        path: 'index',
+        component: () => import('@/views/scrollList/index'),
+        name: 'ScrollList',
+        meta: { title: 'ScrollList', icon: 'guide', noCache: true }
+      }
+    ]
+  },
+  {
+    path: '/cors',
+    component: Layout,
+    redirect: '/cors/index',
+    children: [
+      {
+        path: 'index',
+        component: () => import('@/views/cors/index'),
+        name: 'Cors',
+        meta: { title: 'Cors', icon: 'guide', noCache: true }
+      }
+    ]
+  },
+  {
     path: '/guide',
     component: Layout,
     redirect: '/guide/index',
