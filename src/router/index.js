@@ -98,6 +98,8 @@ export const constantRoutes = [
   {
     path: '/scrollList',
     component: Layout,
+    name: 'scrollList',
+    meta: { title: 'ScrollList', icon: 'table', noCache: true },
     redirect: '/scrollList/index',
     children: [
       {
@@ -105,6 +107,12 @@ export const constantRoutes = [
         component: () => import('@/views/scrollList/index'),
         name: 'ScrollList',
         meta: { title: 'ScrollList', icon: 'guide', noCache: true }
+      },
+      {
+        path: 'fixedMenu',
+        component: () => import('@/views/scrollList/fixedMenu'),
+        name: 'FixedMenu',
+        meta: { title: 'fixedMenu', icon: 'guide', noCache: true }
       }
     ]
   },
