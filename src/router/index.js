@@ -96,6 +96,18 @@ export const constantRoutes = [
     ]
   },
   {
+    path: '/typeFilter',
+    component: Layout,
+    children: [
+      {
+        path: 'index',
+        component: () => import('@/views/typeFilter/index'),
+        name: 'TypeFilter',
+        meta: { title: 'TypeFilter', icon: 'search', noCache: true }
+      }
+    ]
+  },
+  {
     path: '/scrollList',
     component: Layout,
     name: 'scrollList',

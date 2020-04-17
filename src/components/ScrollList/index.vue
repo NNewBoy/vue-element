@@ -33,6 +33,7 @@ export default {
   props: {
     /**
      * @type {String} window | list
+     * @description 仅适用于element ui 的表格el-table
      * @description window不固定页头，控制浏览器滚动，不需要slot
      * @description list固定页头，控制列表滚动，将列表代码放入slot
      */
@@ -83,12 +84,12 @@ export default {
       window.addEventListener('scroll', this.refreshData, true)
     } else if (this.type === 'list') {
       this.firstRefresh = true
-      const element = this.$refs.scrollList
-      const top = element.getBoundingClientRect().top
-      const clientHeight = this.getClientHeight()
+      // const element = this.$refs.scrollList
+      // const top = element.getBoundingClientRect().top
+      // const clientHeight = this.getClientHeight()
+      // this.$refs.scrollList.style.maxHeight = clientHeight - top - 70
 
-      this.$refs.scrollList.style.maxHeight = clientHeight - top - 70 + 'px'
-
+      const element = document.querySelector('.el-table__body-wrapper')
       element.addEventListener('scroll', this.refreshData, true)
     }
   },
@@ -96,7 +97,10 @@ export default {
     if (this.type === 'window') {
       window.removeEventListener('scroll', this.refreshData, true)
     } else if (this.type === 'list') {
-      this.$refs.scrollList.removeEventListener('scroll', this.refreshData, true)
+      if (this.controlArea !== '') {
+        const element = document.querySelector('.el-table__body-wrapper')
+        element.removeEventListener('scroll', this.refreshData, true)
+      }
     }
   },
   methods: {
@@ -122,7 +126,7 @@ export default {
         if (this.type === 'window') {
           scrollTo(0, 800)
         } else if (this.type === 'list') {
-          scrollTo(0, 800, this.$refs.scrollList)
+          scrollTo(0, 800, document.querySelector('.el-table__body-wrapper'))
         }
       } catch (err) {
         if (this.type === 'window') {
@@ -141,7 +145,7 @@ export default {
         scrollHeight = this.getScrollHeight()
         clientHeight = this.getClientHeight()
       } else if (this.type === 'list') {
-        const element = this.$refs.scrollList
+        const element = document.querySelector('.el-table__body-wrapper')
         clientHeight = element.clientHeight
         scrollHeight = element.scrollHeight
         scrollTop = element.scrollTop
@@ -175,7 +179,8 @@ export default {
         document.body.parentNode.scrollTop = scrollTop
         document.body.scrollTop = scrollTop
       } else if (this.type === 'list') {
-        const element = this.$refs.scrollList
+        // const element = this.$refs.scrollList
+        const element = document.querySelector('.el-table__body-wrapper')
         element.scrollTop = scrollTop
       }
     }

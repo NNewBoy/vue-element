@@ -8,6 +8,7 @@
 
     </div>
     <scrollList
+      id="scrollListBorder"
       type="list"
       :top-btn="true"
       :total="total"
@@ -17,6 +18,7 @@
       <el-table
         v-loading="listLoading"
         :data="list"
+        :height="tableHeight"
         element-loading-text="Loading"
         border
         fit
@@ -125,11 +127,16 @@ export default {
         page: 1,
         per_page: 40,
         code: undefined
-      }
+      },
+      tableHeight: 0
     }
   },
   created() {
     this.fetchData()
+    const top = 164 // 计算当前表格离页面顶部距离
+    const bottom = 70 // 空出距离给底下标签
+    const clientHeight = document.documentElement.clientHeight || document.body.parentNode.clientHeight || document.body.clientHeight
+    this.tableHeight = clientHeight - top - bottom
   },
   methods: {
     async refreshData() {
