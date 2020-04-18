@@ -4,8 +4,10 @@ import { getToken } from '@/utils/auth'
 export function getCatalog() {
   return request({
     url: '/mat/catalog',
-    method: 'get',
-    params: { token: getToken() }
+    method: 'get'
+    // params: { token: getToken() }
+  }).then((data) => {
+    return data.data
   })
 }
 

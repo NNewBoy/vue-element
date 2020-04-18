@@ -1,27 +1,8 @@
 <template>
   <div class="app-container">
-    <table width="100%">
-      <tr>
-        <td width="80px">材质分类</td>
-        <td>
-          <p v-for="(value,key) in catalog" :key="key">
-            <span :class="activeDir1==key?'active':'Classification'" @click="onCheck1(key)">
-              {{ key }}
-            </span>
-          </p>
-        </td>
-      </tr>
-      <tr>
-        <td>材质系列</td>
-        <td>
-          <div v-for="(value) in catalog[activeDir1]" :key="value">
-            <span :class="activeDir2==value?'active':'Classification'" @click="onCheck2(value)">
-              {{ value }}
-            </span>
-          </div>
-        </td>
-      </tr>
-    </table>
+    <typeFilter :data="menuList" fliter-name="材质分类" :multi-choice="true" @getType="getType1" />
+    <typeFilter v-show="showSrcondMenu" :data="secondMenuList" fliter-name="材质系列" :multi-choice="false" @getType="getType2" />
+
     <el-table
       v-loading="listLoading"
       :data="mats"
@@ -71,9 +52,10 @@ import { getCatalog, getMat } from '@/api/material'
 import { getToken } from '@/utils/auth'
 import Pagination from '@/components/Pagination'
 // import waves from '@/directive/waves'
+import typeFilter from '@/components/TypeFilter'
 
 export default {
-  components: { Pagination },
+  components: { Pagination, typeFilter },
   // directives: { waves },
   data() {
     return {
@@ -82,13 +64,18 @@ export default {
       catalog: [],
       activeDir1: '',
       activeDir2: '',
+      activeDir: '',
       mats: [],
       total: 0,
       listQuery: {
         page: 1,
         per_page: 20,
         name: undefined
-      }
+      },
+      menuList: [],
+      secondMenuList: [],
+      parentMenuList: [],
+      showSrcondMenu: false
     }
   },
   created() {
@@ -98,11 +85,10 @@ export default {
     async fetchCatalog() {
       const { data } = await getCatalog()
       this.catalog = data
-      // // 选首个目录
-      // for (var key in this.catalog[this.activeDir1]) {
-      //   this.onCheck1(this.catalog[this.activeDir1][key])
-      //   break
-      // }
+      this.menuList = Object.keys(data)
+
+      // 默认选首个目录
+      // this.getType1([{ name: this.menuList[0], index: 0 }])
     },
     async fetchMaterial() {
       this.listLoading = true
@@ -111,33 +97,45 @@ export default {
       this.total = data.total
       this.listLoading = false
     },
-    onCheck1(name) {
-      this.activeDir1 = name
-      // if (!this.catalog[this.activeDir1].active) {
-      //   // 选首个目录
-      //   for (var key in this.catalog[this.activeDir1]) {
-      //     this.catalog[this.activeDir1].active = this.catalog[this.activeDir1][key]
-      //     break
-      //   }
-      // }
-      this.onCheck2(this.catalog[this.activeDir1].active)
-    },
-    onCheck2(name) {
-      if (!name) {
+    getType1(arr) {
+      if (arr.length === 0) { // 清空数据
+        this.showSrcondMenu = false
         this.mats = []
         this.total = 0
         return
+      } else {
+        this.showSrcondMenu = true
+        this.secondMenuList = []
+        this.parentMenuList = []
+        arr.map(val => {
+          const temp = this.catalog[val.name]
+          for (const i of temp) {
+            this.secondMenuList.push(i)
+            this.parentMenuList.push(val.name)
+          }
+        })
       }
-      this.catalog[this.activeDir1].active = name
-      this.activeDir2 = this.catalog[this.activeDir1].active
-      this.fetchMaterial()
+
+      // 默认选首个目录
+      // this.activeDir1 = this.parentMenuList[0]
+      // this.getType2([{ name: this.secondMenuList[0], index: 0 }])
+    },
+    getType2(arr) {
+      if (arr.length === 0) { // 清空数据
+        this.mats = []
+        this.total = 0
+        return
+      } else if (arr.length > 0) {
+        this.activeDir1 = this.parentMenuList[arr[0].index]
+        this.catalog[this.activeDir1].active = arr[0].name
+        this.activeDir2 = this.catalog[this.activeDir1].active
+        // this.fetchMaterial()
+      }
     },
     getPicUrl(pic) {
-      console.log('pause')
       // return getPicUrl(pic) + '?' + Math.random()
     },
     beforePicUpload(file) {
-      console.log('pause')
       // return checkPicBeforeUpload(file)
     },
     onUploadPicSuccess(row, res, file) {

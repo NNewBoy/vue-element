@@ -27,31 +27,35 @@
 </template>
 
 <script type="text/javascript">
+/**
+ * @description 仅适用于element ui 的表格el-table
+ * @description window不固定页头，控制浏览器滚动，不需要slot
+ * @description list固定页头，控制列表滚动，将列表代码放入slot
+ * @property {String} type 滑动列表类型 window | list
+ * @property {Number} total 数据总数
+ * @property {Number} amount 已刷新数据数
+ * @property {Boolean} topBtn 是否显示回到顶部按钮
+ * @property {Boolean} leftBtn 是否显示向左滚动按钮
+ * @property {Boolean} rightBtn 是否显示向右滚动按钮
+ * @property {String} listId 列表id，要使用左右按钮必须传入
+ * @function refreshData 数据加载函数
+ */
 import { scrollTo } from '@/components/ScrollList/js/scroll-to'
 export default {
   name: 'ScrollList',
   props: {
-    /**
-     * @type {String} window | list
-     * @description 仅适用于element ui 的表格el-table
-     * @description window不固定页头，控制浏览器滚动，不需要slot
-     * @description list固定页头，控制列表滚动，将列表代码放入slot
-     */
-    type: {// 两种类型
+    type: {
       required: true,
       type: String
     },
-    // 数据总数
     total: {
       required: true,
       type: Number
     },
-    // 已刷新数据数
     amount: {
       required: true,
       type: Number
     },
-    // 三个按钮显示与否
     topBtn: {
       type: Boolean,
       default: true
@@ -64,7 +68,6 @@ export default {
       type: Boolean,
       default: false
     },
-    // 列表id，要使用左右按钮必须传入
     listId: {
       type: String,
       default: ''

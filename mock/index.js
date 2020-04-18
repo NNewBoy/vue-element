@@ -8,6 +8,7 @@ import search from './remote-search'
 import captcha from './captcha'
 import image from './image'
 import scrollList from './scrollList'
+import material from './material'
 
 const mocks = [
   ...user,
@@ -16,7 +17,8 @@ const mocks = [
   ...search,
   ...captcha,
   ...image,
-  ...scrollList
+  ...scrollList,
+  ...material
 ]
 
 // for front mock
