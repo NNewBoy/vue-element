@@ -1,7 +1,6 @@
 <template>
   <div class="app-container">
-    <typeFilter :data="menuList" filter-name="材质分类" :multi-choice="true" @getType="getType1" />
-    <typeFilter v-show="showSrcondMenu" :data="secondMenuList" filter-name="材质系列" :multi-choice="false" @getType="getType2" />
+    <MultiFilter :datas="menuList" :levels="3" :filter-names="['门板系列','门板价格','门板造型']" :multi-choices="[true,true,true]" @getResult="getType2" />
 
     <el-table
       v-loading="listLoading"
@@ -47,15 +46,15 @@
 </template>
 
 <script>
-import { getCatalog, getMat } from '@/api/material'
+import { getCatalog } from '@/api/doorstyle'
 // import { getPicUrl, checkPicBeforeUpload } from '@/utils/pic'
 import { getToken } from '@/utils/auth'
 import Pagination from '@/components/Pagination'
 // import waves from '@/directive/waves'
-import typeFilter from '@/components/TypeFilter'
+import MultiFilter from '@/components/MultiFilter'
 
 export default {
-  components: { Pagination, typeFilter },
+  components: { Pagination, MultiFilter },
   // directives: { waves },
   data() {
     return {
@@ -84,14 +83,32 @@ export default {
   methods: {
     async fetchCatalog() {
       const { data } = await getCatalog()
-      this.catalog = data
-      this.menuList = Object.keys(data)
+
+      const calCatalog = (function() {
+        return function fun(dirs) {
+          const catalogs = []
+          for (const dir in dirs) {
+            let next = []
+            if (Array.isArray(dirs[dir])) {
+              dirs[dir].forEach(element => {
+                next.push({ name: element })
+              })
+            } else {
+              next = fun(dirs[dir])
+            }
+
+            catalogs.push({ name: dir, children: next })
+          }
+          return catalogs
+        }
+      })()
+      this.menuList = calCatalog(data)
     },
     async fetchMaterial() {
       this.listLoading = true
-      const { data } = await getMat(this.activeDir1, this.catalog[this.activeDir1].active, this.listQuery)
-      this.mats = data.items
-      this.total = data.total
+      // const { data } = await getMat(this.activeDir1, this.catalog[this.activeDir1].active, this.listQuery)
+      // this.mats = data.items
+      // this.total = data.total
       this.listLoading = false
     },
     getType1(arr) {
@@ -112,18 +129,23 @@ export default {
           }
         })
       }
+
+      // 默认选首个目录
+      // this.activeDir1 = this.parentMenuList[0]
+      // this.getType2([{ name: this.secondMenuList[0], index: 0 }])
     },
     getType2(arr) {
-      if (arr.length === 0) { // 清空数据
-        this.mats = []
-        this.total = 0
-        return
-      } else if (arr.length > 0) {
-        this.activeDir1 = this.parentMenuList[arr[0].index]
-        this.catalog[this.activeDir1].active = arr[0].name
-        this.activeDir2 = this.catalog[this.activeDir1].active
-        // this.fetchMaterial()
-      }
+      console.log(arr)
+      // if (arr.length === 0) { // 清空数据
+      //   this.mats = []
+      //   this.total = 0
+      //   return
+      // } else if (arr.length > 0) {
+      //   this.activeDir1 = this.parentMenuList[arr[0].index]
+      //   this.catalog[this.activeDir1].active = arr[0].name
+      //   this.activeDir2 = this.catalog[this.activeDir1].active
+      //   // this.fetchMaterial()
+      // }
     },
     getPicUrl(pic) {
       // return getPicUrl(pic) + '?' + Math.random()

@@ -9,6 +9,7 @@ import captcha from './captcha'
 import image from './image'
 import scrollList from './scrollList'
 import material from './material'
+import doorstyle from './doorstyle'
 
 const mocks = [
   ...user,
@@ -18,7 +19,8 @@ const mocks = [
   ...captcha,
   ...image,
   ...scrollList,
-  ...material
+  ...material,
+  ...doorstyle
 ]
 
 // for front mock

@@ -96,6 +96,42 @@ export const constantRoutes = [
     ]
   },
   {
+    path: '/doorStyle',
+    component: Layout,
+    children: [
+      {
+        path: 'index',
+        component: () => import('@/views/doorStyle/index'),
+        name: 'DoorStyle',
+        meta: { title: 'DoorStyle', icon: 'search', noCache: true }
+      }
+    ]
+  },
+  {
+    path: '/multiFilter',
+    component: Layout,
+    children: [
+      {
+        path: 'index',
+        component: () => import('@/views/multiFilter/index'),
+        name: 'MultiFilter',
+        meta: { title: 'MultiFilter', icon: 'search', noCache: true }
+      }
+    ]
+  },
+  {
+    path: '/typeFilter2',
+    component: Layout,
+    children: [
+      {
+        path: 'index',
+        component: () => import('@/views/typeFilter2/index'),
+        name: 'TypeFilter2',
+        meta: { title: 'TypeFilter2', icon: 'search', noCache: true }
+      }
+    ]
+  },
+  {
     path: '/typeFilter',
     component: Layout,
     children: [

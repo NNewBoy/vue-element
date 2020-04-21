@@ -89,11 +89,12 @@
 <script type="text/javascript">
 /**
  * @property {Array} data 筛选器数据
+ * @property {Number} level 多级筛选器的级别，从0开始
  * @property {String} filterName 筛选器名称
  * @property {Boolean} multiChoice 是否开启多选
- * @function getType 获取选中选项，返回包含选中选项的编号和名字的对象数组
+ * @function getType 获取选中选项，返回包含选中选项的编号和名字的对象数组, 取消选择返回空数组
  */
-import toPinyin from '@/components/TypeFilter/js/chineseToPinyin'
+import toPinyin from './utils/chineseToPinyin'
 export default {
   components: {},
   props: {
@@ -103,6 +104,11 @@ export default {
       default() {
         return []
       }
+    },
+    level: {
+      require: true,
+      type: Number,
+      default: 0
     },
     filterName: {
       type: String,
@@ -160,7 +166,12 @@ export default {
       const reg = new RegExp('[a-z]')
       for (const item in this.data) {
         list[0].children.push(true)
-        const firstLetter = toPinyin.chineseToPinYin(this.data[item]).charAt(0).toLowerCase()
+        let firstLetter
+        if (this.data[item]) {
+          firstLetter = toPinyin.chineseToPinYin(this.data[item]).charAt(0).toLowerCase()
+        } else {
+          firstLetter = ''
+        }
         if (reg.test(firstLetter)) {
           list[this.corr[firstLetter]].children[item] = true
         } else {
@@ -246,7 +257,7 @@ export default {
           return { name: this.data[index], index: index }
         }
       })
-      this.$emit('getType', res.filter(item => item !== undefined))
+      this.$emit('getType', res.filter(item => item !== undefined), this.level)
     },
     moreFunc() {
       if (!this.canSelectMore) {
@@ -326,6 +337,7 @@ export default {
   }
 }
 .type-item{
+  height: 38px;
   display: inline-block;
   padding: 10px;
   margin: 5px 10px 5px 0;
