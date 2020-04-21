@@ -1,15 +1,12 @@
 import { pinyin } from './pinyin.js'
 export default {
   getFirstLetter: function(l1) {
-
-  },
-  chineseToPinYin: function(l1) {
     var l2 = l1.length
     var I1 = ''
     var reg = new RegExp(/^[\u4e00-\u9fa5]+$/)
     for (var i = 0; i < l2; i++) {
       var val = l1.substr(i, 1)
-      var name = this.arraySearch(val, pinyin)
+      var name = this.arraySearch2(val, pinyin)
       if (name !== false && reg.test(val)) {
         I1 += name
       } else {
@@ -22,7 +19,26 @@ export default {
     }
     return I1
   },
-  arraySearch: function(l1, l2) {
+  chineseToPinYin: function(l1) {
+    var l2 = l1.length
+    var I1 = ''
+    var reg = new RegExp(/^[\u4e00-\u9fa5]+$/)
+    for (var i = 0; i < l2; i++) {
+      var val = l1.substr(i, 1)
+      var name = this.arraySearch1(val, pinyin)
+      if (name !== false && reg.test(val)) {
+        I1 += name
+      } else {
+        I1 += val
+      }
+    }
+    I1 = I1.replace(/ /g, '-')
+    while (I1.indexOf('--') > 0) {
+      I1 = I1.replace('--', '-')
+    }
+    return I1
+  },
+  arraySearch1: function(l1, l2) {
     for (var name in pinyin) {
       if (pinyin[name].indexOf(l1) !== -1) {
         return this.ucfirst(name)
@@ -35,6 +51,20 @@ export default {
       var first = l1.substr(0, 1).toUpperCase()
       var spare = l1.substr(1, l1.length)
       return first + spare
+    }
+  },
+  arraySearch2: function(l1, l2) {
+    for (var name in pinyin) {
+      if (pinyin[name].indexOf(l1) !== -1) {
+        return this.getFirst(name)
+      }
+    }
+    return false
+  },
+  getFirst: function(l1) {
+    if (l1.length > 0) {
+      var first = l1.substr(0, 1).toUpperCase()
+      return first
     }
   }
 }

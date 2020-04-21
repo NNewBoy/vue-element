@@ -1,7 +1,7 @@
 <template>
   <div class="app-container">
-    <typeFilter :data="menuList" filter-name="材质分类" :multi-choice="true" @getType="getType1" />
-    <typeFilter v-show="showSrcondMenu" :data="secondMenuList" filter-name="材质系列" :multi-choice="false" @getType="getType2" />
+    <typeFilter :data="menuList" :level="0" filter-name="材质分类" :multi-choice="true" @getType="getType1" />
+    <typeFilter v-show="showSrcondMenu" :data="secondMenuList" :level="1" filter-name="材质系列" :multi-choice="false" @getType="getType2" />
 
     <el-table
       v-loading="listLoading"

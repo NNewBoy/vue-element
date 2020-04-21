@@ -21,6 +21,7 @@
             placeholder="查找"
             prefix-icon="el-icon-search"
           />
+          <a title="清空" href="javascript:;" class="el-icon-circle-close" @click="clearCondition" />
         </div>
       </div>
       <div ref="selectContent" class="select-content" :class="showMore?'mini-content':''">
@@ -89,9 +90,10 @@
 <script type="text/javascript">
 /**
  * @property {Array} data 筛选器数据
+ * @property {Number} level 多级筛选器的级别，从0开始
  * @property {String} filterName 筛选器名称
  * @property {Boolean} multiChoice 是否开启多选
- * @function getType 获取选中选项，返回包含选中选项的编号和名字的对象数组
+ * @function getType 获取选中选项，返回包含选中选项的编号和名字的对象数组,及当前选择器的级别, 取消选择返回空数组
  */
 import toPinyin from '@/components/TypeFilter/js/chineseToPinyin'
 export default {
@@ -103,6 +105,11 @@ export default {
       default() {
         return []
       }
+    },
+    level: {
+      require: true,
+      type: Number,
+      default: 0
     },
     filterName: {
       type: String,
@@ -122,7 +129,8 @@ export default {
       canSelectMore: false,
       initCondition: false,
       searchType: [],
-      searchText: ''
+      searchText: '',
+      pinyin: []
     }
   },
   computed: {
@@ -160,7 +168,12 @@ export default {
       const reg = new RegExp('[a-z]')
       for (const item in this.data) {
         list[0].children.push(true)
-        const firstLetter = toPinyin.chineseToPinYin(this.data[item]).charAt(0).toLowerCase()
+        let firstLetter
+        if (this.data[item]) {
+          firstLetter = toPinyin.chineseToPinYin(this.data[item]).charAt(0).toLowerCase()
+        } else {
+          firstLetter = ''
+        }
         if (reg.test(firstLetter)) {
           list[this.corr[firstLetter]].children[item] = true
         } else {
@@ -187,12 +200,25 @@ export default {
         this.canSelectMore = false
         this.initCondition = false
         this.selectedType = [true]
+        this.searchType = []
+        this.searchText = ''
         this.$nextTick(() => {
           if (this.$refs.selectContentRef.offsetHeight > 130) {
             this.initCondition = true
           }
-          if (this.data.length > 0) { // 初始化默认选第一项
-            this.getType()
+          if (this.data.length > 0) {
+            this.getType() // 初始化默认选第一项
+            for (const item in this.data) {
+              if (this.data[item]) {
+                const spell = toPinyin.chineseToPinYin(this.data[item])
+                const UCspell = spell.toLowerCase()
+                const firstLetter = toPinyin.getFirstLetter(this.data[item])
+                const UCfirstLetter = toPinyin.getFirstLetter(this.data[item]).toLowerCase()
+                this.pinyin[item] = firstLetter + '-' + spell + UCfirstLetter + '-' + UCspell
+              } else {
+                this.pinyin[item] = ''
+              }
+            }
           }
         })
       }
@@ -202,21 +228,20 @@ export default {
       this.selectedLetter = 0
       if (val !== '') {
         this.data.map((item, index) => {
-          if (item.indexOf(val) === -1) {
+          if (item.indexOf(val) === -1) { // 隐藏字符不符合
             this.$set(this.searchType, index, true)
+          }
+          if (this.pinyin[index].indexOf(val) !== -1) { // 显示拼音和缩写符合
+            this.$set(this.searchType, index, false)
           }
         })
       }
-      // this.$nextTick(() => { // 隐藏选中条件显示框
-      //   if (this.$refs.selectContentRef.offsetHeight > 130) {
-      //     this.initCondition = true
-      //   } else {
-      //     this.initCondition = false
-      //   }
-      // })
     }
   },
   methods: {
+    clearCondition() {
+      this.searchText = ''
+    },
     onClick1(index) {
       this.selectedLetter = index
     },
@@ -246,7 +271,7 @@ export default {
           return { name: this.data[index], index: index }
         }
       })
-      this.$emit('getType', res.filter(item => item !== undefined))
+      this.$emit('getType', res.filter(item => item !== undefined), this.level)
     },
     moreFunc() {
       if (!this.canSelectMore) {
@@ -326,6 +351,7 @@ export default {
   }
 }
 .type-item{
+  height: 38px;
   display: inline-block;
   padding: 10px;
   margin: 5px 10px 5px 0;
@@ -394,8 +420,23 @@ export default {
   }
 }
 .search-type{
+  position: relative;
   display: inline-block;
-  width:130px;
+  width:160px;
   margin-left: 15px;
+  padding-right: 30px;
+
+  a{
+    position: absolute;
+    right: 0;
+    height: 28px;
+    line-height: 28px;
+    font-size: 20px;
+    color: #46a6ff;
+
+    &:hover{
+      color: #e4393c;
+    }
+  }
 }
 </style>
