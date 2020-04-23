@@ -1,16 +1,9 @@
 <template>
   <div class="app-container">
-    <typeFilter :data="menuList" :level="0" filter-name="材质分类" :multi-choice="true" @getType="getType1" />
-    <typeFilter v-show="showSrcondMenu" :data="secondMenuList" :level="1" filter-name="材质系列" :multi-choice="false" @getType="getType2" />
-
-    <el-table
-      v-loading="listLoading"
-      :data="mats"
-      element-loading-text="Loading"
-      border
-      fit
-      highlight-current-row
-    >
+    <typeFilter :data="menuList" filter-name="材质分类" :multi-choice="true" @getType="getType1" />
+    <typeFilter v-show="showSrcondMenu" :data="secondMenuList" filter-name="材质系列" :multi-choice="false" @getType="getType2" />
+    <br>
+    <MaterialEdit :datas="mats" :list-loading="listLoading" @getParams="getParams">
       <el-table-column align="center" label="ID" width="50">
         <template slot-scope="scope">
           {{ scope.$index + 1 }}
@@ -21,16 +14,11 @@
           {{ row.name }}
         </template>
       </el-table-column>
-      <el-table-column align="center" label="图片">
-        <template slot-scope="{row}">
-          {{ row.pic_file_name }}
-        </template>
-      </el-table-column>
       <el-table-column align="center" label="图片" width="130px">
         <template slot-scope="{row}">
           <el-upload
             class="hotadv-uploader"
-            action="/api/mat/uploadpic"
+            action="/api/mat/uploadpic__"
             :data="{'token':token, 'mid': row.id}"
             :show-file-list="false"
             :on-success="onUploadPicSuccess.bind(null, row)"
@@ -41,8 +29,14 @@
           </el-upload>
         </template>
       </el-table-column>
-    </el-table>
-    <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.per_page" @pagination="fetchMaterial" />
+      <!-- <el-table-column align="center" label="图片">
+        <template slot-scope="{row}">
+          {{ row.pic_file_name }}
+        </template>
+      </el-table-column> -->
+    </MaterialEdit>
+    <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.per_page" @pagination="mats=[]" />
+
   </div>
 </template>
 
@@ -53,9 +47,10 @@ import { getToken } from '@/utils/auth'
 import Pagination from '@/components/Pagination'
 // import waves from '@/directive/waves'
 import typeFilter from '@/components/TypeFilter'
+import MaterialEdit from '@/components/MaterialEdit'
 
 export default {
-  components: { Pagination, typeFilter },
+  components: { Pagination, typeFilter, MaterialEdit },
   // directives: { waves },
   data() {
     return {
@@ -82,10 +77,36 @@ export default {
     this.fetchCatalog()
   },
   methods: {
+    getParams(params) {
+      // updateArticle(params.data).then(() => {
+      for (const item of params.id) {
+        const index = this.mats.findIndex(v => v.id === item)
+        for (const val in params.data) {
+          this.mats[index][val] = params.data[val]
+        }
+      }
+      this.$notify({
+        title: 'Success',
+        message: '数据修改成功',
+        type: 'success',
+        duration: 2000
+      })
+      // }).catch(() => {
+      //   this.$notify({
+      //     title: 'Error',
+      //     message: '数据修改失败，请检查网络',
+      //     type: 'error',
+      //     duration: 2000
+      //   })
+      // })
+    },
     async fetchCatalog() {
       const { data } = await getCatalog()
       this.catalog = data
       this.menuList = Object.keys(data)
+
+      // 默认选首个目录
+      // this.getType1([{ name: this.menuList[0], index: 0 }])
     },
     async fetchMaterial() {
       this.listLoading = true
@@ -112,6 +133,10 @@ export default {
           }
         })
       }
+
+      // 默认选首个目录
+      // this.activeDir1 = this.parentMenuList[0]
+      // this.getType2([{ name: this.secondMenuList[0], index: 0 }])
     },
     getType2(arr) {
       if (arr.length === 0) { // 清空数据
@@ -126,7 +151,7 @@ export default {
       }
     },
     getPicUrl(pic) {
-      // return getPicUrl(pic) + '?' + Math.random()
+      // return getPicUrl(pic) // + '?' + Math.random()
     },
     beforePicUpload(file) {
       // return checkPicBeforeUpload(file)
@@ -145,7 +170,7 @@ export default {
 }
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
 .active{
 		float: left;
 		margin-left: 10px;
@@ -164,4 +189,9 @@ export default {
 		border-radius: 4px;
 		font-size: 14px;
 	}
+.avatar {
+  width: 50px;
+  height: 50px;
+  display: block;
+}
 </style>

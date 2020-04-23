@@ -20,6 +20,8 @@ export function getMat(use, text, query) {
     url: '/mat/list',
     method: 'get',
     params: param
+  }).then((data) => {
+    return data.data
   })
 }
 

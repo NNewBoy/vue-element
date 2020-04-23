@@ -96,6 +96,30 @@ export const constantRoutes = [
     ]
   },
   {
+    path: '/materialParam_door',
+    component: Layout,
+    children: [
+      {
+        path: 'index',
+        component: () => import('@/views/materialParam_door/index'),
+        name: 'MaterialParam_door',
+        meta: { title: 'MaterialParam_door', icon: 'table', noCache: true }
+      }
+    ]
+  },
+  {
+    path: '/materialParam',
+    component: Layout,
+    children: [
+      {
+        path: 'index',
+        component: () => import('@/views/materialParam/index'),
+        name: 'MaterialParam',
+        meta: { title: 'MaterialParam', icon: 'table', noCache: true }
+      }
+    ]
+  },
+  {
     path: '/doorStyle',
     component: Layout,
     children: [
