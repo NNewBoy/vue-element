@@ -1,7 +1,9 @@
 <template>
   <div>
-    <el-row>
-      <el-col :span="4">
+    <typeFilter :data="brandList" filter-name="品牌" :multi-choice="true" @getType="getType" />
+    <br>
+    <div class="menu-list">
+      <div class="menu-item">
         <el-input
           v-model="searchText"
           clearable
@@ -9,8 +11,9 @@
           placeholder="查找"
           prefix-icon="el-icon-search"
         />
-      </el-col>
-      <el-col :span="4">
+      </div>
+
+      <div class="menu-item">
         <el-checkbox-group
           v-model="checkboxVal"
           class="material-box"
@@ -20,8 +23,25 @@
             材质参数
           </el-checkbox>
         </el-checkbox-group>
-      </el-col>
-    </el-row>
+      </div>
+
+      <div class="menu-item">
+        <el-checkbox-group
+          v-model="brandboxVal"
+          class="brand-box"
+          size="small"
+        >
+          <el-checkbox border label="brand">
+            修改品牌参数
+          </el-checkbox>
+        </el-checkbox-group>
+        <el-button-group v-if="brandboxVal" class="brand-button">
+          <el-button type="success" size="small" @click="saveBrand">保存</el-button>
+          <el-button type="warning" size="small" @click="resetBrand">重置</el-button>
+        </el-button-group>
+      </div>
+
+    </div>
     <br>
     <el-checkbox-group
       v-model="materialCheckboxVal"
@@ -29,66 +49,84 @@
       <el-table
         :key="key"
         v-loading="listLoading"
-        :data="datas.filter(el=>{return el.name.toLowerCase().indexOf(searchText.toLowerCase())>=0})"
+        :data="tableData.filter(el=>{return el.name.toLowerCase().indexOf(searchText.toLowerCase())>=0})"
         element-loading-text="Loading"
         border
         fit
         highlight-current-row
       >
         <slot />
+        <el-table-column align="center" label="尚品" width="100">
+          <template slot-scope="{row}">
+            {{ row.spzp }}
+            <el-button v-if="brandboxVal" size="mini" type="primary" class="el-icon-d-caret" circle @click="row.spzp=row.spzp===1?0:1" />
+          </template>
+        </el-table-column>
+        <el-table-column align="center" label="维意" width="100">
+          <template slot-scope="{row}">
+            {{ row.wayes }}
+            <el-button v-if="brandboxVal" size="mini" type="primary" class="el-icon-d-caret" circle @click="row.wayes=row.wayes===1?0:1" />
+          </template>
+        </el-table-column>
+        <el-table-column align="center" label="孖酷" width="100">
+          <template slot-scope="{row}">
+            {{ row.homkoo }}
+            <el-button v-if="brandboxVal" size="mini" type="primary" class="el-icon-d-caret" circle @click="row.homkoo=row.homkoo===1?0:1" />
+          </template>
+        </el-table-column>
         <el-table-column align="center" label="" min-width="1" /><!-- 避免材质参数前移 -->
         <div v-if="checkboxVal">
-          <el-table-column align="center" label="贴图长" width="80">
+          <el-table-column align="center" label="贴图长" width="100">
             <template slot-scope="{row}">
               {{ row.u }}
             </template>
           </el-table-column>
-          <el-table-column align="center" label="贴图宽" width="80">
+          <el-table-column align="center" label="贴图宽" width="100">
             <template slot-scope="{row}">
               {{ row.v }}
             </template>
           </el-table-column>
-          <el-table-column align="center" label="透明度" width="80">
+          <el-table-column align="center" label="透明度" width="100">
             <template slot-scope="{row}">
               {{ row.alfa_val }}
             </template>
           </el-table-column>
-          <el-table-column align="center" label="反射度" width="80">
+          <el-table-column align="center" label="反射度" width="100">
             <template slot-scope="{row}">
               {{ row.reflect_val }}
             </template>
           </el-table-column>
-          <el-table-column align="center" label="贴图亮度" width="80">
+          <el-table-column align="center" label="贴图亮度" width="100">
             <template slot-scope="{row}">
               {{ row.diffuse_val }}
             </template>
           </el-table-column>
-          <el-table-column align="center" label="渗透度" width="80">
+          <el-table-column align="center" label="渗透度" width="100">
             <template slot-scope="{row}">
               {{ row.color_blend_factor }}
             </template>
           </el-table-column>
-          <el-table-column align="center" label="粗糙度" width="80">
+          <el-table-column align="center" label="粗糙度" width="100">
             <template slot-scope="{row}">
               {{ row.roughness }}
             </template>
           </el-table-column>
-          <el-table-column align="center" label="高光亮度" width="80">
+          <el-table-column align="center" label="高光亮度" width="100">
             <template slot-scope="{row}">
               {{ row.gloss_val }}
             </template>
           </el-table-column>
-          <el-table-column align="center" label="高光范围" width="80">
+          <el-table-column align="center" label="高光范围" width="100">
             <template slot-scope="{row}">
               {{ row.gloss_size_val }}
             </template>
           </el-table-column>
-          <el-table-column align="center" label="凹凸程度" width="80">
+          <el-table-column align="center" label="凹凸程度" width="100">
             <template slot-scope="{row}">
               {{ row.bump_val }}
             </template>
           </el-table-column>
-          <el-table-column align="center" label="透光度" width="80">
+          <el-table-column align="center" label="透光度" width="100">
             <template slot-scope="{row}">
               {{ row.diffuse_alpha_val }}
             </template>
@@ -237,9 +275,10 @@
 </template>
 
 <script type="text/javascript">
+import typeFilter from '@/components/TypeFilter'
 export default {
   name: 'MaterialEdit',
-  components: {},
+  components: { typeFilter },
   props: {
     datas: {
       require: true,
@@ -265,9 +304,10 @@ export default {
     }
     return {
       searchText: '',
-      checkboxVal: true, // 选择材料参数
+      checkboxVal: false, // 选择材料参数
+      brandboxVal: false, // 修改品牌参数
       materialCheckboxVal: [], // 选择索引
-      paramsCheckboxVal: [0, 1, 2, 3], // 需修改参数
+      paramsCheckboxVal: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], // 需修改参数
       showEdit: false, // 显示编辑按钮
       dialogFormVisible: false,
       rules: {
@@ -298,11 +338,32 @@ export default {
         diffuse_alpha_val: 0
       },
       key: 1, // table key
-      selectAllVal: false
+      selectAllVal: false,
+      brandList: ['尚品', '维意', '孖酷'],
+      tableData: [],
+      updateParams: false // 确定是否重新渲染表格
     }
   },
   computed: {},
   watch: {
+    datas: {
+      immediate: true,
+      deep: true,
+      handler(val) { // 初始化
+        if (this.updateParams === false) {
+          this.searchText = ''
+          this.checkboxVal = false
+          this.brandboxVal = false
+          this.materialCheckboxVal = []
+          this.paramsCheckboxVal = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+          this.showEdit = false
+          this.dialogFormVisible = false
+          this.selectAllVal = false
+          this.tableData = []
+        }
+        this.brandList = ['尚品', '维意', '孖酷']
+      }
+    },
     checkboxVal(valArr) {
       this.key = this.key + 1// 为了保证table 每次都会重渲 In order to ensure the table will be re-rendered each time
     },
@@ -310,13 +371,72 @@ export default {
       if (val.length === 0) {
         this.dialogFormVisible = false
       }
+    },
+    brandboxVal(val) {
+      if (val === false) {
+        this.resetBrand()
+      }
     }
   },
   methods: {
+    saveBrand() {
+      const resArr = []
+      for (const item of this.tableData) {
+        const { id, spzp, wayes, homkoo } = item
+        resArr.push({ id, spzp, wayes, homkoo })
+      }
+      this.$emit('getParams', resArr)
+    },
+    resetBrand() {
+      this.brandList = ['尚品', '维意', '孖酷']
+    },
+    getType(arr) {
+      /* 初始化 */
+      if (this.updateParams === false) {
+        this.searchText = ''
+        this.checkboxVal = false
+        this.brandboxVal = false
+        this.materialCheckboxVal = []
+        this.paramsCheckboxVal = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+        this.showEdit = false
+        this.dialogFormVisible = false
+        this.selectAllVal = false
+        this.tableData = []
+      }
+
+      if (arr.length === 3) {
+        this.tableData = JSON.parse(JSON.stringify(this.datas))
+      } else if (arr.length > 0) {
+        const temp = []
+        for (const item of this.datas) {
+          for (const i of arr) {
+            if (item.spzp === 1 && i.index === 0) {
+              temp.push(item)
+              break
+            }
+            if (item.wayes === 1 && i.index === 1) {
+              temp.push(item)
+              break
+            }
+            if (item.homkoo === 1 && i.index === 2) {
+              temp.push(item)
+              break
+            }
+          }
+        }
+        this.tableData = JSON.parse(JSON.stringify(temp))
+      } else if (arr.length === 0) {
+        this.tableData = []
+      }
+      if (this.updateParams === false) {
+        this.key++
+      }
+      this.updateParams = false
+    },
     selectAll() {
       this.selectAllVal = !this.selectAllVal
       this.showEdit = true
-      const length = this.datas.length
+      const length = this.tableData.length
       if (this.selectAllVal) {
         for (let i = 0; i < length; i++) {
           if (this.materialCheckboxVal.indexOf(i) === -1) {
@@ -353,9 +473,12 @@ export default {
           }
           const resArr = []
           for (const item of this.materialCheckboxVal) {
-            resArr.push(this.datas[item].id)
+            const tempObj = JSON.parse(JSON.stringify(resObj))
+            tempObj.id = this.tableData[item].id
+            resArr.push(tempObj)
           }
-          this.$emit('getParams', { id: resArr, data: resObj })
+          this.updateParams = true
+          this.$emit('getParams', resArr)
         }
       })
     },
@@ -366,15 +489,29 @@ export default {
       if (this.materialCheckboxVal.indexOf(scope.$index) !== -1) {
         this.selectAllVal = false
         this.showEdit = false
+        this.paramsCheckboxVal = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
         if (this.materialCheckboxVal.length === 1) {
           const { u, v, alfa_val, reflect_val, diffuse_val, color_blend_factor, roughness, gloss_val, gloss_size_val, bump_val, diffuse_alpha_val } = scope.row
           this.dialogFormVal = { u, v, alfa_val, reflect_val, diffuse_val, color_blend_factor, roughness, gloss_val, gloss_size_val, bump_val, diffuse_alpha_val }
         } else {
+          let num = 0
           this.dialogFormVal = Object.assign({}, this.dialogFormValDefault)
+          for (const key in this.dialogFormValDefault) {
+            for (let index = 0; index < this.materialCheckboxVal.length - 1; index++) {
+              if (this.tableData[this.materialCheckboxVal[index]][key] !== this.tableData[this.materialCheckboxVal[index + 1]][key]) {
+                if (key === 'u' || key === 'v') {
+                  this.paramsCheckboxVal.splice(0, 1)
+                } else {
+                  this.paramsCheckboxVal.splice(this.paramsCheckboxVal.indexOf(num), 1)
+                }
+                break
+              }
+            }
+            num++
+          }
         }
         this.materialCheckboxVal.sort((a, b) => a - b)
         this.dialogFormVisible = true
-        this.paramsCheckboxVal = [0, 1, 2, 3]
         this.$nextTick(() => {
           this.$refs['dataForm'].$el.scrollTop = 0
           this.$refs['dataForm'].clearValidate()
@@ -401,8 +538,23 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.menu-list{
+  display: flex;
+  align-items: center;
+}
+.menu-item{
+  display: inline-block;
+  margin-right: 20px;
+}
 .material-box{
   text-align: center;
+}
+.brand-box{
+  display: inline-block;
+  margin-right: 5px;
+}
+.brand-button{
+  display: inline-block;
 }
 .header-a-border{
   display: flex;

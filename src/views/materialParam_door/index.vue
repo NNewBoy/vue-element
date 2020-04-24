@@ -144,11 +144,11 @@ export default {
   },
   methods: {
     getParams(params) {
-      // updateArticle(params.data).then(() => {
-      for (const item of params.id) {
-        const index = this.doorstyleList.findIndex(v => v.id === item)
-        for (const val in params.data) {
-          this.doorstyleList[index][val] = params.data[val]
+      // updateArticle(params).then(() => {
+      for (const item of params) {
+        const index = this.doorstyleList.findIndex(v => v.id === item.id)
+        for (const val in item) {
+          if (val !== 'id') { this.doorstyleList[index][val] = item[val] }
         }
       }
       this.$notify({

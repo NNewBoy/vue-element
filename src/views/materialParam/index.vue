@@ -2,7 +2,6 @@
   <div class="app-container">
     <typeFilter :data="menuList" filter-name="材质分类" :multi-choice="true" @getType="getType1" />
     <typeFilter v-show="showSrcondMenu" :data="secondMenuList" filter-name="材质系列" :multi-choice="false" @getType="getType2" />
-    <br>
     <MaterialEdit :datas="mats" :list-loading="listLoading" @getParams="getParams">
       <el-table-column align="center" label="ID" width="50">
         <template slot-scope="scope">
@@ -78,11 +77,11 @@ export default {
   },
   methods: {
     getParams(params) {
-      // updateArticle(params.data).then(() => {
-      for (const item of params.id) {
-        const index = this.mats.findIndex(v => v.id === item)
-        for (const val in params.data) {
-          this.mats[index][val] = params.data[val]
+      // updateArticle(params).then(() => {
+      for (const item of params) {
+        const index = this.mats.findIndex(v => v.id === item.id)
+        for (const val in item) {
+          if (val !== 'id') { this.mats[index][val] = item[val] }
         }
       }
       this.$notify({
