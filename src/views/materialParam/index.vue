@@ -2,7 +2,7 @@
   <div class="app-container">
     <typeFilter :data="menuList" filter-name="材质分类" :multi-choice="true" @getType="getType1" />
     <typeFilter v-show="showSrcondMenu" :data="secondMenuList" filter-name="材质系列" :multi-choice="false" @getType="getType2" />
-    <MaterialEdit :datas="mats" :list-loading="listLoading" @getParams="getParams">
+    <MaterialEdit :datas="mats" :list-loading="listLoading" search-target="name" @getParams="getParams">
       <el-table-column align="center" label="ID" width="50">
         <template slot-scope="scope">
           {{ scope.$index + 1 }}

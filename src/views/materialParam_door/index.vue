@@ -16,7 +16,7 @@
       @getResult="getResult2"
     />
     <!-- {{ doorStyle }} -->
-    <MaterialEdit :datas="doorstyleList" :list-loading="loadingDoorColor" @getParams="getParams">
+    <MaterialEdit :datas="doorstyleList" :list-loading="loadingDoorColor" search-target="door_color" @getParams="getParams">
       <el-table-column align="center" label="ID" width="40">
         <template slot-scope="scope">
           {{ scope.$index + 1 }}

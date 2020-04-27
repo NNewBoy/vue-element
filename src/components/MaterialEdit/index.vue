@@ -49,7 +49,7 @@
       <el-table
         :key="key"
         v-loading="listLoading"
-        :data="tableData.filter(el=>{return el.name.toLowerCase().indexOf(searchText.toLowerCase())>=0})"
+        :data="tableData.filter(el=>{return el[searchTarget].toLowerCase().indexOf(searchText.toLowerCase())>=0})"
         element-loading-text="Loading"
         border
         fit
@@ -58,20 +58,26 @@
         <slot />
         <el-table-column align="center" label="尚品" width="100">
           <template slot-scope="{row}">
-            {{ row.spzp }}
-            <el-button v-if="brandboxVal" size="mini" type="primary" class="el-icon-d-caret" circle @click="row.spzp=row.spzp===1?0:1" />
+            <span v-if="!brandboxVal">{{ row.spzp }}</span>
+            <span v-else class="my-checkbox" :class="row.spzp===1?'is-checked':''" @click="row.spzp=row.spzp===1?0:1">
+              <span class="my-checkbox-inner" />
+            </span>
           </template>
         </el-table-column>
         <el-table-column align="center" label="维意" width="100">
           <template slot-scope="{row}">
-            {{ row.wayes }}
-            <el-button v-if="brandboxVal" size="mini" type="primary" class="el-icon-d-caret" circle @click="row.wayes=row.wayes===1?0:1" />
+            <span v-if="!brandboxVal">{{ row.wayes }}</span>
+            <span v-else class="my-checkbox" :class="row.wayes===1?'is-checked':''" @click="row.wayes=row.wayes===1?0:1">
+              <span class="my-checkbox-inner" />
+            </span>
           </template>
         </el-table-column>
         <el-table-column align="center" label="孖酷" width="100">
           <template slot-scope="{row}">
-            {{ row.homkoo }}
-            <el-button v-if="brandboxVal" size="mini" type="primary" class="el-icon-d-caret" circle @click="row.homkoo=row.homkoo===1?0:1" />
+            <span v-if="!brandboxVal">{{ row.homkoo }}</span>
+            <span v-else class="my-checkbox" :class="row.homkoo===1?'is-checked':''" @click="row.homkoo=row.homkoo===1?0:1">
+              <span class="my-checkbox-inner" />
+            </span>
           </template>
         </el-table-column>
         <el-table-column align="center" label="" min-width="1" /><!-- 避免材质参数前移 -->
@@ -261,7 +267,7 @@
       <div slot="footer" class="dialog-footer">
         <div class="dialog-checkbox-control">
           <el-button type="primary" icon="el-icon-check" circle @click="paramsCheckboxVal=[0,1,2,3,4,5,6,7,8,9]" />
-          <el-button type="danger" icon="el-icon-delete" circle @click="paramsCheckboxVal=[]" />
+          <el-button type="primary" icon="el-icon-close" circle @click="paramsCheckboxVal=[]" />
         </div>
         <el-button @click="dialogFormVisible = false">
           取消
@@ -275,6 +281,12 @@
 </template>
 
 <script type="text/javascript">
+/**
+ * @property {Array} datas el-table的数据
+ * @property {Boolean} ListLoading 表格数据更新时所使用的等待请求完成的参数
+ * @property {String} searchTarget 搜索时对应的匹配字段
+ * @function getParams 返回与datas同类型的数组，对象包括id和修改的参数
+ */
 import typeFilter from '@/components/TypeFilter'
 export default {
   name: 'MaterialEdit',
@@ -291,6 +303,11 @@ export default {
       require: true,
       type: Boolean,
       default: false
+    },
+    searchTarget: {
+      require: true,
+      type: String,
+      default: 'name'
     }
   },
   data() {
@@ -502,7 +519,7 @@ export default {
                 if (key === 'u' || key === 'v') {
                   this.paramsCheckboxVal.splice(0, 1)
                 } else {
-                  this.paramsCheckboxVal.splice(this.paramsCheckboxVal.indexOf(num), 1)
+                  this.paramsCheckboxVal.splice(this.paramsCheckboxVal.indexOf(num - 1), 1)
                 }
                 break
               }
@@ -592,7 +609,7 @@ export default {
   }
   .dialog-size-input-block{
     display: inline-block;
-    width: 221px;
+    width: 230px;
   }
 }
 .dialog-item{
@@ -628,5 +645,51 @@ export default {
 }
 .dialog-checkbox-control{
   float: left;
+}
+.my-checkbox{
+  white-space: nowrap;
+  cursor: pointer;
+  outline: none;
+  display: inline-block;
+  line-height: 1;
+  position: relative;
+  vertical-align: middle;
+
+  &.is-checked{
+    .my-checkbox-inner{
+      background-color: #1890ff;
+      border-color: #1890ff;
+    }
+  }
+
+  .my-checkbox-inner{
+    display: inline-block;
+    position: relative;
+    border: 1px solid #DCDFE6;
+    border-radius: 2px;
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
+    width: 14px;
+    height: 14px;
+    background-color: #fff;
+    z-index: 1;
+    transition: border-color 0.25s cubic-bezier(0.71, -0.46, 0.29, 1.46),background-color 0.25s cubic-bezier(0.71, -0.46, 0.29, 1.46);
+
+    &:after{
+      height: 6px;
+      width: 2px;
+      box-sizing: content-box;
+      content: "";
+      border: 1px solid #fff;
+      border-left: 0;
+      border-top: 0;
+      left: 4px;
+      position: absolute;
+      top: 1px;
+      transform: rotate(45deg) scaleY(1);
+      transition: transform .15s ease-in .05s, -webkit-transform .15s ease-in .05s;
+      transform-origin: center;
+    }
+  }
 }
 </style>
