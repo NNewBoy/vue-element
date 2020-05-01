@@ -36,6 +36,61 @@ Vue.use(Element, {
   size: Cookies.get('size') || 'medium' // set element-ui default size
 })
 
+// 提示删除成功
+Vue.prototype.$notify.deleteOk = function() {
+  Vue.prototype.$notify({
+    title: 'Success',
+    message: '删除成功',
+    type: 'success',
+    duration: 2000
+  })
+}
+
+Vue.prototype.$notify.addOk = function() {
+  Vue.prototype.$notify({
+    title: 'Success',
+    message: '添加成功',
+    type: 'success',
+    duration: 2000
+  })
+}
+
+Vue.prototype.$message.editOk = function() {
+  Vue.prototype.$notify({
+    title: 'Success',
+    message: '修改成功',
+    type: 'success',
+    duration: 2000
+  })
+}
+
+Vue.prototype.$notify.editError = function() {
+  Vue.prototype.$notify({
+    title: 'Error',
+    message: '修改失败',
+    type: 'error',
+    duration: 2000
+  })
+}
+
+Vue.prototype.$notify.uploadOk = function() {
+  Vue.prototype.$notify({
+    title: 'Success',
+    message: '上传成功',
+    type: 'success',
+    duration: 2000
+  })
+}
+
+Vue.prototype.$notify.uploadError = function(msg) {
+  Vue.prototype.$notify({
+    title: 'Error',
+    message: '上传失败' + (msg ? ': ' + msg : ''),
+    type: 'error',
+    duration: 2000
+  })
+}
+
 // register global utility filters
 Object.keys(filters).forEach(key => {
   Vue.filter(key, filters[key])

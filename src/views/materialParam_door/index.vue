@@ -16,7 +16,16 @@
       @getResult="getResult2"
     />
     <!-- {{ doorStyle }} -->
-    <MaterialEdit :datas="doorstyleList" :list-loading="loadingDoorColor" search-target="door_color" @getParams="getParams">
+    <MaterialEdit
+      :datas="doorstyleList"
+      :cascader-datas="catalogs"
+      :from-catalog="nowCatalog"
+      :list-loading="loadingDoorColor"
+      search-target="door_color"
+      @getParams="getParams"
+      @returnCatalog="changeCatalog"
+      @returnDoorPicture="getDoorPicture"
+    >
       <el-table-column align="center" label="ID" width="40">
         <template slot-scope="scope">
           {{ scope.$index + 1 }}
@@ -72,11 +81,6 @@
           </el-upload>
         </template>
       </el-table-column>
-      <el-table-column align="center" label="目录">
-        <template slot-scope="{row}">
-          {{ row.folder }}
-        </template>
-      </el-table-column>
       <el-table-column align="center" label="ShapeCode" width="100">
         <template slot-scope="{row}">
           {{ row.door_shape_code }}
@@ -92,21 +96,32 @@
             {{ row.pic_file_name }}
           </template>
         </el-table-column> -->
+      <el-table-column slot="last_column" label="删除" align="center" width="82" class-name="mini-padding fixed-width">
+        <template slot-scope="{row,$index}">
+          <el-button
+            v-if="row.status!='deleted'"
+            size="mini"
+            type="danger"
+            icon="el-icon-delete"
+            @click="onDelete(row,$index)"
+          />
+        </template>
+      </el-table-column>
     </MaterialEdit>
   </div>
 </template>
 
 <script>
 // import Sticky from '@/components/Sticky'
-import { getCatalog, getColorList } from '@/api/doorstyle'
-// import { getPicUrl, checkPicBeforeUpload } from '@/utils/pic'
+import { getCatalog, getColorList, deleteDoorStyle } from '@/api/doorstyle' /* updateDoorStyle, addDoorStyle  */
+import { getPicUrl, checkPicBeforeUpload } from '@/utils/pic'
 import { getToken } from '@/utils/auth'
-// import { editDelete } from '@/utils/edit'
+import { editDelete } from '@/utils/edit'
 import MultiFilter from '@/components/MultiFilter'
 import MaterialEdit from '@/components/MaterialEdit'
 
 export default {
-  components: { MultiFilter, MaterialEdit }, // Sticky,
+  components: { MultiFilter, MaterialEdit },
   data() {
     return {
       token: getToken(),
@@ -114,7 +129,8 @@ export default {
       loadingDoorColor: false,
       doorstyleList: [],
       selectArr: [],
-      restSelectArr: []
+      restSelectArr: [],
+      nowCatalog: []
     }
   },
   computed: {
@@ -143,32 +159,58 @@ export default {
     this.fetchData()
   },
   methods: {
-    getParams(params) {
-      // updateArticle(params).then(() => {
+    getDoorPicture(picture) { // 贴图属性
+      this.listLoading = true
+      // updateDoorStyle(picture).then(() => {
+      for (const item of picture) {
+        const index = this.doorstyleList.findIndex(v => v.id === item.id)
+        for (const val in item) {
+          if (val !== 'id') { this.doorstyleList[index][val] = item[val] }
+        }
+      }
+      this.listLoading = false
+      this.$message.editOk()
+      // }).catch(() => {
+      //   this.listLoading = false
+      //   this.$notify.editError()
+      // })
+    },
+    changeCatalog(catalog) { // 移动目录
+      this.listLoading = true
+      // updateMat(params).then(() => {
+      for (const item of catalog.id) {
+        // deleteMat(item).then(response => {
+        const index = this.doorstyleList.findIndex(v => v.id === item)
+        this.doorstyleList.splice(index, 1)
+        // }).catch(() => {})
+      }
+      this.listLoading = false
+      this.$message.editOk()
+      // }).catch(() => {
+      //   this.listLoading = false
+      //   this.$notify.editError()
+      // })
+    },
+    getParams(params) { // 材质参数
+      this.listLoading = true
+      // updateDoorStyle(params).then(() => {
       for (const item of params) {
         const index = this.doorstyleList.findIndex(v => v.id === item.id)
         for (const val in item) {
           if (val !== 'id') { this.doorstyleList[index][val] = item[val] }
         }
       }
-      this.$notify({
-        title: 'Success',
-        message: '数据修改成功',
-        type: 'success',
-        duration: 2000
-      })
+      this.listLoading = false
+      this.$message.editOk()
       // }).catch(() => {
-      //   this.$notify({
-      //     title: 'Error',
-      //     message: '数据修改失败，请检查网络',
-      //     type: 'error',
-      //     duration: 2000
-      //   })
+      //   this.listLoading = false
+      //   this.$notify.editError()
       // })
     },
     getResult(arr) {
       if (arr.length > 0) {
         this.selectArr = arr
+        this.nowCatalog = this.selectArr[0].map(item => item.name)
       } else {
         this.doorstyleList = []
       }
@@ -176,14 +218,13 @@ export default {
     getResult2(arr) {
       if (arr.length > 0) {
         this.restSelectArr = arr
-        // this.fetchDoorColor()
+        this.fetchDoorColor()
       } else {
         this.doorstyleList = []
       }
     },
     async fetchData() {
       const { data } = await getCatalog()
-
       const calCatalog = (function() {
         return function fun(dirs) {
           const catalogs = []
@@ -212,16 +253,16 @@ export default {
       this.loadingDoorColor = false
     },
     getPicUrl(pic) {
-      // return getPicUrl(pic) // + '?' + Math.random()
+      return getPicUrl(pic) // + '?' + Math.random()
     },
     getDoorPicUrl(folder) {
-      // return getPicUrl(folder + 'door_800x800.jpg') // + '?' + Math.random()
+      return getPicUrl(folder + 'door_800x800.jpg') // + '?' + Math.random()
     },
     getDrawerPicUrl(folder) {
-      // return getPicUrl(folder + 'drawer_800x800.jpg') // + '?' + Math.random()
+      return getPicUrl(folder + 'drawer_800x800.jpg') // + '?' + Math.random()
     },
     beforePicUpload(file) {
-      // return checkPicBeforeUpload(file)
+      return checkPicBeforeUpload(file)
     },
     onUploadPicSuccess(row, res, file) {
       if (res.success) {
@@ -232,6 +273,19 @@ export default {
       } else {
         this.$notify.uploadError()
       }
+    },
+    onDelete(row, index) {
+      editDelete(() => {
+        this.listLoading = true
+        deleteDoorStyle(row.id).then(response => {
+          this.$notify.deleteOk()
+          this.doorstyleList.splice(index, 1)
+
+          this.listLoading = false
+        }).catch(() => {
+          this.listLoading = false
+        })
+      })
     }
   }
 }

@@ -25,6 +25,30 @@ export function getMat(use, text, query) {
   })
 }
 
+export function updateMat(data) {
+  return request({
+    url: '/mat/update',
+    method: 'post',
+    params: { token: getToken(), data }
+  })
+}
+
+export function addMat(data) {
+  return request({
+    url: '/mat/add',
+    method: 'post',
+    params: { token: getToken(), data } // 返回新增的id
+  })
+}
+
+export function deleteMat(id) {
+  return request({
+    url: '/mat/delete',
+    method: 'post',
+    params: { token: getToken(), id }
+  })
+}
+
 export function getSetCtrl() {
   return request({
     url: '/mat/setctrl/list',

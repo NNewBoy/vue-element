@@ -18,10 +18,10 @@
           <el-input
             v-model="searchText"
             size="mini"
+            clearable
             placeholder="查找"
             prefix-icon="el-icon-search"
           />
-          <a title="清空" href="javascript:;" class="el-icon-circle-close" @click="clearCondition" />
         </div>
       </div>
       <div ref="selectContent" class="select-content" :class="showMore?'mini-content':''">
@@ -95,7 +95,7 @@
  * @property {Boolean} multiChoice 是否开启多选
  * @function getType 获取选中选项，返回包含选中选项的编号和名字的对象数组,及当前选择器的级别, 取消选择返回空数组
  */
-import toPinyin from '@/components/TypeFilter/js/chineseToPinyin'
+import toPinyin from '@/utils/chineseToPinyin'
 export default {
   components: {},
   props: {
@@ -239,9 +239,6 @@ export default {
     }
   },
   methods: {
-    clearCondition() {
-      this.searchText = ''
-    },
     onClick1(index) {
       this.selectedLetter = index
     },
@@ -422,21 +419,7 @@ export default {
 .search-type{
   position: relative;
   display: inline-block;
-  width:160px;
+  width:130px;
   margin-left: 15px;
-  padding-right: 30px;
-
-  a{
-    position: absolute;
-    right: 0;
-    height: 28px;
-    line-height: 28px;
-    font-size: 20px;
-    color: #46a6ff;
-
-    &:hover{
-      color: #e4393c;
-    }
-  }
 }
 </style>

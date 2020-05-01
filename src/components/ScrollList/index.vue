@@ -40,7 +40,6 @@
  * @property {String} listId 列表id，要使用左右按钮必须传入
  * @function refreshData 数据加载函数
  */
-import { scrollTo } from '@/components/ScrollList/js/scroll-to'
 export default {
   name: 'ScrollList',
   props: {
@@ -125,18 +124,10 @@ export default {
       }
     },
     goTop() {
-      try {
-        if (this.type === 'window') {
-          scrollTo(0, 800)
-        } else if (this.type === 'list') {
-          scrollTo(0, 800, document.querySelector('.el-table__body-wrapper'))
-        }
-      } catch (err) {
-        if (this.type === 'window') {
-          this.goBodyTop(0)
-        } else if (this.type === 'list') {
-          this.goBodyTop(0)
-        }
+      if (this.type === 'window') {
+        this.goBodyTop(0)
+      } else if (this.type === 'list') {
+        this.goBodyTop(0)
       }
     },
     async refreshData() {

@@ -16,6 +16,31 @@ export function getColorList(doorstyle) {
     url: '/doorstyle/list',
     method: 'get',
     params: { token: getToken(), doorstyle }
+  }).then((data) => {
+    return data.data
   })
 }
 
+export function updateDoorStyle(data) {
+  return request({
+    url: '/doorstyle/update',
+    method: 'post',
+    params: { token: getToken(), data }
+  })
+}
+
+export function deleteDoorStyle(id) {
+  return request({
+    url: '/doorstyle/delete',
+    method: 'post',
+    params: { token: getToken(), id }
+  })
+}
+
+export function addDoorStyle(data) {
+  return request({
+    url: '/doorstyle/add',
+    method: 'post',
+    params: { token: getToken(), data } // 返回新增的id
+  })
+}

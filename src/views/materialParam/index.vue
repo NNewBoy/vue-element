@@ -2,13 +2,22 @@
   <div class="app-container">
     <typeFilter :data="menuList" filter-name="材质分类" :multi-choice="true" @getType="getType1" />
     <typeFilter v-show="showSrcondMenu" :data="secondMenuList" filter-name="材质系列" :multi-choice="false" @getType="getType2" />
-    <MaterialEdit :datas="mats" :list-loading="listLoading" search-target="name" @getParams="getParams">
+    <MaterialEdit
+      :datas="mats"
+      :cascader-datas="cascaderDatas"
+      :from-catalog="nowCatalog"
+      :list-loading="listLoading"
+      search-target="name"
+      @getParams="getParams"
+      @returnCatalog="changeCatalog"
+      @returnMaterialPicture="getMaterialPicture"
+    >
       <el-table-column align="center" label="ID" width="50">
         <template slot-scope="scope">
           {{ scope.$index + 1 }}
         </template>
       </el-table-column>
-      <el-table-column align="center" label="名称" width="200">
+      <el-table-column align="center" label="名称" min-width="200">
         <template slot-scope="{row}">
           {{ row.name }}
         </template>
@@ -33,6 +42,17 @@
           {{ row.pic_file_name }}
         </template>
       </el-table-column> -->
+      <el-table-column slot="last_column" label="删除" align="center" width="82" class-name="mini-padding fixed-width">
+        <template slot-scope="{row,$index}">
+          <el-button
+            v-if="row.status!='deleted'"
+            size="mini"
+            type="danger"
+            icon="el-icon-delete"
+            @click="onDelete(row,$index)"
+          />
+        </template>
+      </el-table-column>
     </MaterialEdit>
     <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.per_page" @pagination="mats=[]" />
 
@@ -40,9 +60,10 @@
 </template>
 
 <script>
-import { getCatalog, getMat } from '@/api/material'
-// import { getPicUrl, checkPicBeforeUpload } from '@/utils/pic'
+import { getCatalog, getMat, deleteMat } from '@/api/material' /* updateMat, deleteMat, addMat */
+import { getPicUrl, checkPicBeforeUpload } from '@/utils/pic'
 import { getToken } from '@/utils/auth'
+import { editDelete } from '@/utils/edit'
 import Pagination from '@/components/Pagination'
 // import waves from '@/directive/waves'
 import typeFilter from '@/components/TypeFilter'
@@ -69,34 +90,61 @@ export default {
       menuList: [],
       secondMenuList: [],
       parentMenuList: [],
-      showSrcondMenu: false
+      showSrcondMenu: false,
+      cascaderDatas: [],
+      nowCatalog: []
     }
   },
   created() {
     this.fetchCatalog()
   },
   methods: {
-    getParams(params) {
-      // updateArticle(params).then(() => {
+    getMaterialPicture(picture) { // 贴图属性
+      this.listLoading = true
+      // updateMat(picture).then(() => {
+      for (const item of picture) {
+        const index = this.mats.findIndex(v => v.id === item.id)
+        for (const val in item) {
+          if (val !== 'id') { this.mats[index][val] = item[val] }
+        }
+      }
+      this.listLoading = false
+      this.$message.editOk()
+      // }).catch(() => {
+      //   this.listLoading = false
+      //   this.$notify.editError()
+      // })
+    },
+    changeCatalog(catalog) { // 移动目录
+      this.listLoading = true
+      // updateMat(params).then(() => {
+      for (const item of catalog.id) {
+        // deleteMat(item).then(response => {
+        const index = this.mats.findIndex(v => v.id === item)
+        this.mats.splice(index, 1)
+        // }).catch(() => {})
+      }
+      this.listLoading = false
+      this.$message.editOk()
+      // }).catch(() => {
+      //   this.listLoading = false
+      //   this.$notify.editError()
+      // })
+    },
+    getParams(params) { // 材质参数
+      this.listLoading = true
+      // updateMat(params).then(() => {
       for (const item of params) {
         const index = this.mats.findIndex(v => v.id === item.id)
         for (const val in item) {
           if (val !== 'id') { this.mats[index][val] = item[val] }
         }
       }
-      this.$notify({
-        title: 'Success',
-        message: '数据修改成功',
-        type: 'success',
-        duration: 2000
-      })
+      this.listLoading = false
+      this.$message.editOk()
       // }).catch(() => {
-      //   this.$notify({
-      //     title: 'Error',
-      //     message: '数据修改失败，请检查网络',
-      //     type: 'error',
-      //     duration: 2000
-      //   })
+      //   this.listLoading = false
+      //   this.$notify.editError()
       // })
     },
     async fetchCatalog() {
@@ -104,8 +152,26 @@ export default {
       this.catalog = data
       this.menuList = Object.keys(data)
 
-      // 默认选首个目录
-      // this.getType1([{ name: this.menuList[0], index: 0 }])
+      // 设置符合el-cascader的目录数据
+      const calCatalog = (function() {
+        return function fun(dirs) {
+          const catalogs = []
+          for (const dir in dirs) {
+            let next = []
+            if (Array.isArray(dirs[dir])) {
+              dirs[dir].forEach(element => {
+                next.push({ name: element })
+              })
+            } else {
+              next = fun(dirs[dir])
+            }
+
+            catalogs.push({ name: dir, children: next })
+          }
+          return catalogs
+        }
+      })()
+      this.cascaderDatas = calCatalog(data)
     },
     async fetchMaterial() {
       this.listLoading = true
@@ -146,14 +212,15 @@ export default {
         this.activeDir1 = this.parentMenuList[arr[0].index]
         this.catalog[this.activeDir1].active = arr[0].name
         this.activeDir2 = this.catalog[this.activeDir1].active
+        this.nowCatalog = [this.activeDir1, this.activeDir2]
         this.fetchMaterial()
       }
     },
     getPicUrl(pic) {
-      // return getPicUrl(pic) // + '?' + Math.random()
+      return getPicUrl(pic) // + '?' + Math.random()
     },
     beforePicUpload(file) {
-      // return checkPicBeforeUpload(file)
+      return checkPicBeforeUpload(file)
     },
     onUploadPicSuccess(row, res, file) {
       if (res.success) {
@@ -164,6 +231,19 @@ export default {
       } else {
         this.$notify.uploadError()
       }
+    },
+    onDelete(row, index) {
+      editDelete(() => {
+        this.listLoading = true
+        deleteMat(row.id).then(response => {
+          this.$notify.deleteOk()
+          this.mats.splice(index, 1)
+
+          this.listLoading = false
+        }).catch(() => {
+          this.listLoading = false
+        })
+      })
     }
   }
 }
