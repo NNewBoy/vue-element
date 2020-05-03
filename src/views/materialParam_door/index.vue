@@ -25,13 +25,14 @@
       @getParams="getParams"
       @returnCatalog="changeCatalog"
       @returnDoorPicture="getDoorPicture"
+      @returnCatalogName="changeCatalogName"
     >
       <el-table-column align="center" label="ID" width="40">
         <template slot-scope="scope">
           {{ scope.$index + 1 }}
         </template>
       </el-table-column>
-      <el-table-column align="center" label="颜色" width="200">
+      <el-table-column align="center" label="颜色" min-width="200">
         <template slot-scope="{row}">
           {{ row.door_color }}
         </template>
@@ -113,7 +114,7 @@
 
 <script>
 // import Sticky from '@/components/Sticky'
-import { getCatalog, getColorList, deleteDoorStyle } from '@/api/doorstyle' /* updateDoorStyle, addDoorStyle  */
+import { getCatalog, getColorList, deleteDoorStyle } from '@/api/doorstyle' /** updateDoorStyle, deleteDoorStyle, addDoorStyle */
 import { getPicUrl, checkPicBeforeUpload } from '@/utils/pic'
 import { getToken } from '@/utils/auth'
 import { editDelete } from '@/utils/edit'
@@ -159,8 +160,21 @@ export default {
     this.fetchData()
   },
   methods: {
+    changeCatalogName(catalog) { // 改变目录名称
+      this.loadingDoorColor = true
+      // updateMat(params).then(() => {
+      console.log(catalog.origin) // 目标目录
+      console.log(catalog.change) // 改变后的目录
+      this.loadingDoorColor = false
+      this.$message.editOk()
+      this.fetchData() // 重新加载目录
+      // }).catch(() => {
+      //   this.loadingDoorColor = false
+      //   this.$notify.editError()
+      // })
+    },
     getDoorPicture(picture) { // 贴图属性
-      this.listLoading = true
+      this.loadingDoorColor = true
       // updateDoorStyle(picture).then(() => {
       for (const item of picture) {
         const index = this.doorstyleList.findIndex(v => v.id === item.id)
@@ -168,15 +182,15 @@ export default {
           if (val !== 'id') { this.doorstyleList[index][val] = item[val] }
         }
       }
-      this.listLoading = false
+      this.loadingDoorColor = false
       this.$message.editOk()
       // }).catch(() => {
-      //   this.listLoading = false
+      //   this.loadingDoorColor = false
       //   this.$notify.editError()
       // })
     },
     changeCatalog(catalog) { // 移动目录
-      this.listLoading = true
+      this.loadingDoorColor = true
       // updateMat(params).then(() => {
       for (const item of catalog.id) {
         // deleteMat(item).then(response => {
@@ -184,15 +198,15 @@ export default {
         this.doorstyleList.splice(index, 1)
         // }).catch(() => {})
       }
-      this.listLoading = false
+      this.loadingDoorColor = false
       this.$message.editOk()
       // }).catch(() => {
-      //   this.listLoading = false
+      //   this.loadingDoorColor = false
       //   this.$notify.editError()
       // })
     },
     getParams(params) { // 材质参数
-      this.listLoading = true
+      this.loadingDoorColor = true
       // updateDoorStyle(params).then(() => {
       for (const item of params) {
         const index = this.doorstyleList.findIndex(v => v.id === item.id)
@@ -200,10 +214,10 @@ export default {
           if (val !== 'id') { this.doorstyleList[index][val] = item[val] }
         }
       }
-      this.listLoading = false
+      this.loadingDoorColor = false
       this.$message.editOk()
       // }).catch(() => {
-      //   this.listLoading = false
+      //   this.loadingDoorColor = false
       //   this.$notify.editError()
       // })
     },
@@ -276,14 +290,14 @@ export default {
     },
     onDelete(row, index) {
       editDelete(() => {
-        this.listLoading = true
+        this.loadingDoorColor = true
         deleteDoorStyle(row.id).then(response => {
           this.$notify.deleteOk()
           this.doorstyleList.splice(index, 1)
 
-          this.listLoading = false
+          this.loadingDoorColor = false
         }).catch(() => {
-          this.listLoading = false
+          this.loadingDoorColor = false
         })
       })
     }

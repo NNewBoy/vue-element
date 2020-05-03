@@ -1,5 +1,5 @@
 <template>
-  <el-dialog :key="key" v-el-drag-dialog class="dialog-container" top="10vh" title="修改材质参数" :visible.sync="visible">
+  <el-dialog :key="key" v-el-drag-dialog class="dialog-container" top="10vh" title="修改材质目录" :visible.sync="visible">
     <div slot="title" class="dialog-footer">
       <div class="selected-condition">
         <div>移动材质目录</div>
@@ -47,6 +47,16 @@
 </template>
 
 <script type="text/javascript">
+/**
+ * @property {Boolean} catalogDialogVisible 对话框显示与否
+ * @property {Array} materialCheckboxVal 当前选择的材质数组
+ * @property {Array} tableData 当前表单的数据数组
+ * @property {Array} fromCatalog 当前选中的目录数组
+ * @property {Array} cascaderDatas 当前目录的数据数组
+ * @property {String} searchTarget 搜索时对应的匹配字段，用于判断是材质库或门板库
+ * @function closeCatalogDialog 通知父组件关闭对话框
+ * @function returnCatalog 返回目录转移数据{id,from,to}，id为选择的材质id数组，from为当前目录数组，to为目标目录数组
+ */
 import MultiFilter from '@/components/MultiFilter'
 import elDragDialog from '@/directive/el-drag-dialog' // base on element-ui
 export default {

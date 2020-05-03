@@ -11,6 +11,7 @@
       @getParams="getParams"
       @returnCatalog="changeCatalog"
       @returnMaterialPicture="getMaterialPicture"
+      @returnCatalogName="changeCatalogName"
     >
       <el-table-column align="center" label="ID" width="50">
         <template slot-scope="scope">
@@ -60,7 +61,7 @@
 </template>
 
 <script>
-import { getCatalog, getMat, deleteMat } from '@/api/material' /* updateMat, deleteMat, addMat */
+import { getCatalog, getMat, deleteMat } from '@/api/material' /** updateMat, deleteMat, addMat */
 import { getPicUrl, checkPicBeforeUpload } from '@/utils/pic'
 import { getToken } from '@/utils/auth'
 import { editDelete } from '@/utils/edit'
@@ -99,6 +100,19 @@ export default {
     this.fetchCatalog()
   },
   methods: {
+    changeCatalogName(catalog) { // 改变目录名称
+      this.listLoading = true
+      // updateMat(params).then(() => {
+      console.log(catalog.origin) // 目标目录
+      console.log(catalog.change) // 改变后的目录
+      this.listLoading = false
+      this.$message.editOk()
+      this.fetchCatalog() // 重新加载目录
+      // }).catch(() => {
+      //   this.loadingDoorColor = false
+      //   this.$notify.editError()
+      // })
+    },
     getMaterialPicture(picture) { // 贴图属性
       this.listLoading = true
       // updateMat(picture).then(() => {

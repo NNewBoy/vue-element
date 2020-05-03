@@ -1,5 +1,5 @@
 <template>
-  <el-dialog :key="key" v-el-drag-dialog class="dialog-container" top="10vh" title="修改材质参数" :visible.sync="visible">
+  <el-dialog :key="key" v-el-drag-dialog class="dialog-container" top="10vh" title="修改贴图属性" :visible.sync="visible">
     <div slot="title" class="dialog-footer">
       <div class="selected-condition">
         <div>修改贴图属性</div>
@@ -74,6 +74,13 @@
 </template>
 
 <script type="text/javascript">
+/**
+ * @property {Boolean} dialogVisible 对话框显示与否
+ * @property {Array} materialCheckboxVal 当前选择的材质数组
+ * @property {Array} tableData 当前表单的数据数组
+ * @function closeDialog 通知父组件关闭对话框
+ * @function returnMaterialPicture 返回与tableData同类型的数组，对象包括id和修改的参数
+ */
 import elDragDialog from '@/directive/el-drag-dialog' // base on element-ui
 export default {
   directives: { elDragDialog },

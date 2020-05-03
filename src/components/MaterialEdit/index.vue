@@ -41,6 +41,9 @@
         </el-button-group>
       </div>
 
+      <div class="menu-item">
+        <el-button plain size="small" @click="catalogNameDialogVisible=true">编辑目录名</el-button>
+      </div>
     </div>
     <br>
     <el-checkbox-group
@@ -61,7 +64,13 @@
 
         <el-table-column align="center" label="尚品" width="100">
           <template slot-scope="{row}">
-            <span v-if="!brandboxVal">{{ row.spzp }}</span>
+            <span v-if="!brandboxVal">
+              <span v-if="row.spzp===1">是</span>
+              <span v-else-if="row.spzp===0">否</span>
+              <span v-else>
+                {{ row.spzp }}
+              </span>
+            </span>
             <span v-else class="my-checkbox" :class="row.spzp===1?'is-checked':''" @click="row.spzp=row.spzp===1?0:1">
               <span class="my-checkbox-inner" />
             </span>
@@ -69,7 +78,13 @@
         </el-table-column>
         <el-table-column align="center" label="维意" width="100">
           <template slot-scope="{row}">
-            <span v-if="!brandboxVal">{{ row.wayes }}</span>
+            <span v-if="!brandboxVal">
+              <span v-if="row.wayes===1">是</span>
+              <span v-else-if="row.wayes===0">否</span>
+              <span v-else>
+                {{ row.wayes }}
+              </span>
+            </span>
             <span v-else class="my-checkbox" :class="row.wayes===1?'is-checked':''" @click="row.wayes=row.wayes===1?0:1">
               <span class="my-checkbox-inner" />
             </span>
@@ -77,7 +92,13 @@
         </el-table-column>
         <el-table-column align="center" label="孖酷" width="100">
           <template slot-scope="{row}">
-            <span v-if="!brandboxVal">{{ row.homkoo }}</span>
+            <span v-if="!brandboxVal">
+              <span v-if="row.homkoo===1">是</span>
+              <span v-else-if="row.homkoo===0">否</span>
+              <span v-else>
+                {{ row.homkoo }}
+              </span>
+            </span>
             <span v-else class="my-checkbox" :class="row.homkoo===1?'is-checked':''" @click="row.homkoo=row.homkoo===1?0:1">
               <span class="my-checkbox-inner" />
             </span>
@@ -346,6 +367,13 @@
       @closeDialog="closeDialog('material')"
       v-on="$listeners"
     />
+    <CatalogNameDialog
+      :catalog-name-dialog-visible="catalogNameDialogVisible"
+      :cascader-datas="cascaderDatas"
+      :search-target="searchTarget"
+      @closeDialog="closeDialog('catalogName')"
+      v-on="$listeners"
+    />
   </div>
 </template>
 
@@ -357,17 +385,17 @@
  * @property {Boolean} ListLoading 表格数据更新时所使用的等待请求完成的参数
  * @property {String} searchTarget 搜索时对应的匹配字段
  * @function getParams 返回与datas同类型的数组，对象包括id和修改的参数
- * @function changeCatalog 返回与目录转移数据{id,from,to}，id为选择的材质id数组，from为当前目录数组，to为目标目录数组
  */
 import toPinyin from '@/utils/chineseToPinyin'
 import BrandsCheckbox from './components/BrandsCheckbox'
 import CatalogDialog from './components/CatalogDialog'
 import DoorPictureDialog from './components/DoorPictureDialog'
 import MaterialPictureDialog from './components/MaterialPictureDialog'
+import CatalogNameDialog from './components/CatalogNameDialog'
 import elDragDialog from '@/directive/el-drag-dialog' // base on element-ui
 export default {
   name: 'MaterialEdit',
-  components: { BrandsCheckbox, CatalogDialog, DoorPictureDialog, MaterialPictureDialog },
+  components: { BrandsCheckbox, CatalogDialog, DoorPictureDialog, MaterialPictureDialog, CatalogNameDialog },
   directives: { elDragDialog },
   props: {
     datas: {
@@ -465,7 +493,8 @@ export default {
       updateParams: false, // 确定是否重新渲染表格
       catalogDialogVisible: false,
       doorPictureDialogVisible: false,
-      materialPictureDialogVisible: false
+      materialPictureDialogVisible: false,
+      catalogNameDialogVisible: false
     }
   },
   computed: {
@@ -522,6 +551,8 @@ export default {
         this.doorPictureDialogVisible = false
       } else if (target === 'material') {
         this.materialPictureDialogVisible = false
+      } else if (target === 'catalogName') {
+        this.catalogNameDialogVisible = false
       }
       this.selectAllVal = false
       this.materialCheckboxVal = []
