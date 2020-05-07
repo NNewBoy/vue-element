@@ -10,7 +10,7 @@
           href="javascript:;"
           @click="deleteMaterialItem(index)"
         >
-          <i class="el-icon-check" />{{ tableData[item]['name'] }}
+          <i class="el-icon-check" />{{ item['name'] }}
         </a>
       </div>
     </div>
@@ -164,25 +164,24 @@ export default {
     initData() {
       this.paramsCheckboxVal = [0, 1, 2, 3, 4]
       if (this.materialCheckboxVal.length === 1) {
-        const { name, mat_type_name, mat_type_id, pic_file_texture_dir, permit_paint } = this.tableData[this.materialCheckboxVal[0]]
+        const { name, mat_type_name, mat_type_id, pic_file_texture_dir, permit_paint } = this.materialCheckboxVal[0]
         this.dialogFormVal = { name, mat_type_name, mat_type_id, pic_file_texture_dir, permit_paint }
       } else {
         let num = 0
         this.dialogFormVal = Object.assign({}, this.dialogFormValDefault)
         for (const key in this.dialogFormValDefault) {
           for (let index = 0; index < this.materialCheckboxVal.length - 1; index++) {
-            if (this.tableData[this.materialCheckboxVal[index]][key] !== this.tableData[this.materialCheckboxVal[index + 1]][key]) {
+            if (this.materialCheckboxVal[index][key] !== this.materialCheckboxVal[index + 1][key]) {
               this.paramsCheckboxVal.splice(this.paramsCheckboxVal.indexOf(num), 1)
               this.dialogFormVal[key] = this.dialogFormValDefault[key]
               break
             } else {
-              this.dialogFormVal[key] = this.tableData[this.materialCheckboxVal[index]][key]
+              this.dialogFormVal[key] = this.materialCheckboxVal[index][key]
             }
           }
           num++
         }
       }
-      this.materialCheckboxVal.sort((a, b) => a - b)
       this.$nextTick(() => {
         this.$refs['dataForm'].$el.scrollTop = 0
         this.$refs['dataForm'].clearValidate()
@@ -217,7 +216,7 @@ export default {
           const resArr = []
           for (const item of this.materialCheckboxVal) {
             const tempObj = JSON.parse(JSON.stringify(resObj))
-            tempObj.id = this.tableData[item].id
+            tempObj.id = item.id
             resArr.push(tempObj)
           }
           this.setVisible()

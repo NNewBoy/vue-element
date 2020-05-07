@@ -13,16 +13,8 @@
         />
       </div>
 
-      <div class="menu-item radio-menu">
-        <el-radio v-model="radioVal" class="radio-menu-item" border size="small" label="material">
-          编辑材质
-        </el-radio>
-        <el-radio v-model="radioVal" class="radio-menu-item" border size="small" label="catalog">
-          移动目录
-        </el-radio>
-        <el-radio v-model="radioVal" class="radio-menu-item" border size="small" label="picture">
-          贴图属性
-        </el-radio>
+      <div class="menu-item">
+        <el-button plain size="small" @click="catalogNameDialogVisible=true">编辑目录名</el-button>
       </div>
 
       <div class="menu-item">
@@ -32,7 +24,7 @@
           size="small"
         >
           <el-checkbox border label="brand">
-            编辑品牌参数
+            品牌参数
           </el-checkbox>
         </el-checkbox-group>
         <el-button-group v-if="brandboxVal" class="brand-button">
@@ -41,180 +33,166 @@
         </el-button-group>
       </div>
 
-      <div class="menu-item">
-        <el-button plain size="small" @click="catalogNameDialogVisible=true">编辑目录名</el-button>
+      <div class="menu-item radio-menu">
+        <el-radio v-model="radioVal" class="radio-menu-item" border size="small" label="material">
+          材质参数
+        </el-radio>
+        <el-radio v-model="radioVal" class="radio-menu-item" border size="small" label="catalog">
+          移动目录
+        </el-radio>
+        <el-radio v-model="radioVal" class="radio-menu-item" border size="small" label="picture">
+          贴图属性
+        </el-radio>
+        <el-button-group v-if="radioVal!==''" class="edit-button">
+          <el-button type="primary" size="small" @click="selectMaterial">编辑</el-button>
+        </el-button-group>
       </div>
     </div>
     <br>
-    <el-checkbox-group
-      v-model="materialCheckboxVal"
+    <el-table
+      :key="key"
+      ref="tbTable"
+      v-loading="listLoading"
+      max-height="500px"
+      :data="tableDataFilter"
+      element-loading-text="Loading"
+      border
+      fit
+      highlight-current-row
+      @selection-change="handleSelectionChange"
     >
-      <el-table
-        :key="key"
-        v-loading="listLoading"
-        max-height="500px"
-        :data="tableDataFilter"
-        element-loading-text="Loading"
-        border
-        fit
-        highlight-current-row
-      >
+      <el-table-column
+        type="selection"
+        width="45"
+      />
 
-        <slot />
+      <slot />
 
-        <el-table-column align="center" label="尚品" width="100">
-          <template slot-scope="{row}">
-            <span v-if="!brandboxVal">
-              <span v-if="row.spzp===1">是</span>
-              <span v-else-if="row.spzp===0">否</span>
-              <span v-else>
-                {{ row.spzp }}
-              </span>
+      <el-table-column v-for="(o, i) in brands" :key="i" align="center" :label="o.name" width="50">
+        <template slot-scope="{row}">
+          <span v-if="!brandboxVal">
+            <span v-if="row.spzp===1">是</span>
+            <span v-else-if="row.spzp===0">否</span>
+            <span v-else>
+              {{ row.spzp }}
             </span>
-            <span v-else class="my-checkbox" :class="row.spzp===1?'is-checked':''" @click="row.spzp=row.spzp===1?0:1">
-              <span class="my-checkbox-inner" />
+          </span>
+          <span v-else class="my-checkbox" :class="row[o.key]===1?'is-checked':''" @click="row[o.key]=row[o.key]===1?0:1">
+            <span class="my-checkbox-inner" />
+          </span>
+        </template>
+      </el-table-column>
+
+      <!-- <el-table-column align="center" label="" min-width="1" />避免材质参数前移 -->
+      <slot name="last_column" /><!-- 自动推后 -->
+
+      <div v-if="radioVal==='material'">
+        <el-table-column align="center" label="贴图长" width="100">
+          <template slot-scope="{row}">
+            {{ row.u }}
+          </template>
+        </el-table-column>
+        <el-table-column align="center" label="贴图宽" width="100">
+          <template slot-scope="{row}">
+            {{ row.v }}
+          </template>
+        </el-table-column>
+        <el-table-column align="center" label="透明度" width="100">
+          <template slot-scope="{row}">
+            {{ row.alfa_val }}
+          </template>
+        </el-table-column>
+        <el-table-column align="center" label="反射度" width="100">
+          <template slot-scope="{row}">
+            {{ row.reflect_val }}
+          </template>
+        </el-table-column>
+        <el-table-column align="center" label="贴图亮度" width="100">
+          <template slot-scope="{row}">
+            {{ row.diffuse_val }}
+          </template>
+        </el-table-column>
+        <el-table-column align="center" label="渗透度" width="100">
+          <template slot-scope="{row}">
+            {{ row.color_blend_factor }}
+          </template>
+        </el-table-column>
+        <el-table-column align="center" label="粗糙度" width="100">
+          <template slot-scope="{row}">
+            {{ row.roughness }}
+          </template>
+        </el-table-column>
+        <el-table-column align="center" label="高光亮度" width="100">
+          <template slot-scope="{row}">
+            {{ row.gloss_val }}
+          </template>
+        </el-table-column>
+        <el-table-column align="center" label="高光范围" width="100">
+          <template slot-scope="{row}">
+            {{ row.gloss_size_val }}
+          </template>
+        </el-table-column>
+        <el-table-column align="center" label="凹凸程度" width="100">
+          <template slot-scope="{row}">
+            {{ row.bump_val }}
+          </template>
+        </el-table-column>
+        <el-table-column align="center" label="透光度" width="100">
+          <template slot-scope="{row}">
+            {{ row.diffuse_alpha_val }}
+          </template>
+        </el-table-column>
+      </div>
+
+      <div v-if="radioVal==='picture' && searchTarget==='door_color'">
+        <el-table-column align="center" label="目录" width="200">
+          <template slot-scope="{row}">
+            {{ row.folder }}
+          </template>
+        </el-table-column>
+        <el-table-column align="center" label="贴图纹理方向" width="120">
+          <template slot-scope="{row}">
+            <span v-if="row.pic_file_texture_dir===1">横向</span>
+            <span v-else-if="row.pic_file_texture_dir===0">竖向</span>
+            <span v-else>
+              {{ row.pic_file_texture_dir }}
             </span>
           </template>
         </el-table-column>
-        <el-table-column align="center" label="维意" width="100">
+      </div>
+
+      <div v-if="radioVal==='picture' && searchTarget==='name'">
+        <el-table-column align="center" label="云渲染材质名" width="200">
           <template slot-scope="{row}">
-            <span v-if="!brandboxVal">
-              <span v-if="row.wayes===1">是</span>
-              <span v-else-if="row.wayes===0">否</span>
-              <span v-else>
-                {{ row.wayes }}
-              </span>
-            </span>
-            <span v-else class="my-checkbox" :class="row.wayes===1?'is-checked':''" @click="row.wayes=row.wayes===1?0:1">
-              <span class="my-checkbox-inner" />
+            {{ row.mat_type_name }}
+          </template>
+        </el-table-column>
+        <el-table-column align="center" label="云渲染材质id" width="200">
+          <template slot-scope="{row}">
+            {{ row.mat_type_id }}
+          </template>
+        </el-table-column>
+        <el-table-column align="center" label="贴图纹理方向" width="120">
+          <template slot-scope="{row}">
+            <span v-if="row.pic_file_texture_dir===1">横向</span>
+            <span v-else-if="row.pic_file_texture_dir===0">竖向</span>
+            <span v-else>
+              {{ row.pic_file_texture_dir }}
             </span>
           </template>
         </el-table-column>
-        <el-table-column align="center" label="孖酷" width="100">
+        <el-table-column align="center" label="是否可以喷绘" width="120">
           <template slot-scope="{row}">
-            <span v-if="!brandboxVal">
-              <span v-if="row.homkoo===1">是</span>
-              <span v-else-if="row.homkoo===0">否</span>
-              <span v-else>
-                {{ row.homkoo }}
-              </span>
-            </span>
-            <span v-else class="my-checkbox" :class="row.homkoo===1?'is-checked':''" @click="row.homkoo=row.homkoo===1?0:1">
-              <span class="my-checkbox-inner" />
+            <span v-if="row.permit_paint===1">是</span>
+            <span v-else-if="row.permit_paint===0">否</span>
+            <span v-else>
+              {{ row.permit_paint }}
             </span>
           </template>
         </el-table-column>
+      </div>
 
-        <!-- <el-table-column align="center" label="" min-width="1" />避免材质参数前移 -->
-        <slot name="last_column" /><!-- 自动推后 -->
-
-        <div v-if="radioVal==='material'">
-          <el-table-column align="center" label="贴图长" width="100">
-            <template slot-scope="{row}">
-              {{ row.u }}
-            </template>
-          </el-table-column>
-          <el-table-column align="center" label="贴图宽" width="100">
-            <template slot-scope="{row}">
-              {{ row.v }}
-            </template>
-          </el-table-column>
-          <el-table-column align="center" label="透明度" width="100">
-            <template slot-scope="{row}">
-              {{ row.alfa_val }}
-            </template>
-          </el-table-column>
-          <el-table-column align="center" label="反射度" width="100">
-            <template slot-scope="{row}">
-              {{ row.reflect_val }}
-            </template>
-          </el-table-column>
-          <el-table-column align="center" label="贴图亮度" width="100">
-            <template slot-scope="{row}">
-              {{ row.diffuse_val }}
-            </template>
-          </el-table-column>
-          <el-table-column align="center" label="渗透度" width="100">
-            <template slot-scope="{row}">
-              {{ row.color_blend_factor }}
-            </template>
-          </el-table-column>
-          <el-table-column align="center" label="粗糙度" width="100">
-            <template slot-scope="{row}">
-              {{ row.roughness }}
-            </template>
-          </el-table-column>
-          <el-table-column align="center" label="高光亮度" width="100">
-            <template slot-scope="{row}">
-              {{ row.gloss_val }}
-            </template>
-          </el-table-column>
-          <el-table-column align="center" label="高光范围" width="100">
-            <template slot-scope="{row}">
-              {{ row.gloss_size_val }}
-            </template>
-          </el-table-column>
-          <el-table-column align="center" label="凹凸程度" width="100">
-            <template slot-scope="{row}">
-              {{ row.bump_val }}
-            </template>
-          </el-table-column>
-          <el-table-column align="center" label="透光度" width="100">
-            <template slot-scope="{row}">
-              {{ row.diffuse_alpha_val }}
-            </template>
-          </el-table-column>
-        </div>
-
-        <div v-if="radioVal==='picture' && searchTarget==='door_color'">
-          <el-table-column align="center" label="目录" width="200">
-            <template slot-scope="{row}">
-              {{ row.folder }}
-            </template>
-          </el-table-column>
-          <el-table-column align="center" label="贴图纹理方向" width="120">
-            <template slot-scope="{row}">
-              <span v-if="row.pic_file_texture_dir===1">横向</span>
-              <span v-else-if="row.pic_file_texture_dir===0">竖向</span>
-              <span v-else>
-                {{ row.pic_file_texture_dir }}
-              </span>
-            </template>
-          </el-table-column>
-        </div>
-
-        <div v-if="radioVal==='picture' && searchTarget==='name'">
-          <el-table-column align="center" label="云渲染材质名" width="200">
-            <template slot-scope="{row}">
-              {{ row.mat_type_name }}
-            </template>
-          </el-table-column>
-          <el-table-column align="center" label="云渲染材质id" width="200">
-            <template slot-scope="{row}">
-              {{ row.mat_type_id }}
-            </template>
-          </el-table-column>
-          <el-table-column align="center" label="贴图纹理方向" width="120">
-            <template slot-scope="{row}">
-              <span v-if="row.pic_file_texture_dir===1">横向</span>
-              <span v-else-if="row.pic_file_texture_dir===0">竖向</span>
-              <span v-else>
-                {{ row.pic_file_texture_dir }}
-              </span>
-            </template>
-          </el-table-column>
-          <el-table-column align="center" label="是否可以喷绘" width="120">
-            <template slot-scope="{row}">
-              <span v-if="row.permit_paint===1">是</span>
-              <span v-else-if="row.permit_paint===0">否</span>
-              <span v-else>
-                {{ row.permit_paint }}
-              </span>
-            </template>
-          </el-table-column>
-        </div>
-
-        <div v-if="radioVal!==''">
+      <!-- <div v-if="radioVal!==''">
           <el-table-column align="center" label="编辑材质" min-width="150">
             <template slot="header">
               <div class="header-a-border">
@@ -235,9 +213,8 @@
               >选择</el-button>
             </template>
           </el-table-column>
-        </div>
-      </el-table>
-    </el-checkbox-group>
+        </div> -->
+    </el-table>
 
     <el-dialog v-el-drag-dialog title="修改材质参数" top="10vh" :visible.sync="dialogFormVisible">
       <div slot="title" class="dialog-footer">
@@ -245,12 +222,12 @@
           <div>修改材质参数</div>
           <span>目标ID：</span>
           <a
-            v-for="(item, index) in materialCheckboxVal"
+            v-for="(item, index) in selection"
             :key="index"
             href="javascript:;"
             @click="deleteMaterialItem(index)"
           >
-            <i class="el-icon-check" />{{ tableDataFilter[item][searchTarget] }}
+            <i class="el-icon-check" />{{ item[searchTarget] }}
           </a>
         </div>
       </div>
@@ -345,7 +322,7 @@
 
     <CatalogDialog
       :catalog-dialog-visible="catalogDialogVisible"
-      :material-checkbox-val="materialCheckboxVal"
+      :material-checkbox-val="selection"
       :table-data="tableDataFilter"
       :from-catalog="fromCatalog"
       :cascader-datas="cascaderDatas"
@@ -355,14 +332,14 @@
     />
     <DoorPictureDialog
       :dialog-visible="doorPictureDialogVisible"
-      :material-checkbox-val="materialCheckboxVal"
+      :material-checkbox-val="selection"
       :table-data="tableDataFilter"
       @closeDialog="closeDialog('door')"
       v-on="$listeners"
     />
     <MaterialPictureDialog
       :dialog-visible="materialPictureDialogVisible"
-      :material-checkbox-val="materialCheckboxVal"
+      :material-checkbox-val="selection"
       :table-data="tableDataFilter"
       @closeDialog="closeDialog('material')"
       v-on="$listeners"
@@ -494,7 +471,8 @@ export default {
       catalogDialogVisible: false,
       doorPictureDialogVisible: false,
       materialPictureDialogVisible: false,
-      catalogNameDialogVisible: false
+      catalogNameDialogVisible: false,
+      selection: []
     }
   },
   computed: {
@@ -506,6 +484,9 @@ export default {
           toPinyin.getFirstLetter(txt).indexOf(st) >= 0 ||
           toPinyin.chineseToPinYin(txt).toUpperCase().indexOf(st) >= 0
       })
+    },
+    brands() {
+      return this.$store.getters.brands
     }
   },
   watch: {
@@ -517,10 +498,8 @@ export default {
           this.searchText = ''
           this.radioVal = ''
           this.brandboxVal = false
-          this.materialCheckboxVal = []
           this.paramsCheckboxVal = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
           this.dialogFormVisible = false
-          this.selectAllVal = false
           this.tableData = []
         }
         this.selectBrands(this.lastBrand)
@@ -554,8 +533,6 @@ export default {
       } else if (target === 'catalogName') {
         this.catalogNameDialogVisible = false
       }
-      this.selectAllVal = false
-      this.materialCheckboxVal = []
     },
     saveBrand() {
       const resArr = []
@@ -575,10 +552,8 @@ export default {
         this.searchText = ''
         this.radioVal = ''
         this.brandboxVal = false
-        this.materialCheckboxVal = []
         this.paramsCheckboxVal = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
         this.dialogFormVisible = false
-        this.selectAllVal = false
         this.tableData = []
       }
 
@@ -611,6 +586,9 @@ export default {
       }
       this.updateParams = false
     },
+    handleSelectionChange(selection) {
+      this.selection = selection
+    },
     selectAll() {
       this.selectAllVal = !this.selectAllVal
       const length = this.tableDataFilter.length
@@ -626,8 +604,6 @@ export default {
     },
     clickCancel() {
       this.dialogFormVisible = false
-      this.selectAllVal = false
-      this.materialCheckboxVal = []
     },
     updateData() {
       this.$refs['dataForm'].validate((valid) => {
@@ -654,34 +630,35 @@ export default {
             }
           }
           const resArr = []
-          for (const item of this.materialCheckboxVal) {
+          for (const item of this.selection) {
             const tempObj = JSON.parse(JSON.stringify(resObj))
-            tempObj.id = this.tableDataFilter[item].id
+            tempObj.id = item.id
             resArr.push(tempObj)
           }
           this.updateParams = true
-          this.selectAllVal = false
-          this.materialCheckboxVal = []
           this.$emit('getParams', resArr)
         }
       })
     },
     deleteMaterialItem(index) {
-      this.materialCheckboxVal.splice(index, 1)
+      this.selection.splice(index, 1)
+      if (this.selection.length === 0) {
+        this.dialogFormVisible = false
+      }
     },
-    selectMaterial(scope) {
-      if (this.radioVal === 'material') {
-        if (this.materialCheckboxVal.indexOf(scope.$index) !== -1) {
+    selectMaterial() {
+      if (this.selection.length > 0) {
+        if (this.radioVal === 'material') {
           this.paramsCheckboxVal = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
-          if (this.materialCheckboxVal.length === 1) {
-            const { u, v, alfa_val, reflect_val, diffuse_val, color_blend_factor, roughness, gloss_val, gloss_size_val, bump_val, diffuse_alpha_val } = scope.row
+          if (this.selection.length === 1) {
+            const { u, v, alfa_val, reflect_val, diffuse_val, color_blend_factor, roughness, gloss_val, gloss_size_val, bump_val, diffuse_alpha_val } = this.selection[0]
             this.dialogFormVal = { u, v, alfa_val, reflect_val, diffuse_val, color_blend_factor, roughness, gloss_val, gloss_size_val, bump_val, diffuse_alpha_val }
           } else {
             let num = 0
             this.dialogFormVal = Object.assign({}, this.dialogFormValDefault)
             for (const key in this.dialogFormValDefault) {
-              for (let index = 0; index < this.materialCheckboxVal.length - 1; index++) {
-                if (this.tableDataFilter[this.materialCheckboxVal[index]][key] !== this.tableDataFilter[this.materialCheckboxVal[index + 1]][key]) {
+              for (let index = 0; index < this.selection.length - 1; index++) {
+                if (this.selection[index][key] !== this.selection[index + 1][key]) {
                   if (key === 'u' || key === 'v') {
                     this.paramsCheckboxVal.splice(0, 1)
                   } else {
@@ -690,28 +667,25 @@ export default {
                   this.dialogFormVal[key] = this.dialogFormValDefault[key]
                   break
                 } else {
-                  this.dialogFormVal[key] = this.tableDataFilter[this.materialCheckboxVal[index]][key]
+                  this.dialogFormVal[key] = this.selection[index][key]
                 }
               }
               num++
             }
           }
-          this.materialCheckboxVal.sort((a, b) => a - b)
           this.dialogFormVisible = true
           this.$nextTick(() => {
             this.$refs['dataForm'].$el.scrollTop = 0
             this.$refs['dataForm'].clearValidate()
           })
-        }
-      } else if (this.radioVal === 'catalog') {
-        this.materialCheckboxVal.sort((a, b) => a - b)
-        this.catalogDialogVisible = true
-      } else if (this.radioVal === 'picture') {
-        this.materialCheckboxVal.sort((a, b) => a - b)
-        if (this.searchTarget === 'door_color') {
-          this.doorPictureDialogVisible = true
-        } else if (this.searchTarget === 'name') {
-          this.materialPictureDialogVisible = true
+        } else if (this.radioVal === 'catalog') {
+          this.catalogDialogVisible = true
+        } else if (this.radioVal === 'picture') {
+          if (this.searchTarget === 'door_color') {
+            this.doorPictureDialogVisible = true
+          } else if (this.searchTarget === 'name') {
+            this.materialPictureDialogVisible = true
+          }
         }
       }
     }
@@ -719,11 +693,8 @@ export default {
 }
 </script>
 <style>
-.menu-list .menu-item.radio-menu{
-  margin-right: 0;
-}
 .radio-menu .radio-menu-item{
-  margin-right: 20px;
+  margin-right: 5px;
 }
 .radio-menu .el-radio.radio-menu-item.is-bordered{
   margin-left: 0;

@@ -10,7 +10,7 @@
           href="javascript:;"
           @click="deleteMaterialItem(index)"
         >
-          <i class="el-icon-check" />{{ tableData[item][searchTarget] }}
+          <i class="el-icon-check" />{{ item[searchTarget] }}
         </a>
       </div>
     </div>
@@ -151,7 +151,7 @@ export default {
       }
       const resId = []
       for (const item of this.materialCheckboxVal) {
-        resId.push(this.tableData[item].id)
+        resId.push(item.id)
       }
       this.setVisible()
       this.$emit('returnCatalog', { id: resId, from: this.fromCatalog, to: this.cascaderVal })

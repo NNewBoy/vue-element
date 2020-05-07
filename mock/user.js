@@ -21,7 +21,7 @@ const users = {
     introduction: 'I am an editor',
     avatar: 'https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif',
     name: 'Normal Editor',
-    brand: [{ key: 'spzp', name: '尚品' }, { key: 'wayes', name: '维意' }]
+    brand: [{ key: 'spzp', name: '尚品' }, { key: 'wayes', name: '维意' }, { key: 'homkoo', name: '孖酷' }]
   }
 }
 

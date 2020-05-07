@@ -1,227 +1,247 @@
 <template>
   <div ref="list_body" class="app-container">
-    <div class="dir-container">
-      门板系列
-      <el-tag
-        v-for="(item, index) in doorSeries"
-        :key="index"
-        :class="item.selected ? 'select-tag' : 'unselect-tag' "
-        @click="onSelectDir(catalogs, index)"
-      >
-        {{ item.name }}
-      </el-tag>
-    </div>
-    <div class="dir-container">
-      门板价格
-      <el-tag
-        v-for="(item, index) in doorPrice"
-        :key="index"
-        :class="item.selected ? 'select-tag' : 'unselect-tag' "
-        @click="onSelectDir(doorPrice, index)"
-      >
-        {{ item.name }}
-      </el-tag>
-    </div>
-    <div class="dir-container">
-      门板造型
-      <el-tag
-        v-for="(item, index) in doorShape"
-        :key="index"
-        :class="item.selected ? 'select-tag' : 'unselect-tag' "
-        @click="onSelectDir(doorShape, index)"
-      >
-        {{ item.name }}
-      </el-tag>
-    </div>
-    <div v-if="doorExt4.length>1" class="dir-container">
-      门板Ext4
-      <el-tag
-        v-for="(item, index) in doorExt4"
-        :key="index"
-        :class="item.selected ? 'select-tag' : 'unselect-tag' "
-        @click="onSelectDir(doorExt4, index)"
-      >
-        {{ item.name }}
-      </el-tag>
-    </div>
-    <div v-if="doorExt5.length>1" class="dir-container">
-      门板Ext5
-      <el-tag
-        v-for="(item, index) in doorExt5"
-        :key="index"
-        :class="item.selected ? 'select-tag' : 'unselect-tag' "
-        @click="onSelectDir(doorExt5, index)"
-      >
-        {{ item.name }}
-      </el-tag>
-    </div>
-    <div v-if="doorExt6.length>1" class="dir-container">
-      门板Ext6
-      <el-tag
-        v-for="(item, index) in doorExt6"
-        :key="index"
-        :class="item.selected ? 'select-tag' : 'unselect-tag' "
-        @click="onSelectDir(doorExt6, index)"
-      >
-        {{ item.name }}
-      </el-tag>
-    </div>
+    <MultiFilter
+      :datas="catalogs"
+      :levels="3"
+      :filter-names="['门板系列','门板价格','门板造型']"
+      :multi-choices="[false,false,false]"
+      @getResult="getResult"
+    />
+    <MultiFilter
+      :datas="restCatalogs"
+      :levels="3"
+      :show-num-len="2"
+      :filter-names="['门板Ext4','门板Ext5','门板Ext6']"
+      :multi-choices="[false,false,false]"
+      @getResult="getResult2"
+    />
     <!-- {{ doorStyle }} -->
-    <div>
-      <el-table
-        v-loading="loadingDoorColor"
-        :data="doorstyleList"
-        element-loading-text="Loading"
-        border
-        fit
-        highlight-current-row
-      >
-        <el-table-column align="center" label="ID" width="40">
-          <template slot-scope="scope">
-            {{ scope.$index + 1 }}
-          </template>
-        </el-table-column>
-        <el-table-column align="center" label="颜色" width="200">
-          <template slot-scope="{row}">
-            {{ row.door_color }}
-          </template>
-        </el-table-column>
-        <el-table-column align="center" label="图片" width="80">
-          <template slot-scope="{row}">
-            <el-upload
-              class="hotadv-uploader"
-              action="/api/mat/uploadpic"
-              :data="{'token':token, 'mid': row.id}"
-              :show-file-list="false"
-              :on-success="onUploadPicSuccess.bind(null, row)"
-              :before-upload="beforePicUpload"
-            >
-              <el-image v-if="row.preview_pic" :src="getPicUrl(row.preview_pic)" class="avatar" />
-              <i v-else class="el-icon-plus hotadv-uploader-icon" />
-            </el-upload>
-          </template>
-        </el-table-column>
-        <el-table-column align="center" label="door" width="80">
-          <template slot-scope="{row}">
-            <el-upload
-              class="hotadv-uploader"
-              action="/api/mat/uploadpic"
-              :data="{'token':token, 'mid': row.id}"
-              :show-file-list="false"
-              :on-success="onUploadPicSuccess.bind(null, row)"
-              :before-upload="beforePicUpload"
-            >
-              <el-image v-if="row.preview_pic" :src="getDoorPicUrl(row.folder)" class="avatar" />
-              <i v-else class="el-icon-plus hotadv-uploader-icon" />
-            </el-upload>
-          </template>
-        </el-table-column>
-        <el-table-column align="center" label="drawer" width="80">
-          <template slot-scope="{row}">
-            <el-upload
-              class="hotadv-uploader"
-              action="/api/mat/uploadpic"
-              :data="{'token':token, 'mid': row.id}"
-              :show-file-list="false"
-              :on-success="onUploadPicSuccess.bind(null, row)"
-              :before-upload="beforePicUpload"
-            >
-              <el-image v-if="row.preview_pic" :src="getDrawerPicUrl(row.folder)" class="avatar" />
-              <i v-else class="el-icon-plus hotadv-uploader-icon" />
-            </el-upload>
-          </template>
-        </el-table-column>
-        <el-table-column align="center" label="目录">
-          <template slot-scope="{row}">
-            {{ row.folder }}
-          </template>
-        </el-table-column>
-        <el-table-column align="center" label="ShapeCode" width="100">
-          <template slot-scope="{row}">
-            {{ row.door_shape_code }}
-          </template>
-        </el-table-column>
-        <el-table-column align="center" label="厚度" width="50">
-          <template slot-scope="{row}">
-            {{ row.door_thick }}
-          </template>
-        </el-table-column>
-        <!-- <el-table-column align="center" label="图片">
+    <MaterialEdit
+      :datas="doorstyleList"
+      :cascader-datas="catalogs"
+      :from-catalog="nowCatalog"
+      :list-loading="loadingDoorColor"
+      search-target="door_color"
+      @getParams="getParams"
+      @returnCatalog="changeCatalog"
+      @returnDoorPicture="getDoorPicture"
+      @returnCatalogName="changeCatalogName"
+    >
+      <el-table-column align="center" label="ID" width="40">
+        <template slot-scope="scope">
+          {{ scope.$index + 1 }}
+        </template>
+      </el-table-column>
+      <el-table-column align="center" label="颜色" min-width="200">
+        <template slot-scope="{row}">
+          {{ row.door_color }}
+        </template>
+      </el-table-column>
+      <el-table-column align="center" label="图片" width="80">
+        <template slot-scope="{row}">
+          <el-upload
+            class="hotadv-uploader"
+            action="/api/mat/uploadpic"
+            :data="{'token':token, 'mid': row.id}"
+            :show-file-list="false"
+            :on-success="onUploadPicSuccess.bind(null, row)"
+            :before-upload="beforePicUpload"
+          >
+            <el-image v-if="row.preview_pic" :src="getPicUrl(row.preview_pic)" class="avatar" />
+            <i v-else class="el-icon-plus hotadv-uploader-icon" />
+          </el-upload>
+        </template>
+      </el-table-column>
+      <el-table-column align="center" label="door" width="80">
+        <template slot-scope="{row}">
+          <el-upload
+            class="hotadv-uploader"
+            action="/api/mat/uploadpic"
+            :data="{'token':token, 'mid': row.id}"
+            :show-file-list="false"
+            :on-success="onUploadPicSuccess.bind(null, row)"
+            :before-upload="beforePicUpload"
+          >
+            <el-image v-if="row.preview_pic" :src="getDoorPicUrl(row.folder)" class="avatar" />
+            <i v-else class="el-icon-plus hotadv-uploader-icon" />
+          </el-upload>
+        </template>
+      </el-table-column>
+      <el-table-column align="center" label="drawer" width="80">
+        <template slot-scope="{row}">
+          <el-upload
+            class="hotadv-uploader"
+            action="/api/mat/uploadpic"
+            :data="{'token':token, 'mid': row.id}"
+            :show-file-list="false"
+            :on-success="onUploadPicSuccess.bind(null, row)"
+            :before-upload="beforePicUpload"
+          >
+            <el-image v-if="row.preview_pic" :src="getDrawerPicUrl(row.folder)" class="avatar" />
+            <i v-else class="el-icon-plus hotadv-uploader-icon" />
+          </el-upload>
+        </template>
+      </el-table-column>
+      <el-table-column align="center" label="ShapeCode" width="100">
+        <template slot-scope="{row}">
+          {{ row.door_shape_code }}
+        </template>
+      </el-table-column>
+      <el-table-column align="center" label="厚度" width="50">
+        <template slot-scope="{row}">
+          {{ row.door_thick }}
+        </template>
+      </el-table-column>
+
+      <sku-status-column />
+
+      <!-- <el-table-column align="center" label="图片">
           <template slot-scope="{row}">
             {{ row.pic_file_name }}
           </template>
         </el-table-column> -->
-      </el-table>
-    </div>
+      <el-table-column slot="last_column" label="删除" align="center" width="82" class-name="mini-padding fixed-width">
+        <template slot-scope="{row,$index}">
+          <el-button
+            v-if="row.status!='deleted'"
+            size="mini"
+            type="danger"
+            icon="el-icon-delete"
+            @click="onDelete(row,$index)"
+          />
+        </template>
+      </el-table-column>
+    </MaterialEdit>
   </div>
 </template>
 
 <script>
-// import Sticky from '@/components/Sticky'
-import { getCatalog, getColorList } from '@/api/doorstyle'
-// import { getPicUrl, checkPicBeforeUpload } from '@/utils/pic'
+import { getCatalog, getColorList, deleteDoorStyle } from '@/api/doorstyle' /** updateDoorStyle, deleteDoorStyle, addDoorStyle */
+import { getPicUrl, checkPicBeforeUpload } from '@/utils/pic'
 import { getToken } from '@/utils/auth'
-// import { editDelete } from '@/utils/edit'
+import { editDelete } from '@/utils/edit'
+import MultiFilter from '@/components/MultiFilter'
+import MaterialEdit from '@/components/MaterialEdit'
+import SkuStatusColumn from '@/components/SkuStatusColumn'
 
 export default {
-  // components: { Sticky },
+  components: { MultiFilter, MaterialEdit, SkuStatusColumn },
   data() {
     return {
       token: getToken(),
       catalogs: [],
       loadingDoorColor: false,
-      doorstyleList: []
+      doorstyleList: [],
+      selectArr: [],
+      restSelectArr: [],
+      nowCatalog: []
     }
   },
   computed: {
-    doorSeries() {
-      return this.catalogs
-    },
-    doorPrice() {
-      const ds = this.catalogs.find(element => element.selected)
-      return ds ? ds.next : []
-    },
-    doorShape() {
-      const ds = this.doorPrice.find(element => element.selected)
-      return ds ? ds.next : []
-    },
-    doorExt4() {
-      const ds = this.doorShape.find(element => element.selected)
-      return ds ? ds.next : []
-    },
-    doorExt5() {
-      const ds = this.doorExt4.find(element => element.selected)
-      return ds ? ds.next : []
-    },
-    doorExt6() {
-      const ds = this.doorExt5.find(element => element.selected)
-      return ds ? ds.next : []
-    },
     doorStyle() {
-      const fn = (function() {
-        return function fun(dirs) {
-          let str
-          const sub = dirs.find(element => element.selected)
-          if (sub) {
-            str = sub.name
-            if (sub.next && sub.next.length > 0) {
-              str += '\\' + fun(sub.next)
-            }
-          }
-          return str
+      return this.selectArr[0].map(item => item.name).join('\\')
+    },
+    restDoorStyle() {
+      return this.restSelectArr[0].map(item => item.name).join('\\')
+    },
+    allDoorStyle() {
+      return [this.doorStyle, this.restDoorStyle].join('\\')
+    },
+    restCatalogs() {
+      const res = []
+      for (const i of this.selectArr) {
+        let temp = this.catalogs
+        for (const j of i) {
+          temp = temp[j.index].children
         }
-      })()
-      return fn(this.catalogs)
+        res.push(temp)
+      }
+      return res
     }
   },
   created() {
     this.fetchData()
   },
   methods: {
+    changeCatalogName(catalog) { // 改变目录名称
+      this.loadingDoorColor = true
+      // updateDoorStyle(params).then(() => {
+      console.log(catalog.origin) // 目标目录
+      console.log(catalog.change) // 改变后的目录
+      this.loadingDoorColor = false
+      this.$message.editOk()
+      this.fetchData() // 重新加载目录
+      // }).catch(() => {
+      //   this.loadingDoorColor = false
+      //   this.$notify.editError()
+      // })
+    },
+    getDoorPicture(picture) { // 贴图属性
+      this.loadingDoorColor = true
+      // updateDoorStyle(picture).then(() => {
+      for (const item of picture) {
+        const index = this.doorstyleList.findIndex(v => v.id === item.id)
+        for (const val in item) {
+          if (val !== 'id') { this.doorstyleList[index][val] = item[val] }
+        }
+      }
+      this.loadingDoorColor = false
+      this.$message.editOk()
+      // }).catch(() => {
+      //   this.loadingDoorColor = false
+      //   this.$notify.editError()
+      // })
+    },
+    changeCatalog(catalog) { // 移动目录
+      this.loadingDoorColor = true
+      // updateDoorStyle(params).then(() => {
+      for (const item of catalog.id) {
+        // deleteDoorStyle(item).then(response => {
+        const index = this.doorstyleList.findIndex(v => v.id === item)
+        this.doorstyleList.splice(index, 1)
+        // }).catch(() => {})
+      }
+      this.loadingDoorColor = false
+      this.$message.editOk()
+      // }).catch(() => {
+      //   this.loadingDoorColor = false
+      //   this.$notify.editError()
+      // })
+    },
+    getParams(params) { // 材质参数
+      this.loadingDoorColor = true
+      // updateDoorStyle(params).then(() => {
+      for (const item of params) {
+        const index = this.doorstyleList.findIndex(v => v.id === item.id)
+        for (const val in item) {
+          if (val !== 'id') { this.doorstyleList[index][val] = item[val] }
+        }
+      }
+      this.loadingDoorColor = false
+      this.$message.editOk()
+      // }).catch(() => {
+      //   this.loadingDoorColor = false
+      //   this.$notify.editError()
+      // })
+    },
+    getResult(arr) {
+      if (arr.length > 0) {
+        this.selectArr = arr
+        this.nowCatalog = this.selectArr[0].map(item => item.name)
+      } else {
+        this.doorstyleList = []
+      }
+    },
+    getResult2(arr) {
+      if (arr.length > 0) {
+        this.restSelectArr = arr
+        this.fetchDoorColor()
+      } else {
+        this.doorstyleList = []
+      }
+    },
     async fetchData() {
       const { data } = await getCatalog()
-      console.log(data)
-
       const calCatalog = (function() {
         return function fun(dirs) {
           const catalogs = []
@@ -229,48 +249,37 @@ export default {
             let next = []
             if (Array.isArray(dirs[dir])) {
               dirs[dir].forEach(element => {
-                next.push({ name: element, selected: false })
+                next.push({ name: element })
               })
-              next[0].selected = true
             } else {
               next = fun(dirs[dir])
             }
 
-            catalogs.push({ name: dir, selected: false, next })
+            catalogs.push({ name: dir, children: next })
           }
-          catalogs[0].selected = true
           return catalogs
         }
       })()
 
       this.catalogs = calCatalog(data)
-      console.log(this.catalogs)
-      this.fetchDoorColor()
-    },
-    onSelectDir(cats, index) {
-      cats.forEach((element, i) => {
-        element.selected = index === i
-      })
-      this.fetchDoorColor()
     },
     async fetchDoorColor() {
       this.loadingDoorColor = true
-      console.log(this.doorStyle)
-      const { data } = await getColorList(this.doorStyle)
+      const { data } = await getColorList(this.allDoorStyle)
       this.doorstyleList = data
       this.loadingDoorColor = false
     },
     getPicUrl(pic) {
-      // return getPicUrl(pic) // + '?' + Math.random()
+      return getPicUrl(pic) // + '?' + Math.random()
     },
     getDoorPicUrl(folder) {
-      // return getPicUrl(folder + 'door_800x800.jpg') // + '?' + Math.random()
+      return getPicUrl(folder + 'door_800x800.jpg') // + '?' + Math.random()
     },
     getDrawerPicUrl(folder) {
-      // return getPicUrl(folder + 'drawer_800x800.jpg') // + '?' + Math.random()
+      return getPicUrl(folder + 'drawer_800x800.jpg') // + '?' + Math.random()
     },
     beforePicUpload(file) {
-      // return checkPicBeforeUpload(file)
+      return checkPicBeforeUpload(file)
     },
     onUploadPicSuccess(row, res, file) {
       if (res.success) {
@@ -281,6 +290,19 @@ export default {
       } else {
         this.$notify.uploadError()
       }
+    },
+    onDelete(row, index) {
+      editDelete(() => {
+        this.loadingDoorColor = true
+        deleteDoorStyle(row.id).then(response => {
+          this.$notify.deleteOk()
+          this.doorstyleList.splice(index, 1)
+
+          this.loadingDoorColor = false
+        }).catch(() => {
+          this.loadingDoorColor = false
+        })
+      })
     }
   }
 }

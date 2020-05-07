@@ -1,7 +1,15 @@
 <template>
   <div class="app-container">
-    <typeFilter :data="menuList" filter-name="材质分类" :multi-choice="true" @getType="getType1" />
-    <typeFilter v-show="showSrcondMenu" :data="secondMenuList" filter-name="材质系列" :multi-choice="false" @getType="getType2" />
+    <MultiFilter
+      :datas="cascaderDatas"
+      :levels="2"
+      :filter-names="['材质分类','材质系列']"
+      :multi-choices="[true,false]"
+      :selected="selected"
+      @getResult="getResult"
+    />
+    <!-- <typeFilter :data="menuList" filter-name="材质分类" :multi-choice="false" @getType="getType1" />
+    <typeFilter v-show="showSrcondMenu" :data="secondMenuList" filter-name="材质系列" :multi-choice="false" @getType="getType2" /> -->
     <MaterialEdit
       :datas="mats"
       :cascader-datas="cascaderDatas"
@@ -38,6 +46,9 @@
           </el-upload>
         </template>
       </el-table-column>
+
+      <sku-status-column />
+
       <!-- <el-table-column align="center" label="图片">
         <template slot-scope="{row}">
           {{ row.pic_file_name }}
@@ -67,20 +78,23 @@ import { getToken } from '@/utils/auth'
 import { editDelete } from '@/utils/edit'
 import Pagination from '@/components/Pagination'
 // import waves from '@/directive/waves'
-import typeFilter from '@/components/TypeFilter'
+// import typeFilter from '@/components/TypeFilter'
+import MultiFilter from '@/components/MultiFilter'
 import MaterialEdit from '@/components/MaterialEdit'
+import SkuStatusColumn from '@/components/SkuStatusColumn'
+import { getQueryObject } from '@/utils/index'
 
 export default {
-  components: { Pagination, typeFilter, MaterialEdit },
+  components: { Pagination, MultiFilter, MaterialEdit, SkuStatusColumn },
   // directives: { waves },
   data() {
     return {
       listLoading: false,
       token: getToken(),
-      catalog: [],
-      activeDir1: '',
-      activeDir2: '',
-      activeDir: '',
+      // catalog: [],
+      // activeDir1: '',
+      // activeDir2: '',
+      // activeDir: '',
       mats: [],
       total: 0,
       listQuery: {
@@ -88,12 +102,13 @@ export default {
         per_page: 20,
         name: undefined
       },
-      menuList: [],
-      secondMenuList: [],
-      parentMenuList: [],
-      showSrcondMenu: false,
+      // menuList: [],
+      // secondMenuList: [],
+      // parentMenuList: [],
+      // showSrcondMenu: false,
       cascaderDatas: [],
-      nowCatalog: []
+      nowCatalog: [],
+      selected: [0, 0] // 目录默认选项
     }
   },
   created() {
@@ -163,8 +178,8 @@ export default {
     },
     async fetchCatalog() {
       const { data } = await getCatalog()
-      this.catalog = data
-      this.menuList = Object.keys(data)
+      // this.catalog = data
+      // this.menuList = Object.keys(data)
 
       // 设置符合el-cascader的目录数据
       const calCatalog = (function() {
@@ -186,48 +201,72 @@ export default {
         }
       })()
       this.cascaderDatas = calCatalog(data)
+
+      // 查找默认选项序号
+      const urlHash = getQueryObject()
+      this.cascaderDatas.map((item, index) => {
+        if (item.name === urlHash.dir1) {
+          this.$set(this.selected, 0, index)
+        }
+      })
+      this.cascaderDatas[this.selected[0]].children.map((item, index) => {
+        if (item.name === urlHash.dir2) {
+          this.$set(this.selected, 1, index)
+        }
+      })
     },
     async fetchMaterial() {
       this.listLoading = true
-      const { data } = await getMat(this.activeDir1, this.catalog[this.activeDir1].active, this.listQuery)
+      // const { data } = await getMat(this.activeDir1, this.catalog[this.activeDir1].active, this.listQuery)
+      const { data } = await getMat(this.nowCatalog[0], this.nowCatalog[1], this.listQuery)
       this.mats = data.items
       this.total = data.total
       this.listLoading = false
     },
-    getType1(arr) {
-      if (arr.length === 0) { // 清空数据
-        this.showSrcondMenu = false
-        this.mats = []
-        this.total = 0
-        return
-      } else {
-        this.showSrcondMenu = true
-        this.secondMenuList = []
-        this.parentMenuList = []
-        arr.map(val => {
-          const temp = this.catalog[val.name]
-          for (const i of temp) {
-            this.secondMenuList.push(i)
-            this.parentMenuList.push(val.name)
-          }
-        })
-      }
+    // getType1(arr) {
+    //   if (arr.length === 0) { // 清空数据
+    //     this.showSrcondMenu = false
+    //     this.mats = []
+    //     this.total = 0
+    //     return
+    //   } else {
+    //     this.showSrcondMenu = true
+    //     this.secondMenuList = []
+    //     this.parentMenuList = []
+    //     arr.map(val => {
+    //       const temp = this.catalog[val.name]
+    //       for (const i of temp) {
+    //         this.secondMenuList.push(i)
+    //         this.parentMenuList.push(val.name)
+    //       }
+    //     })
+    //   }
 
-      // 默认选首个目录
-      // this.activeDir1 = this.parentMenuList[0]
-      // this.getType2([{ name: this.secondMenuList[0], index: 0 }])
-    },
-    getType2(arr) {
-      if (arr.length === 0) { // 清空数据
+    //   // 默认选首个目录
+    //   // this.activeDir1 = this.parentMenuList[0]
+    //   // this.getType2([{ name: this.secondMenuList[0], index: 0 }])
+    // },
+    // getType2(arr) {
+    //   if (arr.length === 0) { // 清空数据
+    //     this.mats = []
+    //     this.total = 0
+    //     return
+    //   } else if (arr.length > 0) {
+    //     this.activeDir1 = this.parentMenuList[arr[0].index]
+    //     this.catalog[this.activeDir1].active = arr[0].name
+    //     this.activeDir2 = this.catalog[this.activeDir1].active
+    //     this.nowCatalog = [this.activeDir1, this.activeDir2]
+    //     this.fetchMaterial()
+    //   }
+    // },
+    getResult(arr) {
+      if (arr.length > 0) {
+        this.nowCatalog = arr[0].map(item => item.name)
+        this.fetchMaterial()
+      } else {
         this.mats = []
         this.total = 0
-        return
-      } else if (arr.length > 0) {
-        this.activeDir1 = this.parentMenuList[arr[0].index]
-        this.catalog[this.activeDir1].active = arr[0].name
-        this.activeDir2 = this.catalog[this.activeDir1].active
-        this.nowCatalog = [this.activeDir1, this.activeDir2]
-        this.fetchMaterial()
+        this.nowCatalog = []
       }
     },
     getPicUrl(pic) {

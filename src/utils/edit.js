@@ -1,5 +1,5 @@
 
-import Vue from '@/main'
+import Vue from 'vue'
 import axios from 'axios'
 
 export function editDelete(fnDel) {

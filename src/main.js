@@ -91,6 +91,27 @@ Vue.prototype.$notify.uploadError = function(msg) {
   })
 }
 
+// 剪贴板
+Vue.prototype.$clipboard = {}
+
+Vue.prototype.$message.copyOk = function() {
+  Vue.prototype.$notify({
+    title: 'Success',
+    message: '复制成功',
+    type: 'success',
+    duration: 2000
+  })
+}
+
+Vue.prototype.$message.pasteOk = function() {
+  Vue.prototype.$notify({
+    title: 'Success',
+    message: '粘贴成功',
+    type: 'success',
+    duration: 2000
+  })
+}
+
 // register global utility filters
 Object.keys(filters).forEach(key => {
   Vue.filter(key, filters[key])

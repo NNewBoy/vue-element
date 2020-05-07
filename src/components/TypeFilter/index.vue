@@ -93,6 +93,7 @@
  * @property {Number} level 多级筛选器的级别，从0开始
  * @property {String} filterName 筛选器名称
  * @property {Boolean} multiChoice 是否开启多选
+ * @property {Number} selected 默认选项
  * @function getType 获取选中选项，返回包含选中选项的编号和名字的对象数组,及当前选择器的级别, 取消选择返回空数组
  */
 import toPinyin from '@/utils/chineseToPinyin'
@@ -118,13 +119,17 @@ export default {
     multiChoice: {
       type: Boolean,
       default: true
+    },
+    selected: {
+      type: Number,
+      default: 0
     }
   },
   data() {
     return {
       corr: { '全部': 0, 'a': 1, 'b': 2, 'c': 3, 'd': 4, 'e': 5, 'f': 6, 'g': 7, 'h': 8, 'i': 9, 'j': 10, 'k': 11, 'l': 12, 'm': 13, 'n': 14, 'o': 15, 'p': 16, 'q': 17, 'r': 18, 's': 19, 't': 20, 'u': 21, 'v': 22, 'w': 23, 'x': 24, 'y': 25, 'z': 26, '其他': 27 },
       selectedLetter: 0,
-      selectedType: [true],
+      selectedType: [],
       showMore: true,
       canSelectMore: false,
       initCondition: false,
@@ -199,9 +204,14 @@ export default {
         this.showMore = true
         this.canSelectMore = false
         this.initCondition = false
-        this.selectedType = [true]
+        this.selectedType = []
         this.searchType = []
         this.searchText = ''
+        if (this.data.length - 1 < this.selected) {
+          this.$set(this.selectedType, 0, true)
+        } else {
+          this.$set(this.selectedType, this.selected, true)
+        }
         this.$nextTick(() => {
           if (this.$refs.selectContentRef.offsetHeight > 130) {
             this.initCondition = true

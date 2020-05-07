@@ -88,3 +88,36 @@ export function editSetCtrl(obj, mainObj) {
     params: { token: getToken(), obj: obj, main_obj: mainObj }
   })
 }
+
+export function getSelMatGroup() {
+  return request({
+    url: '/mat/selmatgroup/list',
+    method: 'get',
+    params: { token: getToken() }
+  })
+}
+
+export function deleteSelMatGroup(id) {
+  return request({
+    url: '/mat/selmatgroup/delete',
+    method: 'get',
+    params: { token: getToken(), id }
+  })
+}
+
+export function editSelMatGroup(data) {
+  return request({
+    url: '/mat/selmatgroup/edit',
+    method: 'get',
+    params: { token: getToken(), data }
+  })
+}
+
+export function addSelMatGroup(data) {
+  return request({
+    url: '/mat/selmatgroup/add',
+    method: 'get',
+    params: { token: getToken(), data }
+  })
+}
+

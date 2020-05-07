@@ -96,36 +96,60 @@ export const constantRoutes = [
     ]
   },
   {
-    path: '/materialParam_door',
+    path: '/doorinner',
     component: Layout,
     children: [
       {
         path: 'index',
-        component: () => import('@/views/materialParam_door/index'),
-        name: 'MaterialParam_door',
-        meta: { title: 'MaterialParam_door', icon: 'table', noCache: true }
+        component: () => import('@/views/doorstyle/doorinner'),
+        name: 'doorinner',
+        meta: { title: 'doorinner', icon: 'table', noCache: true }
       }
     ]
   },
   {
-    path: '/materialParam',
+    path: '/DoorStyleConstraintScheme',
     component: Layout,
     children: [
       {
         path: 'index',
-        component: () => import('@/views/materialParam/index'),
-        name: 'MaterialParam',
-        meta: { title: 'MaterialParam', icon: 'table', noCache: true }
+        component: () => import('@/views/doorstyle/DoorStyleConstraintScheme'),
+        name: 'DoorStyleConstraintScheme',
+        meta: { title: 'DoorStyleConstraintScheme', icon: 'table', noCache: true }
       }
     ]
   },
   {
-    path: '/doorStyle',
+    path: '/doorstyle',
     component: Layout,
     children: [
       {
         path: 'index',
-        component: () => import('@/views/doorStyle/index'),
+        component: () => import('@/views/doorstyle/index'),
+        name: 'doorstyle',
+        meta: { title: 'doorstyle', icon: 'table', noCache: true }
+      }
+    ]
+  },
+  {
+    path: '/material',
+    component: Layout,
+    children: [
+      {
+        path: 'material',
+        component: () => import('@/views/material/index'),
+        name: 'Material',
+        meta: { title: 'Material', icon: 'table', noCache: true }
+      }
+    ]
+  },
+  {
+    path: '/doorStyle_example',
+    component: Layout,
+    children: [
+      {
+        path: 'index',
+        component: () => import('@/views/doorStyle_example/index'),
         name: 'DoorStyle',
         meta: { title: 'DoorStyle', icon: 'search', noCache: true }
       }
