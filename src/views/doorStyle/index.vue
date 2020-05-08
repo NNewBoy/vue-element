@@ -2,14 +2,12 @@
   <div ref="list_body" class="app-container">
     <MultiFilter
       :datas="catalogs"
-      :levels="3"
       :filter-names="['门板系列','门板价格','门板造型']"
       :multi-choices="[false,false,false]"
       @getResult="getResult"
     />
     <MultiFilter
       :datas="restCatalogs"
-      :levels="3"
       :show-num-len="2"
       :filter-names="['门板Ext4','门板Ext5','门板Ext6']"
       :multi-choices="[false,false,false]"
@@ -116,7 +114,7 @@
 </template>
 
 <script>
-import { getCatalog, getColorList, deleteDoorStyle } from '@/api/doorstyle' /** updateDoorStyle, deleteDoorStyle, addDoorStyle */
+import { getCatalog, getColorList, updateDoorStyle, deleteDoorStyle } from '@/api/doorstyle' /** , addDoorStyle */
 import { getPicUrl, checkPicBeforeUpload } from '@/utils/pic'
 import { getToken } from '@/utils/auth'
 import { editDelete } from '@/utils/edit'
@@ -178,23 +176,23 @@ export default {
     },
     getDoorPicture(picture) { // 贴图属性
       this.loadingDoorColor = true
-      // updateDoorStyle(picture).then(() => {
-      for (const item of picture) {
-        const index = this.doorstyleList.findIndex(v => v.id === item.id)
-        for (const val in item) {
-          if (val !== 'id') { this.doorstyleList[index][val] = item[val] }
+      updateDoorStyle(picture).then(() => {
+        for (const item of picture) {
+          const index = this.doorstyleList.findIndex(v => v.id === item.id)
+          for (const val in item) {
+            if (val !== 'id') { this.doorstyleList[index][val] = item[val] }
+          }
         }
-      }
-      this.loadingDoorColor = false
-      this.$message.editOk()
-      // }).catch(() => {
-      //   this.loadingDoorColor = false
-      //   this.$notify.editError()
-      // })
+        this.loadingDoorColor = false
+        this.$message.editOk()
+      }).catch(() => {
+        this.loadingDoorColor = false
+        this.$notify.editError()
+      })
     },
     changeCatalog(catalog) { // 移动目录
       this.loadingDoorColor = true
-      // updateDoorStyle(params).then(() => {
+      // addDoorStyle(params).then(() => {
       for (const item of catalog.id) {
         // deleteDoorStyle(item).then(response => {
         const index = this.doorstyleList.findIndex(v => v.id === item)
@@ -210,19 +208,19 @@ export default {
     },
     getParams(params) { // 材质参数
       this.loadingDoorColor = true
-      // updateDoorStyle(params).then(() => {
-      for (const item of params) {
-        const index = this.doorstyleList.findIndex(v => v.id === item.id)
-        for (const val in item) {
-          if (val !== 'id') { this.doorstyleList[index][val] = item[val] }
+      updateDoorStyle(params).then(() => {
+        for (const item of params) {
+          const index = this.doorstyleList.findIndex(v => v.id === item.id)
+          for (const val in item) {
+            if (val !== 'id') { this.doorstyleList[index][val] = item[val] }
+          }
         }
-      }
-      this.loadingDoorColor = false
-      this.$message.editOk()
-      // }).catch(() => {
-      //   this.loadingDoorColor = false
-      //   this.$notify.editError()
-      // })
+        this.loadingDoorColor = false
+        this.$message.editOk()
+      }).catch(() => {
+        this.loadingDoorColor = false
+        this.$notify.editError()
+      })
     },
     getResult(arr) {
       if (arr.length > 0) {

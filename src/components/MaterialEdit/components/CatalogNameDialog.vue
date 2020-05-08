@@ -7,7 +7,6 @@
     >
       <MultiFilter
         :datas="cascaderDatas"
-        :levels="searchTarget==='door_color'?3:2"
         :filter-names="searchTarget==='door_color'?['门板系列','门板价格','门板造型']:['材质分类','材质系列']"
         :multi-choices="searchTarget==='door_color'?[true,true,false]:[true,false]"
         @getResult="getResult"

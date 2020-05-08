@@ -34,6 +34,7 @@
       保存
     </el-button>
     <el-table
+      ref="elTable1"
       v-loading="listLoading"
       :data="datas"
       :row-style="tableRowStyle"
@@ -42,6 +43,7 @@
       fit
       highlight-current-row
       class="tb-edit"
+      @row-click="setFocus1"
     >
       <el-table-column type="expand" label="展开" width="80">
         <template slot-scope="{row}">
@@ -57,11 +59,13 @@
               添加
             </el-button>
             <el-table
+              ref="elTable2"
               :data="row.door_styles"
               border
               fit
               highlight-current-row
               class="tb-edit"
+              @row-click="setFocus2"
             >
               <el-table-column align="center" label="ID" width="50">
                 <template slot-scope="scope">
@@ -96,7 +100,7 @@
       </el-table-column>
       <el-table-column label="名称" width="300">
         <template slot-scope="{row}">
-          <el-input v-model="row.name" size="small" placeholder="请输入内容" @change="onEdit(row)" />
+          <el-input v-model="row.name" class="input-one" size="small" placeholder="请输入内容" @change="onEdit(row)" />
           <span>{{ row.name }}</span>
         </template>
       </el-table-column>
@@ -178,6 +182,18 @@ export default {
     this.fetchData()
   },
   methods: {
+    setFocus2() { // 子表聚焦
+      this.$nextTick(() => {
+        const row = this.$refs.elTable2.$el.querySelector('.current-row')
+        row.querySelector('input').focus()
+      })
+    },
+    setFocus1(row, column, event) { // 主表聚焦
+      this.$nextTick(() => {
+        const row = this.$refs.elTable1.$el.querySelector('.current-row')
+        row.querySelector('input').focus()
+      })
+    },
     async fetchData() {
       this.listLoading = true
       const { data } = await getDoorStyleScheme(this.searchText, this.listQuery)
@@ -215,9 +231,21 @@ export default {
       return row.editStatus === 1 ? { 'background-color': 'PeachPuff' } : ''
       // return ''
     },
-    onSaveAll() { // 已修改的数据数组，待上传
+    onSaveAll() { // 已修改的数据数组
       const editedArr = this.datas.filter(item => item.editStatus === 1)
-      console.log(editedArr)
+      confirmEdit(() => {
+        this.listLoading = true
+        updateDoorStyleScheme(editedArr)
+          .then(response => {
+            this.listLoading = false
+            this.$message.editOk()
+            this.fetchData()
+          })
+          .catch(() => {
+            this.listLoading = false
+          })
+        this.editRow = null
+      })
     },
     onSave(row, index) {
       confirmEdit(() => {

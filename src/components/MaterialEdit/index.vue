@@ -636,6 +636,7 @@ export default {
             resArr.push(tempObj)
           }
           this.updateParams = true
+          console.log(resArr)
           this.$emit('getParams', resArr)
         }
       })

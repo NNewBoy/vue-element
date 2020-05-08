@@ -20,7 +20,6 @@
 <script type="text/javascript">
 /**
  * @property {Array} datas 筛选器数据，格式:item = {name:xx, children:[ item ]}
- * @property {Number} levels 多级筛选器的总级别，最小为1
  * @property {Number} showNumLen 多级筛选器不开启隐藏的选项最小长度，默认为1
  * @property {Array} filterNames 筛选器名称，长度与总级别相等
  * @property {Array} multiChoices 是否开启多选，长度与总级别相等，false不开启、true开启
@@ -38,11 +37,6 @@ export default {
       default() {
         return []
       }
-    },
-    levels: {
-      require: true,
-      type: Number,
-      default: 1
     },
     showNumLen: {
       type: Number,
@@ -74,6 +68,11 @@ export default {
       parentMenuIndexList: [],
       parentMenuNameList: [],
       menuShow: [true]
+    }
+  },
+  computed: {
+    levels() {
+      return this.filterNames.length === 0 ? 1 : this.filterNames.length
     }
   },
   watch: {

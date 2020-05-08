@@ -2,14 +2,12 @@
   <div class="app-container">
     <MultiFilter
       :datas="catalogs"
-      :levels="3"
       :filter-names="['门板系列','门板价格','门板造型']"
       :multi-choices="[false,false,false]"
       @getResult="getResult"
     />
     <MultiFilter
       :datas="restCatalogs"
-      :levels="3"
       :show-num-len="2"
       :filter-names="['门板Ext4','门板Ext5','门板Ext6']"
       :multi-choices="[false,false,false]"

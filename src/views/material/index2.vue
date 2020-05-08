@@ -7,6 +7,8 @@
       :selected="selected"
       @getResult="getResult"
     />
+    <!-- <typeFilter :data="menuList" filter-name="材质分类" :multi-choice="false" @getType="getType1" />
+    <typeFilter v-show="showSrcondMenu" :data="secondMenuList" filter-name="材质系列" :multi-choice="false" @getType="getType2" /> -->
     <MaterialEdit
       :datas="mats"
       :cascader-datas="cascaderDatas"
@@ -69,11 +71,13 @@
 </template>
 
 <script>
-import { getCatalog, getMat, updateMat, deleteMat } from '@/api/material' /** , addMat */
+import { getCatalog, getMat, deleteMat } from '@/api/material' /** updateMat, deleteMat, addMat */
 import { getPicUrl, checkPicBeforeUpload } from '@/utils/pic'
 import { getToken } from '@/utils/auth'
 import { editDelete } from '@/utils/edit'
 import Pagination from '@/components/Pagination'
+// import waves from '@/directive/waves'
+// import typeFilter from '@/components/TypeFilter'
 import MultiFilter from '@/components/MultiFilter'
 import MaterialEdit from '@/components/MaterialEdit'
 import SkuStatusColumn from '@/components/SkuStatusColumn'
@@ -81,10 +85,15 @@ import { getQueryObject } from '@/utils/index'
 
 export default {
   components: { Pagination, MultiFilter, MaterialEdit, SkuStatusColumn },
+  // directives: { waves },
   data() {
     return {
       listLoading: false,
       token: getToken(),
+      // catalog: [],
+      // activeDir1: '',
+      // activeDir2: '',
+      // activeDir: '',
       mats: [],
       total: 0,
       listQuery: {
@@ -92,6 +101,10 @@ export default {
         per_page: 20,
         name: undefined
       },
+      // menuList: [],
+      // secondMenuList: [],
+      // parentMenuList: [],
+      // showSrcondMenu: false,
       cascaderDatas: [],
       nowCatalog: [],
       selected: [0, 0] // 目录默认选项
@@ -116,23 +129,23 @@ export default {
     },
     getMaterialPicture(picture) { // 贴图属性
       this.listLoading = true
-      updateMat(picture).then(() => {
-        for (const item of picture) {
-          const index = this.mats.findIndex(v => v.id === item.id)
-          for (const val in item) {
-            if (val !== 'id') { this.mats[index][val] = item[val] }
-          }
+      // updateMat(picture).then(() => {
+      for (const item of picture) {
+        const index = this.mats.findIndex(v => v.id === item.id)
+        for (const val in item) {
+          if (val !== 'id') { this.mats[index][val] = item[val] }
         }
-        this.listLoading = false
-        this.$message.editOk()
-      }).catch(() => {
-        this.listLoading = false
-        this.$notify.editError()
-      })
+      }
+      this.listLoading = false
+      this.$message.editOk()
+      // }).catch(() => {
+      //   this.listLoading = false
+      //   this.$notify.editError()
+      // })
     },
     changeCatalog(catalog) { // 移动目录
       this.listLoading = true
-      // addMat(params).then(() => {
+      // updateMat(params).then(() => {
       for (const item of catalog.id) {
         // deleteMat(item).then(response => {
         const index = this.mats.findIndex(v => v.id === item)
@@ -148,22 +161,24 @@ export default {
     },
     getParams(params) { // 材质参数
       this.listLoading = true
-      updateMat(params).then(() => {
-        for (const item of params) {
-          const index = this.mats.findIndex(v => v.id === item.id)
-          for (const val in item) {
-            if (val !== 'id') { this.mats[index][val] = item[val] }
-          }
+      // updateMat(params).then(() => {
+      for (const item of params) {
+        const index = this.mats.findIndex(v => v.id === item.id)
+        for (const val in item) {
+          if (val !== 'id') { this.mats[index][val] = item[val] }
         }
-        this.listLoading = false
-        this.$message.editOk()
-      }).catch(() => {
-        this.listLoading = false
-        this.$notify.editError()
-      })
+      }
+      this.listLoading = false
+      this.$message.editOk()
+      // }).catch(() => {
+      //   this.listLoading = false
+      //   this.$notify.editError()
+      // })
     },
     async fetchCatalog() {
       const { data } = await getCatalog()
+      // this.catalog = data
+      // this.menuList = Object.keys(data)
 
       // 设置符合el-cascader的目录数据
       const calCatalog = (function() {
@@ -201,11 +216,48 @@ export default {
     },
     async fetchMaterial() {
       this.listLoading = true
+      // const { data } = await getMat(this.activeDir1, this.catalog[this.activeDir1].active, this.listQuery)
       const { data } = await getMat(this.nowCatalog[0], this.nowCatalog[1], this.listQuery)
       this.mats = data.items
       this.total = data.total
       this.listLoading = false
     },
+    // getType1(arr) {
+    //   if (arr.length === 0) { // 清空数据
+    //     this.showSrcondMenu = false
+    //     this.mats = []
+    //     this.total = 0
+    //     return
+    //   } else {
+    //     this.showSrcondMenu = true
+    //     this.secondMenuList = []
+    //     this.parentMenuList = []
+    //     arr.map(val => {
+    //       const temp = this.catalog[val.name]
+    //       for (const i of temp) {
+    //         this.secondMenuList.push(i)
+    //         this.parentMenuList.push(val.name)
+    //       }
+    //     })
+    //   }
+
+    //   // 默认选首个目录
+    //   // this.activeDir1 = this.parentMenuList[0]
+    //   // this.getType2([{ name: this.secondMenuList[0], index: 0 }])
+    // },
+    // getType2(arr) {
+    //   if (arr.length === 0) { // 清空数据
+    //     this.mats = []
+    //     this.total = 0
+    //     return
+    //   } else if (arr.length > 0) {
+    //     this.activeDir1 = this.parentMenuList[arr[0].index]
+    //     this.catalog[this.activeDir1].active = arr[0].name
+    //     this.activeDir2 = this.catalog[this.activeDir1].active
+    //     this.nowCatalog = [this.activeDir1, this.activeDir2]
+    //     this.fetchMaterial()
+    //   }
+    // },
     getResult(arr) {
       if (arr.length > 0) {
         this.nowCatalog = arr[0].map(item => item.name)

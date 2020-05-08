@@ -2,14 +2,12 @@
   <div ref="list_body" class="app-container">
     <MultiFilter
       :datas="catalogs"
-      :levels="3"
       :filter-names="['门板系列','门板价格','门板造型']"
       :multi-choices="[false,false,false]"
       @getResult="getResult"
     />
     <MultiFilter
       :datas="restCatalogs"
-      :levels="3"
       :show-num-len="2"
       :filter-names="['门板Ext4','门板Ext5','门板Ext6']"
       :multi-choices="[true,true,false]"
@@ -17,7 +15,6 @@
     />
     <el-table
       v-loading="listLoading"
-      max-height="500px"
       :data="doorstyleList"
       element-loading-text="Loading"
       border
@@ -51,7 +48,7 @@
       </el-table-column>
       <el-table-column align="center" label="材料" width="320">
         <template slot-scope="{row}">
-          <multi-mat-list :data="row.inner_mat" :mat-list="matList" @onCopy="onCopy" />
+          <multi-mat-list :data="row.inner_mat" />
         </template>
       </el-table-column>
       <el-table-column align="center" label="门芯类型" width="100">
@@ -118,8 +115,7 @@ export default {
       listLoading: false,
       catalogs: [],
       doorstyleList: [],
-      selectArr: [],
-      matList: []
+      selectArr: []
     }
   },
   computed: {
@@ -148,9 +144,6 @@ export default {
     this.fetchData()
   },
   methods: {
-    onCopy(arr) {
-      this.matList = JSON.parse(JSON.stringify(arr))
-    },
     async fetchData() {
       const { data } = await getInnerCatalog()
       const calCatalog = (function() {
@@ -232,7 +225,6 @@ export default {
     },
     onSave(row, index) {
       confirmEdit(() => {
-        console.log(row)
         this.listLoading = true
         updateDoorInner(row)
           .then(response => {

@@ -2,7 +2,6 @@
   <div class="app-container">
     <MultiFilter
       :datas="cascaderDatas"
-      :levels="2"
       :filter-names="['材质分类','材质系列']"
       :multi-choices="[false,false]"
       @getResult="getResult"

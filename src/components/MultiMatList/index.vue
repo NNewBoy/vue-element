@@ -23,6 +23,7 @@
 <script type="text/javascript">
 
 import MaterialSelect from '@/components/MaterialSelect'
+import { copyToClipboard, pasteFromClipboard } from '@/utils/clipboard'
 
 export default {
   name: 'MultiMatList',
@@ -64,16 +65,16 @@ export default {
       this.dialogFormVisible = true
     },
     onCopy() {
-      this.$emit('onCopy', this.data)
-      this.$message.copyOk()
+      copyToClipboard('multiMatList', this.data)
     },
     onPaste() {
-      this.data.splice(0, this.data.length)
-      const data = this.matList
-      data.forEach(el => {
-        this.data.push({ 'mat_dir1': el.mat_dir1, 'mat_dir2': el.mat_dir2, 'mat_name': el.mat_name })
-      })
-      this.$message.pasteOk()
+      const data = pasteFromClipboard('multiMatList')
+      if (data !== null) {
+        this.data.splice(0, this.data.length)
+        data.forEach(el => {
+          this.data.push({ 'mat_dir1': el.mat_dir1, 'mat_dir2': el.mat_dir2, 'mat_name': el.mat_name })
+        })
+      }
     },
     onSelectMat(data) {
       this.dialogFormVisible = false

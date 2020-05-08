@@ -1,6 +1,6 @@
 <template>
   <div class="app-container">
-    <MultiFilter :datas="menuList" :levels="3" :filter-names="['门板系列','门板价格','门板造型']" :multi-choices="[true,true,true]" @getResult="getType2" />
+    <MultiFilter :datas="menuList" :filter-names="['门板系列','门板价格','门板造型']" :multi-choices="[true,true,true]" @getResult="getType2" />
 
     <el-table
       v-loading="listLoading"
