@@ -16,6 +16,8 @@ export function getCatalogByObjName(objname) {
     url: '/mat/catalog/objname',
     method: 'get',
     params: { objname }
+  }).then((data) => {
+    return data.data
   })
 }
 
@@ -24,6 +26,8 @@ export function getCatalogByProductPros(dir1, dir2, dir3, dir4, modelno) {
     url: '/mat/catalog/productprops',
     method: 'get',
     params: { dir1, dir2, dir3, dir4, modelno }
+  }).then((data) => {
+    return data.data
   })
 }
 
@@ -32,6 +36,8 @@ export function getCatalogByLineType(linetype, linestyle) {
     url: '/mat/catalog/linetype',
     method: 'get',
     params: { linetype, linestyle }
+  }).then((data) => {
+    return data.data
   })
 }
 
@@ -41,7 +47,8 @@ export function getMat(use, text, query) {
     param[key] = query[key]
   }
   return request({
-    url: '/mat/list',
+    // url: '/mat/list', // material页面
+    url: '/mat/list2',
     method: 'get',
     params: param
   }).then((data) => {

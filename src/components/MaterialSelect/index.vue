@@ -121,7 +121,6 @@ export default {
   },
   methods: {
     async fetchData() {
-      console.log(this.initDir1, this.initDir2)
       const { data } = await getCatalog()
       // 设置符合el-cascader的目录数据
       const calCatalog = (function() {

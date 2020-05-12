@@ -46,17 +46,17 @@
         >颜色</el-button>
       </el-button-group>
     </div>
-    <div class="list-container">
-      <el-row :loading="loadingMat" :gutter="5">
-        <el-col v-for="(o,index) in mats.filter(obj=>{return obj.name.toLowerCase().indexOf(matFilter.toLowerCase())>=0})" :key="index" :span="3">
+    <div class="list-border">
+      <div class="list-container">
+        <div v-for="(o,index) in mats.filter(obj=>{return obj.name.toLowerCase().indexOf(matFilter.toLowerCase())>=0})" :key="index" class="list-item">
           <el-card :class="index===selectedMat ? 'el-card-selected' : ''" @click.native="onSelectMat(index)">
             <div style="text-align: center; margin:0 auto;position: relative;">
               <el-image :src="getPicUrl(o.pic_file_name)" style="width: 100%; height: 100%;" :title="matInfo(o)" />
               <span align="center">{{ o.name }}</span>
             </div>
           </el-card>
-        </el-col>
-      </el-row>
+        </div>
+      </div>
     </div>
     <div class="footer">
       <el-col :span="4">
@@ -124,6 +124,7 @@ export default {
         // objname
         const { data } = await getCatalogByObjName(params)
         dataret = data
+        console.log(data)
       } else if (paramType === '2') {
         // product dir
         const proProps = params.split(',')
@@ -146,6 +147,12 @@ export default {
           dir1.dir2.push({ name: element.mat_dir2, selected: false })
         }
       })
+
+      /* 模拟数据 */
+      this.datas = [{ name: '柜身板', selected: false, dir2: [
+        { name: '柜身板', selected: false },
+        { name: '多层板', selected: false }
+      ] }]
 
       if (this.datas.length > 0) {
         this.onSelectDir1(0)
@@ -239,6 +246,7 @@ export default {
 }
 
 .el-card:hover{
+  width: 206px;
   margin: 2px;
 }
 
@@ -270,12 +278,16 @@ export default {
   margin: 10px;
 }
 
-.list-container {
+.list-border {
   position:absolute;
   top: 150px;
   bottom: 80px;
-  width: 100%;
+  width: calc(100% - 40px);
   overflow: auto;
+}
+
+.list-item{
+  display: inline-block;
 }
 
 .footer {
