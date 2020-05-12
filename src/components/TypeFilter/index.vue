@@ -28,6 +28,7 @@
         <div ref="selectContentRef" class="select-content-div">
           <a
             v-for="(item, index) in data"
+            :id="'item'+index"
             :key="'t-'+index"
             href="javascript:;"
             class="type-item"
@@ -93,7 +94,7 @@
  * @property {Number} level 多级筛选器的级别，从0开始
  * @property {String} filterName 筛选器名称
  * @property {Boolean} multiChoice 是否开启多选
- * @property {Number} selected 默认选项
+ * @property {String} selected 默认选项
  * @function getType 获取选中选项，返回包含选中选项的编号和名字的对象数组,及当前选择器的级别, 取消选择返回空数组
  */
 import toPinyin from '@/utils/chineseToPinyin'
@@ -121,8 +122,8 @@ export default {
       default: true
     },
     selected: {
-      type: Number,
-      default: 0
+      type: String,
+      default: ''
     }
   },
   data() {
@@ -207,12 +208,21 @@ export default {
         this.selectedType = []
         this.searchType = []
         this.searchText = ''
-        if (this.data.length - 1 < this.selected) {
+        const selectedIndex = this.data.findIndex(el => el === this.selected)
+        if (this.data.length - 1 < selectedIndex || selectedIndex === -1) {
           this.$set(this.selectedType, 0, true)
         } else {
-          this.$set(this.selectedType, this.selected, true)
+          this.$set(this.selectedType, selectedIndex, true)
         }
         this.$nextTick(() => {
+          this.$refs.selectContent.scrollTop = 0
+          for (const i in this.selectedType) {
+            if (this.selectedType[i]) {
+              const div = this.$refs.selectContentRef.querySelector('#item' + i)
+              this.$refs.selectContent.scrollTop = div.offsetTop - div.clientHeight
+              break
+            }
+          }
           if (this.$refs.selectContentRef.offsetHeight > 130) {
             this.initCondition = true
           }
@@ -283,12 +293,40 @@ export default {
     moreFunc() {
       if (!this.canSelectMore) {
         this.showMore = !this.showMore
+        if (this.showMore) {
+          this.selectedLetter = 0
+        }
+        this.$nextTick(() => {
+          this.$refs.selectContent.scrollTop = 0
+          // if (this.showMore) {
+          for (const i in this.selectedType) {
+            if (this.selectedType[i]) {
+              const div = this.$refs.selectContentRef.querySelector('#item' + i)
+              this.$refs.selectContent.scrollTop = div.offsetTop - div.clientHeight - 12
+              break
+            }
+          }
+        // }
+        })
       }
-      this.$refs.selectContent.scrollTop = 0
     },
     setMulti() {
       this.canSelectMore = !this.canSelectMore
       this.showMore = !this.canSelectMore
+
+      if (!this.canSelectMore) {
+        this.selectedLetter = 0
+        this.$nextTick(() => {
+          this.$refs.selectContent.scrollTop = 0
+          for (const i in this.selectedType) {
+            if (this.selectedType[i]) {
+              const div = this.$refs.selectContentRef.querySelector('#item' + i)
+              this.$refs.selectContent.scrollTop = div.offsetTop - div.clientHeight
+              break
+            }
+          }
+        })
+      }
     }
   }
 }

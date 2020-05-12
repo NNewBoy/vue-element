@@ -11,6 +11,30 @@ export function getCatalog() {
   })
 }
 
+export function getCatalogByObjName(objname) {
+  return request({
+    url: '/mat/catalog/objname',
+    method: 'get',
+    params: { objname }
+  })
+}
+
+export function getCatalogByProductPros(dir1, dir2, dir3, dir4, modelno) {
+  return request({
+    url: '/mat/catalog/productprops',
+    method: 'get',
+    params: { dir1, dir2, dir3, dir4, modelno }
+  })
+}
+
+export function getCatalogByLineType(linetype, linestyle) {
+  return request({
+    url: '/mat/catalog/linetype',
+    method: 'get',
+    params: { linetype, linestyle }
+  })
+}
+
 export function getMat(use, text, query) {
   const param = { token: getToken(), use: use, text: text }
   for (const key in query) {
@@ -29,7 +53,7 @@ export function updateMat(data) {
   return request({
     url: '/mat/update',
     method: 'post',
-    params: { token: getToken(), data }
+    params: { data }
   })
 }
 
@@ -37,7 +61,18 @@ export function addMat(data) {
   return request({
     url: '/mat/add',
     method: 'post',
-    params: { token: getToken(), data } // 返回新增的id
+    params: { data } // 返回新增的id
+  })
+}
+
+export function importMat(data) {
+  return request({
+    url: '/mat/import',
+    method: 'post',
+    data: { data } // ,
+    // transformRequest: [function(data) {
+    //   return data
+    // }]
   })
 }
 
@@ -45,15 +80,14 @@ export function deleteMat(id) {
   return request({
     url: '/mat/delete',
     method: 'post',
-    params: { token: getToken(), id }
+    params: { id }
   })
 }
 
 export function getSetCtrl() {
   return request({
     url: '/mat/setctrl/list',
-    method: 'get',
-    params: { token: getToken() }
+    method: 'get'
   })
 }
 
@@ -61,7 +95,7 @@ export function enableSetCtrl(name, enable) {
   return request({
     url: '/mat/setctrl/enable',
     method: 'post',
-    params: { token: getToken(), obj: name, enable: enable }
+    params: { obj: name, enable: enable }
   })
 }
 
@@ -69,7 +103,7 @@ export function deleteSetCtrl(name) {
   return request({
     url: '/mat/setctrl/delete',
     method: 'post',
-    params: { token: getToken(), obj: name }
+    params: { obj: name }
   })
 }
 
@@ -77,7 +111,7 @@ export function addSetCtrl(obj, mainObj) {
   return request({
     url: '/mat/setctrl/add',
     method: 'post',
-    params: { token: getToken(), obj: obj, main_obj: mainObj }
+    params: { obj: obj, main_obj: mainObj }
   })
 }
 
@@ -85,39 +119,69 @@ export function editSetCtrl(obj, mainObj) {
   return request({
     url: '/mat/setctrl/edit',
     method: 'post',
-    params: { token: getToken(), obj: obj, main_obj: mainObj }
+    params: { obj: obj, main_obj: mainObj }
   })
 }
 
 export function getSelMatGroup() {
   return request({
     url: '/mat/selmatgroup/list',
-    method: 'get',
-    params: { token: getToken() }
+    method: 'get'
   })
 }
 
 export function deleteSelMatGroup(id) {
   return request({
     url: '/mat/selmatgroup/delete',
-    method: 'get',
-    params: { token: getToken(), id }
+    method: 'post',
+    params: { id }
   })
 }
 
 export function editSelMatGroup(data) {
   return request({
-    url: '/mat/selmatgroup/edit',
-    method: 'get',
-    params: { token: getToken(), data }
+    url: '/mat/selmatgroup/update',
+    method: 'post',
+    params: { data }
   })
 }
 
 export function addSelMatGroup(data) {
   return request({
     url: '/mat/selmatgroup/add',
-    method: 'get',
-    params: { token: getToken(), data }
+    method: 'post',
+    params: { data }
   })
 }
 
+// 扩展材料
+export function getExtraSet() {
+  return request({
+    url: '/mat/extraset/list',
+    method: 'get'
+  })
+}
+
+export function deleteExtraSet(id) {
+  return request({
+    url: '/mat/extraset/delete',
+    method: 'post',
+    params: { id }
+  })
+}
+
+export function editExtraSet(data) {
+  return request({
+    url: '/mat/extraset/update',
+    method: 'post',
+    params: { data }
+  })
+}
+
+export function addExtraSet(data) {
+  return request({
+    url: '/mat/extraset/add',
+    method: 'post',
+    params: { data }
+  })
+}

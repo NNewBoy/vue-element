@@ -1,17 +1,14 @@
 <template>
   <div class="app-container">
     <MultiFilter
-      class="multi-filter-container"
       :datas="cascaderDatas"
       :filter-names="['材质分类','材质系列']"
       :multi-choices="[false,false]"
-      :selected="selected"
       @getResult="getResult"
     />
     <el-table
       ref="tbTable"
       v-loading="vLoading"
-      class="el-table-container"
       :data="mats"
       element-loading-text="Loading"
       border
@@ -70,21 +67,6 @@ export default {
       require: true,
       type: Boolean,
       default: false
-    },
-    initDir1: {
-      require: false,
-      type: String,
-      default: ''
-    },
-    initDir2: {
-      require: false,
-      type: String,
-      default: ''
-    },
-    initName: {
-      require: false,
-      type: String,
-      default: ''
     }
   },
   data() {
@@ -97,31 +79,16 @@ export default {
       },
       total: 0,
       cascaderDatas: [],
-      nowCatalog: [],
-      selected: []
+      nowCatalog: []
     }
   },
-  watch: {
-    initDir1: {
-      immediate: true,
-      handler(val) {
-        this.$set(this.selected, 0, val)
-        if (this.initDir2 === '') {
-          this.fetchData()
-        }
-      }
-    },
-    initDir2: {
-      immediate: true,
-      handler(val) {
-        this.$set(this.selected, 1, val)
-        this.fetchData()
-      }
-    }
+  computed: {
+  },
+  created() {
+    this.fetchData()
   },
   methods: {
     async fetchData() {
-      console.log(this.initDir1, this.initDir2)
       const { data } = await getCatalog()
       // 设置符合el-cascader的目录数据
       const calCatalog = (function() {
@@ -150,18 +117,6 @@ export default {
       this.mats = data.items
       this.total = data.total
       this.listLoading = false
-
-      this.$refs.tbTable.clearSelection()
-      if (this.initName !== '') {
-        this.mats.filter(row => {
-          if (row.name === this.initName) {
-            this.$nextTick(() => {
-              this.$refs.tbTable.toggleRowSelection(row)
-            })
-            return
-          }
-        })
-      }
     },
     getResult(arr) {
       if (arr.length > 0) {
@@ -188,18 +143,3 @@ export default {
   }
 }
 </script>
-
-<style scoped>
-.dialog-footer{
-  text-align: center;
-}
-.app-container{
-  padding: 0;
-}
-.multi-filter-container{
-  text-align: left;
-}
-.el-table-container{
-  margin: 20px 0;
-}
-</style>

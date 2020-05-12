@@ -10,7 +10,7 @@
         :level="index"
         :filter-name="filterNames[index]"
         :multi-choice="multiChoices[index]"
-        :selected="selected[index]?selected[index]:0"
+        :selected="selected[index]"
         @getType="getType"
       />
     </div>
@@ -23,7 +23,7 @@
  * @property {Number} showNumLen 多级筛选器不开启隐藏的选项最小长度，默认为1
  * @property {Array} filterNames 筛选器名称，长度与总级别相等
  * @property {Array} multiChoices 是否开启多选，长度与总级别相等，false不开启、true开启
- * @property {Array} selected 筛选器的默认选项，最小为0，长度与总级别相等
+ * @property {Array} selected 筛选器的默认选项，长度与总级别相等
  * @function getType 获取选中选项，返回一个或多个选中选项的名字与索引的队列数组, 取消选择返回空数组
  */
 import filterDiv from '@/components/TypeFilter'

@@ -3,7 +3,8 @@
     <MultiFilter
       :datas="cascaderDatas"
       :filter-names="['材质分类','材质系列']"
-      :multi-choices="[false,false]"
+      :multi-choices="[true,false]"
+      :selected="selected"
       @getResult="getResult"
     />
     <MaterialEdit
@@ -69,13 +70,14 @@
 
 <script>
 import { getCatalog, getMat, updateMat, deleteMat } from '@/api/material' /** , addMat */
-import { getThumbnailUrl, checkPicBeforeUpload } from '@/utils/pic'
+import { getPicUrl, checkPicBeforeUpload } from '@/utils/pic'
 import { getToken } from '@/utils/auth'
 import { editDelete } from '@/utils/edit'
 import Pagination from '@/components/Pagination'
 import MultiFilter from '@/components/MultiFilter'
 import MaterialEdit from '@/components/MaterialEdit'
 import SkuStatusColumn from '@/components/SkuStatusColumn'
+import { getQueryObject } from '@/utils/index'
 
 export default {
   components: { Pagination, MultiFilter, MaterialEdit, SkuStatusColumn },
@@ -91,7 +93,8 @@ export default {
         name: undefined
       },
       cascaderDatas: [],
-      nowCatalog: []
+      nowCatalog: [],
+      selected: [0, 0] // 目录默认选项
     }
   },
   created() {
@@ -182,6 +185,19 @@ export default {
         }
       })()
       this.cascaderDatas = calCatalog(data)
+
+      // 查找默认选项序号
+      const urlHash = getQueryObject()
+      this.cascaderDatas.map((item, index) => {
+        if (item.name === urlHash.dir1) {
+          this.$set(this.selected, 0, index)
+        }
+      })
+      this.cascaderDatas[this.selected[0]].children.map((item, index) => {
+        if (item.name === urlHash.dir2) {
+          this.$set(this.selected, 1, index)
+        }
+      })
     },
     async fetchMaterial() {
       this.listLoading = true
@@ -201,7 +217,7 @@ export default {
       }
     },
     getPicUrl(pic) {
-      return getThumbnailUrl(pic) // + '?' + Math.random()
+      return getPicUrl(pic) // + '?' + Math.random()
     },
     beforePicUpload(file) {
       return checkPicBeforeUpload(file)

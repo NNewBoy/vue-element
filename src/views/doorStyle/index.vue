@@ -115,7 +115,7 @@
 
 <script>
 import { getCatalog, getColorList, updateDoorStyle, deleteDoorStyle } from '@/api/doorstyle' /** , addDoorStyle */
-import { getPicUrl, checkPicBeforeUpload } from '@/utils/pic'
+import { getThumbnailUrl, checkPicBeforeUpload } from '@/utils/pic'
 import { getToken } from '@/utils/auth'
 import { editDelete } from '@/utils/edit'
 import MultiFilter from '@/components/MultiFilter'
@@ -268,13 +268,13 @@ export default {
       this.loadingDoorColor = false
     },
     getPicUrl(pic) {
-      return getPicUrl(pic) // + '?' + Math.random()
+      return getThumbnailUrl(pic) // + '?' + Math.random()
     },
     getDoorPicUrl(folder) {
-      return getPicUrl(folder + 'door_800x800.jpg') // + '?' + Math.random()
+      return getThumbnailUrl(folder + 'door_800x800.jpg') // + '?' + Math.random()
     },
     getDrawerPicUrl(folder) {
-      return getPicUrl(folder + 'drawer_800x800.jpg') // + '?' + Math.random()
+      return getThumbnailUrl(folder + 'drawer_800x800.jpg') // + '?' + Math.random()
     },
     beforePicUpload(file) {
       return checkPicBeforeUpload(file)

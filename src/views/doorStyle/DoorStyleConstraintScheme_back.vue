@@ -43,7 +43,7 @@
       fit
       highlight-current-row
       class="tb-edit"
-      @cell-click="onClickTb"
+      @row-click="setFocus1"
     >
       <el-table-column type="expand" label="展开" width="80">
         <template slot-scope="{row}">
@@ -58,24 +58,6 @@
             >
               添加
             </el-button>
-            <el-button
-              type="primary"
-              size="mini"
-              icon="el-icon-document-copy"
-              style="margin-top:0px;"
-              @click="onCopyDoorStyle(row.door_styles)"
-            >
-              复制
-            </el-button>
-            <el-button
-              type="primary"
-              size="mini"
-              icon="el-icon-document-add"
-              style="margin-top:0px;"
-              @click="onPasteDoorStyle(row)"
-            >
-              粘贴
-            </el-button>
             <el-table
               ref="elTable2"
               :data="row.door_styles"
@@ -83,7 +65,7 @@
               fit
               highlight-current-row
               class="tb-edit"
-              @cell-click="onClickTb"
+              @row-click="setFocus2"
             >
               <el-table-column align="center" label="ID" width="50">
                 <template slot-scope="scope">
@@ -155,7 +137,7 @@
 
     </el-table>
     <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.per_page" @pagination="fetchData" />
-    <el-dialog title="选择门板款式" :visible.sync="dialogFormVisible" width="90%" height="90%" style="z-index:999999" center>
+    <el-dialog title="选择门板款式" :visible.sync="dialogFormVisible" width="90%" height="90%" style="z-index:999999">
       <door-style-select @cancel="dialogFormVisible=false" @selectDoorStyle="onSelectDoorStyle" />
     </el-dialog>
   </div>
@@ -167,7 +149,6 @@ import Pagination from '@/components/Pagination'
 import SkuStatusColumn from '@/components/SkuStatusColumn2'
 import { confirmEdit, confirmDelete } from '@/utils/edit'
 import DoorStyleSelect from '@/components/DoorStyleSelect'
-import { copyToClipboard, pasteFromClipboard } from '@/utils/clipboard'
 
 export default {
   components: { Pagination, SkuStatusColumn, DoorStyleSelect },
@@ -201,6 +182,18 @@ export default {
     this.fetchData()
   },
   methods: {
+    setFocus2() { // 子表聚焦
+      this.$nextTick(() => {
+        const row = this.$refs.elTable2.$el.querySelector('.current-row')
+        row.querySelector('input').focus()
+      })
+    },
+    setFocus1(row, column, event) { // 主表聚焦
+      this.$nextTick(() => {
+        const row = this.$refs.elTable1.$el.querySelector('.current-row')
+        row.querySelector('input').focus()
+      })
+    },
     async fetchData() {
       this.listLoading = true
       const { data } = await getDoorStyleScheme(this.searchText, this.listQuery)
@@ -217,19 +210,22 @@ export default {
       this.fetchData()
     },
     onNew() {
-      this.datas.unshift({ id: null, name: '', comment: '', mode: 0, door_styles: [], status: 0, editStatus: 1 })
+      this.datas.unshift({ id: null, name: '', comment: '', mode: 0, door_styles: [], status: 0, editStatus: 0 })
     },
     onEditDoorStyle(row, index) {
       const indexRow = this.datas.findIndex(v => v.id === row.id)
       this.datas[indexRow].editStatus = 1
     },
     onDeleteDoorStyle(row, index) {
-      const pRow = this.datas.find(v => v.id === row.id)
-      pRow.editStatus = 1
-      row.door_styles.splice(index, 1)
+      const indexRow = this.datas.findIndex(v => v.id === row.id)
+      row['door_styles'].splice(index, 1)
+      this.datas[indexRow] = row
+      this.datas[indexRow].editStatus = 1
     },
     onEdit(row) {
-      row.editStatus = 1 // 修改
+      if (row.editStatus === 0) {
+        row.editStatus = 1 // 修改
+      }
     },
     tableRowStyle({ row, rowIndex }) {
       return row.editStatus === 1 ? { 'background-color': 'PeachPuff' } : ''
@@ -237,7 +233,6 @@ export default {
     },
     onSaveAll() { // 已修改的数据数组
       const editedArr = this.datas.filter(item => item.editStatus === 1)
-
       confirmEdit(() => {
         this.listLoading = true
         updateDoorStyleScheme(editedArr)
@@ -249,6 +244,7 @@ export default {
           .catch(() => {
             this.listLoading = false
           })
+        this.editRow = null
       })
     },
     onSave(row, index) {
@@ -307,31 +303,11 @@ export default {
       } else {
         this.editRow.door_styles.push(dss)
       }
-      const pRow = this.datas.find(v => v.id === this.editRow.id)
-      pRow.editStatus = 1
+      const indexRow = this.datas.findIndex(v => v.id === this.editRow.id)
+      this.datas[indexRow].editStatus = 1
 
       this.editRow = null
       this.dialogFormVisible = false
-    },
-    onCopyDoorStyle(dss) {
-      copyToClipboard('door_style_list', dss)
-    },
-    onPasteDoorStyle(row) {
-      const data = pasteFromClipboard('door_style_list')
-      if (data) {
-        row.door_styles = data
-        if (row.editStatus === 0) {
-          row.editStatus = 1
-        }
-      }
-    },
-    onClickTb(row, column, cell, event) {
-      this.$nextTick(() => {
-        const input = cell.querySelector('input')
-        if (input) {
-          input.focus()
-        }
-      })
     }
   }
 }

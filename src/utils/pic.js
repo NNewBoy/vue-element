@@ -18,6 +18,10 @@ export function getPicUrl(url) {
   return str
 }
 
+export function getThumbnailUrl(url, w = 100, h = 100) {
+  return getPicUrl(url) + '?x-oss-process=image/resize,h_' + h + ',w_' + w
+}
+
 /**
  * 检查图片是否能上传
  * @param {string} file

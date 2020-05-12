@@ -100,3 +100,24 @@ export function readFile(filePath, cbkFun) {
       console.log(error)
     })
 }
+
+/**
+ * [过滤对象]
+ * @param  obj [过滤前数据]
+ * @param  arr [过滤条件,去除arr中的属性，字符串或数组]
+ */
+export function filterObj(obj, arr) {
+  if (typeof (obj) !== 'object') {
+    return null
+  }
+
+  if (!Array.isArray(arr)) {
+    return filterObj(obj, [arr])
+  }
+
+  const result = {}
+  Object.keys(obj).filter((key) => (!arr.includes(key))).forEach((key) => {
+    result[key] = obj[key]
+  })
+  return result
+}

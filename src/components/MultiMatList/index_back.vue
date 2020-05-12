@@ -1,7 +1,9 @@
 <template>
   <div>
-    <el-tag v-for="(o, i) in data" :key="i" closable style="width:280px" @close="onDeleteMat(i)" @click.native="onSelMat(o)">
-      {{ o.mat_dir1 + '\\' + o.mat_dir2 + '\\' + o.mat_name }}
+    <el-tag v-for="(o, i) in data" :key="i" closable style="width:280px" @close="onDeleteMat(i)">
+      <router-link target="_blank" :to="{path:'/material/material', query:{dir1:o.mat_dir1,dir2:o.mat_dir2,name:o.mat_name}}">
+        {{ o.mat_dir1 + '\\' + o.mat_dir2 + '\\' + o.mat_name }}
+      </router-link>
     </el-tag>
     <el-button-group>
       <el-tooltip content="复制">
@@ -12,8 +14,8 @@
         <el-button type="primary" icon="el-icon-caret-right" size="mini" @click="onPaste" />
       </el-tooltip>
     </el-button-group>
-    <el-dialog title="选择材料" :visible.sync="dialogFormVisible" width="90%" height="90%" style="z-index:999999" :center="false">
-      <material-select :init-dir1="dir1" :init-dir2="dir2" :init-name="materialName" @cancel="dialogFormVisible=false" @selectMat="onSelectMat" @selectDir1="onSelectDir1" @selectDir2="onSelectDir2" />
+    <el-dialog title="选择材料" :visible.sync="dialogFormVisible" width="90%" height="90%" style="z-index:999999">
+      <material-select @cancel="dialogFormVisible=false" @selectMat="onSelectMat" @selectDir1="onSelectDir1" @selectDir2="onSelectDir2" />
     </el-dialog>
   </div>
 </template>
@@ -38,14 +40,19 @@ export default {
       require: true,
       type: Boolean,
       default: false
+    },
+    matList: {
+      require: true,
+      type: Array,
+      default() {
+        return []
+      }
     }
   },
   data() {
     return {
       dialogFormVisible: false,
-      dir1: '',
-      dir2: '',
-      materialName: ''
+      copyList: []
     }
   },
   computed: {
@@ -55,22 +62,13 @@ export default {
       this.data.splice(index, 1)
     },
     onAddMat() {
-      this.dir1 = ''
-      this.dir2 = ''
-      this.materialName = ''
-      this.dialogFormVisible = true
-    },
-    onSelMat(row) {
-      this.dir1 = row.mat_dir1
-      this.dir2 = row.mat_dir2
-      this.materialName = row.mat_name
       this.dialogFormVisible = true
     },
     onCopy() {
-      copyToClipboard('mat_list', this.data)
+      copyToClipboard('multiMatList', this.data)
     },
     onPaste() {
-      const data = pasteFromClipboard('mat_list')
+      const data = pasteFromClipboard('multiMatList')
       if (data !== null) {
         this.data.splice(0, this.data.length)
         data.forEach(el => {

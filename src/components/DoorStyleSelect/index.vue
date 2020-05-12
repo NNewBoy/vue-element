@@ -16,6 +16,7 @@
     <el-table
       ref="tbTable"
       v-loading="vLoading"
+      class="el-table-container"
       :data="doorstyleList"
       element-loading-text="Loading"
       border
@@ -181,3 +182,15 @@ export default {
   }
 }
 </script>
+
+<style scoped>
+.dialog-footer{
+  text-align: center;
+}
+.app-container{
+  padding: 0;
+}
+.el-table-container{
+  margin: 20px 0;
+}
+</style>

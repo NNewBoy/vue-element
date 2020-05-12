@@ -96,98 +96,83 @@ export const constantRoutes = [
     ]
   },
   {
-    path: '/doorinner',
-    component: Layout,
-    children: [
-      {
-        path: 'index',
-        component: () => import('@/views/doorstyle/doorinner'),
-        name: 'doorinner',
-        meta: { title: 'doorinner', icon: 'table', noCache: true }
-      }
-    ]
-  },
-  {
-    path: '/DoorStyleConstraintScheme',
-    component: Layout,
-    children: [
-      {
-        path: 'index',
-        component: () => import('@/views/doorstyle/DoorStyleConstraintScheme'),
-        name: 'DoorStyleConstraintScheme',
-        meta: { title: 'DoorStyleConstraintScheme', icon: 'table', noCache: true }
-      }
-    ]
-  },
-  {
-    path: '/doorstyle',
-    component: Layout,
-    children: [
-      {
-        path: 'index',
-        component: () => import('@/views/doorstyle/index'),
-        name: 'doorstyle',
-        meta: { title: 'doorstyle', icon: 'table', noCache: true }
-      }
-    ]
-  },
-  {
     path: '/material',
     component: Layout,
+    name: 'Material',
+    meta: { title: 'Door', icon: 'table', noCache: true },
+    redirect: '/material/index',
     children: [
       {
         path: 'material',
         component: () => import('@/views/material/index'),
         name: 'Material',
         meta: { title: 'Material', icon: 'table', noCache: true }
+      },
+      {
+        path: 'selmatgroup',
+        component: () => import('@/views/kitsun_v10/material/selmatgroup'),
+        name: 'selmatgroup',
+        meta: { title: 'selmatgroup', icon: 'table', noCache: true }
       }
     ]
   },
   {
-    path: '/doorStyle_example',
+    path: '/doorstyle',
     component: Layout,
+    name: 'Door',
+    meta: { title: 'Door', icon: 'table', noCache: true },
+    redirect: '/doorstyle/index',
     children: [
       {
         path: 'index',
+        component: () => import('@/views/doorstyle/index'),
+        name: 'doorstyle',
+        meta: { title: 'doorstyle', icon: 'table', noCache: true }
+      },
+      {
+        path: 'doorinner',
+        component: () => import('@/views/doorstyle/doorinner'),
+        name: 'doorinner',
+        meta: { title: 'doorinner', icon: 'table', noCache: true }
+      },
+      {
+        path: 'DoorStyleConstraintScheme',
+        component: () => import('@/views/doorstyle/DoorStyleConstraintScheme'),
+        name: 'DoorStyleConstraintScheme',
+        meta: { title: 'DoorStyleConstraintScheme', icon: 'table', noCache: true }
+      },
+      {
+        path: 'doorStyle_example',
         component: () => import('@/views/doorStyle_example/index'),
-        name: 'DoorStyle',
-        meta: { title: 'DoorStyle', icon: 'search', noCache: true }
-      }
-    ]
-  },
-  {
-    path: '/multiFilter',
-    component: Layout,
-    children: [
-      {
-        path: 'index',
-        component: () => import('@/views/multiFilter/index'),
-        name: 'MultiFilter',
-        meta: { title: 'MultiFilter', icon: 'search', noCache: true }
-      }
-    ]
-  },
-  {
-    path: '/typeFilter2',
-    component: Layout,
-    children: [
-      {
-        path: 'index',
-        component: () => import('@/views/typeFilter2/index'),
-        name: 'TypeFilter2',
-        meta: { title: 'TypeFilter2', icon: 'search', noCache: true }
+        name: 'example',
+        meta: { title: 'example', icon: 'table', noCache: true }
       }
     ]
   },
   {
     path: '/typeFilter',
     component: Layout,
+    name: 'Filter',
+    meta: { title: 'Filter', icon: 'search', noCache: true },
+    redirect: '/typeFilter/index',
     children: [
       {
         path: 'index',
         component: () => import('@/views/typeFilter/index'),
         name: 'TypeFilter',
         meta: { title: 'TypeFilter', icon: 'search', noCache: true }
+      },
+      {
+        path: 'typeFilter2',
+        component: () => import('@/views/typeFilter2/index'),
+        name: 'TypeFilter2',
+        meta: { title: 'TypeFilter2', icon: 'search', noCache: true }
+      },
+      {
+        path: 'multiFilter',
+        component: () => import('@/views/multiFilter/index'),
+        name: 'MultiFilter',
+        meta: { title: 'MultiFilter', icon: 'search', noCache: true }
       }
     ]
   },
