@@ -1,0 +1,260 @@
+<template>
+  <div class="app-container">
+    <MultiFilter
+      :datas="cascaderDatas"
+      :filter-names="['材质分类','材质系列']"
+      :multi-choices="[false,false]"
+      @getResult="getResult"
+    />
+    <MaterialEdit
+      :datas="mats"
+      :cascader-datas="cascaderDatas"
+      :from-catalog="nowCatalog"
+      :list-loading="listLoading"
+      search-target="name"
+      @getParams="getParams"
+      @returnCatalog="changeCatalog"
+      @returnMaterialPicture="getMaterialPicture"
+      @returnCatalogName="changeCatalogName"
+    >
+      <el-table-column align="center" label="ID" width="50">
+        <template slot-scope="scope">
+          {{ scope.$index + 1 }}
+        </template>
+      </el-table-column>
+      <el-table-column align="center" label="名称" min-width="200">
+        <template slot-scope="{row}">
+          {{ row.name }}
+        </template>
+      </el-table-column>
+      <el-table-column align="center" label="图片" width="130px">
+        <template slot-scope="{row}">
+          <el-upload
+            class="hotadv-uploader"
+            action="/api/mat/uploadpic__"
+            :data="{'token':token, 'mid': row.id}"
+            :show-file-list="false"
+            :on-success="onUploadPicSuccess.bind(null, row)"
+            :before-upload="beforePicUpload"
+          >
+            <el-image v-if="row.pic_file_name" :src="getPicUrl(row.pic_file_name)" class="avatar" />
+            <i v-else class="el-icon-plus hotadv-uploader-icon" />
+          </el-upload>
+        </template>
+      </el-table-column>
+
+      <sku-status-column />
+
+      <!-- <el-table-column align="center" label="图片">
+        <template slot-scope="{row}">
+          {{ row.pic_file_name }}
+        </template>
+      </el-table-column> -->
+      <el-table-column slot="last_column" label="删除" align="center" width="82" class-name="mini-padding fixed-width">
+        <template slot-scope="{row,$index}">
+          <el-button
+            v-if="row.status!='deleted'"
+            size="mini"
+            type="danger"
+            icon="el-icon-delete"
+            @click="onDelete(row,$index)"
+          />
+        </template>
+      </el-table-column>
+    </MaterialEdit>
+    <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.per_page" @pagination="mats=[]" />
+
+  </div>
+</template>
+
+<script>
+import { getCatalog, getMat, updateMat, deleteMat } from '@/api/material' /** , addMat */
+import { getThumbnailUrl, checkPicBeforeUpload } from '@/utils/pic'
+import { getToken } from '@/utils/auth'
+import { editDelete } from '@/utils/edit'
+import Pagination from '@/components/Pagination'
+import MultiFilter from '@/components/MultiFilter'
+import MaterialEdit from '@/components/MaterialEdit'
+import SkuStatusColumn from '@/components/SkuStatusColumn'
+
+export default {
+  components: { Pagination, MultiFilter, MaterialEdit, SkuStatusColumn },
+  data() {
+    return {
+      listLoading: false,
+      token: getToken(),
+      mats: [],
+      total: 0,
+      listQuery: {
+        page: 1,
+        per_page: 20,
+        name: undefined
+      },
+      cascaderDatas: [],
+      nowCatalog: []
+    }
+  },
+  created() {
+    this.fetchCatalog()
+  },
+  methods: {
+    changeCatalogName(catalog) { // 改变目录名称
+      this.listLoading = true
+      // updateMat(params).then(() => {
+      console.log(catalog.origin) // 目标目录
+      console.log(catalog.change) // 改变后的目录
+      this.listLoading = false
+      this.$message.editOk()
+      this.fetchCatalog() // 重新加载目录
+      // }).catch(() => {
+      //   this.loadingDoorColor = false
+      //   this.$notify.editError()
+      // })
+    },
+    getMaterialPicture(picture) { // 贴图属性
+      this.listLoading = true
+      updateMat(picture).then(() => {
+        for (const item of picture) {
+          const index = this.mats.findIndex(v => v.id === item.id)
+          for (const val in item) {
+            if (val !== 'id') { this.mats[index][val] = item[val] }
+          }
+        }
+        this.listLoading = false
+        this.$message.editOk()
+      }).catch(() => {
+        this.listLoading = false
+        this.$notify.editError()
+      })
+    },
+    changeCatalog(catalog) { // 移动目录
+      this.listLoading = true
+      // addMat(params).then(() => {
+      for (const item of catalog.id) {
+        // deleteMat(item).then(response => {
+        const index = this.mats.findIndex(v => v.id === item)
+        this.mats.splice(index, 1)
+        // }).catch(() => {})
+      }
+      this.listLoading = false
+      this.$message.editOk()
+      // }).catch(() => {
+      //   this.listLoading = false
+      //   this.$notify.editError()
+      // })
+    },
+    getParams(params) { // 材质参数
+      this.listLoading = true
+      updateMat(params).then(() => {
+        for (const item of params) {
+          const index = this.mats.findIndex(v => v.id === item.id)
+          for (const val in item) {
+            if (val !== 'id') { this.mats[index][val] = item[val] }
+          }
+        }
+        this.listLoading = false
+        this.$message.editOk()
+      }).catch(() => {
+        this.listLoading = false
+        this.$notify.editError()
+      })
+    },
+    async fetchCatalog() {
+      const { data } = await getCatalog()
+
+      // 设置符合el-cascader的目录数据
+      const calCatalog = (function() {
+        return function fun(dirs) {
+          const catalogs = []
+          for (const dir in dirs) {
+            let next = []
+            if (Array.isArray(dirs[dir])) {
+              dirs[dir].forEach(element => {
+                next.push({ name: element })
+              })
+            } else {
+              next = fun(dirs[dir])
+            }
+
+            catalogs.push({ name: dir, children: next })
+          }
+          return catalogs
+        }
+      })()
+      this.cascaderDatas = calCatalog(data)
+    },
+    async fetchMaterial() {
+      this.listLoading = true
+      const { data } = await getMat(this.nowCatalog[0], this.nowCatalog[1], this.listQuery)
+      this.mats = data.items
+      this.total = data.total
+      this.listLoading = false
+    },
+    getResult(arr) {
+      if (arr.length > 0) {
+        this.nowCatalog = arr[0].map(item => item.name)
+        this.fetchMaterial()
+      } else {
+        this.mats = []
+        this.total = 0
+        this.nowCatalog = []
+      }
+    },
+    getPicUrl(pic) {
+      return getThumbnailUrl(pic) // + '?' + Math.random()
+    },
+    beforePicUpload(file) {
+      return checkPicBeforeUpload(file)
+    },
+    onUploadPicSuccess(row, res, file) {
+      if (res.success) {
+        const tmp = row.pic_file_name
+        row.pic_file_name = null
+        row.pic_file_name = tmp
+        this.$notify.uploadOk()
+      } else {
+        this.$notify.uploadError()
+      }
+    },
+    onDelete(row, index) {
+      editDelete(() => {
+        this.listLoading = true
+        deleteMat(row.id).then(response => {
+          this.$notify.deleteOk()
+          this.mats.splice(index, 1)
+
+          this.listLoading = false
+        }).catch(() => {
+          this.listLoading = false
+        })
+      })
+    }
+  }
+}
+</script>
+
+<style lang="scss" scoped>
+.active{
+		float: left;
+		margin-left: 10px;
+		padding: 10px;
+		background: #6e99e7;
+		margin-bottom: 10px;
+		border-radius: 4px;
+		font-size: 14px;
+	}
+.Classification {
+		float: left;
+		margin-left: 10px;
+		padding: 10px;
+		background: #d6d2d2;
+		margin-bottom: 10px;
+		border-radius: 4px;
+		font-size: 14px;
+	}
+.avatar {
+  width: 50px;
+  height: 50px;
+  display: block;
+}
+</style>

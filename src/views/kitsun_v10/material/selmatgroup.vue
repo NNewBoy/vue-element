@@ -1,14 +1,14 @@
 <template>
   <div class="app-container">
     <div v-if="showDir1" class="dir-container">
-      材质分类
+      <span class="title-item">材质分类</span>
       <span>
         <el-tag
           v-for="(item, index) in datas"
           :key="index"
-          effect="plain"
+          :effect="item.selected ? 'dark' : 'plain' "
           style="border:none;margin-left: 10px;font-size: 16px; line-height: 33px;"
-          :class="item.selected ? 'select-tag' : '' "
+          class="el-tag-pointer"
           @click="onSelectDir1(index)"
         >
           {{ item.name }}
@@ -16,14 +16,14 @@
       </span>
     </div>
     <div v-if="showDir1 || showDir2" class="dir-container">
-      材质目录
+      <span class="title-item">材质目录</span>
       <span>
         <el-tag
           v-for="(item, index) in datas[selectedDir1].dir2"
           :key="index"
-          effect="plain"
+          :effect="item.selected ? 'dark' : 'plain' "
           style="border:none;margin-left: 10px;font-size: 16px; line-height: 33px;"
-          :class="item.selected ? 'select-tag' : '' "
+          class="el-tag-pointer"
           @click="onSelectDir2(index)"
         >
           {{ item.name }}
@@ -31,19 +31,22 @@
       </span>
     </div>
     <div class="dir-container">
-      排序
-      <el-button-group>
+      <span class="title-item">排序</span>
+      <el-button-group class="button-group-margin">
         <el-button
           :class="{'active': orderField==='name' }"
           size="mini"
+          type="primary"
+          plain
           @click="onOrder('name', true)"
-        >名称</el-button>
+        >名称<i class="el-icon-caret-bottom el-icon--right" /></el-button>
         <el-button
           :class="{'active': orderField==='avg_color' }"
           size="mini"
+          type="primary"
           plain
           @click="onOrder('avg_color', false)"
-        >颜色</el-button>
+        >颜色<i class="el-icon-caret-bottom el-icon--right" /></el-button>
       </el-button-group>
     </div>
     <div class="list-border">
@@ -114,6 +117,8 @@ export default {
   },
   methods: {
     async fetchData() {
+      this.$route.params.type = '1' // 模拟
+
       this.datas = []
       this.selectedDir1 = -1
       this.selectedMat = -1
@@ -124,7 +129,6 @@ export default {
         // objname
         const { data } = await getCatalogByObjName(params)
         dataret = data
-        console.log(data)
       } else if (paramType === '2') {
         // product dir
         const proProps = params.split(',')
@@ -147,12 +151,6 @@ export default {
           dir1.dir2.push({ name: element.mat_dir2, selected: false })
         }
       })
-
-      /* 模拟数据 */
-      this.datas = [{ name: '柜身板', selected: false, dir2: [
-        { name: '柜身板', selected: false },
-        { name: '多层板', selected: false }
-      ] }]
 
       if (this.datas.length > 0) {
         this.onSelectDir1(0)
@@ -231,9 +229,8 @@ export default {
 </script>
 
 <style scoped>
-.select-tag{
-  background-color: #5153d4 !important;
-  color: white !important;
+.el-tag-pointer{
+  cursor: pointer;
 }
 .el-card {
   width: 200px;
@@ -276,6 +273,15 @@ export default {
 
 .dir-container {
   margin: 10px;
+}
+
+.title-item{
+  display: inline-block;
+  width: 75px;
+}
+
+.button-group-margin{
+  margin-left: 10px;
 }
 
 .list-border {

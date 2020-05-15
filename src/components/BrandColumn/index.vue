@@ -2,7 +2,7 @@
   <div class="app-container">
     <el-table-column v-for="(o, i) in brands" :key="i" align="center" :label="o.name" width="50">
       <template slot-scope="{row}">
-        <span class="my-checkbox" :class="row[o.key]===1?'is-checked':''" @click="row[o.key]=row[o.key]===1?0:1">
+        <span class="my-checkbox" :class="row[o.key]===1?'is-checked':''" @click="onClick(row, o)">
           <span class="my-checkbox-inner" />
         </span>
       </template>
@@ -51,6 +51,10 @@ export default {
   created() {
   },
   methods: {
+    onClick(row, item) {
+      row[item.key] = row[item.key] === 1 ? 0 : 1
+      row.editStatus = 1
+    }
   }
 }
 </script>

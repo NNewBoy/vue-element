@@ -83,7 +83,6 @@
         </template>
       </el-table-column>
 
-      <!-- <el-table-column align="center" label="" min-width="1" />避免材质参数前移 -->
       <slot name="last_column" /><!-- 自动推后 -->
 
       <div v-if="radioVal==='material'">

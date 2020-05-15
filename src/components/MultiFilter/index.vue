@@ -24,7 +24,7 @@
  * @property {Array} filterNames 筛选器名称，长度与总级别相等
  * @property {Array} multiChoices 是否开启多选，长度与总级别相等，false不开启、true开启
  * @property {Array} selected 筛选器的默认选项，长度与总级别相等
- * @function getType 获取选中选项，返回一个或多个选中选项的名字与索引的队列数组, 取消选择返回空数组
+ * @function getResult 获取选中选项，返回一个或多个选中选项的名字与索引的队列数组(对应单选和多选), 取消选择返回空数组
  */
 import filterDiv from '@/components/TypeFilter'
 export default {
@@ -115,21 +115,21 @@ export default {
       }
       return res
     },
-    getSelectedType(arr) { // 获取选中选项的队列
-      const res = []
-      for (const item of arr) {
-        const selectedType = [item.index]
-        const realList = []
+    getSelectedType(arr) { // 获取选中选项的队列,arr为最后一层选项的数组
+      const res = [] // 所有选项对应的选项队列，单选或多选
+      for (const item of arr) { // 遍历最后一级选择器选中的选项
+        const selectedType = [item.index] // 选项在当前级别可选项数组的索引
+        const realList = [] // 选项对应目录数据数组的索引
         for (let i = this.levels - 1; i > 0; i--) {
-          const parent = this.parentMenuNameList[i][selectedType[0]]
-          const firstIndex = this.parentMenuNameList[i].indexOf(parent)
-          const realIndex = selectedType[0] - firstIndex
+          const parent = this.parentMenuNameList[i][selectedType[0]] // 当前选项的父选项名称
+          const firstIndex = this.parentMenuNameList[i].indexOf(parent) // 当前选项的父选项在父选项数组的下标，parentMenuNameList为当前级别所有选项的父选项
+          const realIndex = selectedType[0] - firstIndex // 获取当前选项在对应的选项队列下当前级别的索引，为了解决多项选择时会有多个不同队列父元素的问题，如当前级别选择两项A,B，A的子选项有三个，B的子选项有三个，则父选项数组为AAABBB
           realList.unshift(realIndex)
-          selectedType.unshift(this.parentMenuIndexList[i][selectedType[0]])
+          selectedType.unshift(this.parentMenuIndexList[i][selectedType[0]]) // 向selectedType头部加入当前级别父选项在目录数据数组的索引
         }
-        realList.unshift(selectedType[0])
+        realList.unshift(selectedType[0]) // 加入第一级选项在目录数据数组的索引
         let node = this.inputData
-        const names = []
+        const names = [] // 当前选项的在队列中的名称
         for (const i of realList) {
           names.push({ name: node[i].name, index: i })
           if (node[i].children) {
@@ -143,9 +143,9 @@ export default {
     getType(arr, level) {
       if (arr.length > 0) {
         if (level < this.levels - 1) {
-          const nextMenu = [] // 下一级选项
-          const theParentIndex = [] // 下一级选项的父选项的索引
-          const theParentName = [] // 下一级选项的父选项的名称
+          const nextMenu = [] // 下一级所有选项
+          const theParentIndex = [] // 下一级所有选项的父选项的索引
+          const theParentName = [] // 下一级所有选项的父选项的名称
           arr.map(val => {
             const temp = this.getChildren(level, val.index)
             for (const i of temp) {

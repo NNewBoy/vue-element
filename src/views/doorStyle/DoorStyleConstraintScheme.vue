@@ -248,6 +248,7 @@ export default {
           })
           .catch(() => {
             this.listLoading = false
+            this.$notify.editError()
           })
       })
     },
@@ -263,6 +264,7 @@ export default {
             })
             .catch(() => {
               this.listLoading = false
+              this.$notify.editError()
             })
         } else {
           addDoorStyleScheme(row)
@@ -274,6 +276,7 @@ export default {
             })
             .catch(() => {
               this.listLoading = false
+              this.$notify.editError()
             })
         }
       })

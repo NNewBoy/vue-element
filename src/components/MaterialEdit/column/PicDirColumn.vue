@@ -1,16 +1,16 @@
 <template>
   <div class="app-container">
-    <el-table-column label="上架状态" width="100" align="center">
+    <el-table-column label="贴图纹理方向" width="120" align="center">
       <template slot-scope="{row}">
-        <el-select v-model="row.status" @change="setEditStatus(row)">
+        <el-select v-model="row.pic_file_texture_dir" @change="row.editStatus=1">
           <el-option
-            v-for="(o, i) in statusList"
+            v-for="(o, i) in dirList"
             :key="i"
             :label="o.text"
             :value="o.value"
           />
         </el-select>
-        <span>{{ row.status | skuStatus }}</span>
+        <span>{{ row.pic_file_texture_dir | dirFilter }}</span>
       </template>
     </el-table-column>
   </div>
@@ -19,17 +19,14 @@
 <script type="text/javascript">
 
 export default {
-  name: 'SkuStatusColumn',
+  name: 'PicDirColumn',
   filters: {
-    skuStatus: function(val) {
+    dirFilter: function(val) {
       switch (val) {
         case 0:
-        case null:
-          return '隐藏'
+          return '竖向'
         case 1:
-          return '上架'
-        case 2:
-          return '下架'
+          return '横向'
         default:
           return '未知:' + val
       }
@@ -40,10 +37,9 @@ export default {
   },
   data() {
     return {
-      statusList: [
-        { value: 0, text: '隐藏' },
-        { value: 1, text: '上架' },
-        { value: 2, text: '下架' }
+      dirList: [
+        { value: 0, text: '竖向' },
+        { value: 1, text: '横向' }
       ]
     }
   },
@@ -59,8 +55,14 @@ export default {
 }
 </script>
 
-<style scope>
-.el-table .current-row .el-select+span {
+<style scoped>
+.tb-edit .el-input {
+  display: none
+}
+.tb-edit .current-row .el-input {
+  display: block
+}
+.tb-edit .current-row .el-input+span {
   display: none
 }
 </style>

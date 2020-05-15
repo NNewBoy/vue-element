@@ -47,8 +47,8 @@ export function getMat(use, text, query) {
     param[key] = query[key]
   }
   return request({
-    // url: '/mat/list', // material页面
-    url: '/mat/list2',
+    url: '/mat/list', // material页面
+    // url: '/mat/list2',
     method: 'get',
     params: param
   }).then((data) => {

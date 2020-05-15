@@ -40,7 +40,7 @@
           </a>
         </div>
       </div>
-      <div v-show="showCondition && initCondition" class="selected-condition">
+      <div v-show="showCondition && initCondition && multiChoice" class="selected-condition">
         <span>已选条件:</span>
         <a
           v-for="(item, index) in selectedType"
