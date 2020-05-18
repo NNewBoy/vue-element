@@ -47,10 +47,19 @@ export function getMat(use, text, query) {
     param[key] = query[key]
   }
   return request({
-    url: '/mat/list', // material页面
-    // url: '/mat/list2',
+    url: '/mat/list',
     method: 'get',
     params: param
+  }).then((data) => {
+    return data.data
+  })
+}
+export function getMatByConstraints(dir1, dir2, constrainttype, constraints) {
+  return request({
+    url: '/mat/list2',
+    // url: '/mat/listbyconstraints',
+    method: 'get',
+    params: { dir1, dir2, constrainttype, constraints }
   }).then((data) => {
     return data.data
   })
@@ -65,11 +74,13 @@ export function updateMat(data) {
 }
 
 export function addMat(data) {
-  return request({
-    url: '/mat/add',
-    method: 'post',
-    params: { data } // 返回新增的id
-  })
+  // return request({
+  //   url: '/mat/add',
+  //   method: 'post',
+  //   params: { data } // 返回新增的id
+  // })
+  return Promise.resolve(111)
+  // return Promise.reject()
 }
 
 export function importMat(data) {

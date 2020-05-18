@@ -28,25 +28,27 @@
       </div>
 
       <div class="menu-item">
-        <el-button type="primary" plain size="small" @click="editCatalogName">编辑目录名</el-button>
-      </div>
+        <upload-excel class="excel-item" :btn-margin="false" btn-size="small" action="/doorstyle/import" :on-success="onExcelSuccess" />
+        <el-button class="excel-item" type="primary" size="small" @click="editCatalogName">编辑目录名</el-button>
 
-      <div class="menu-item radio-menu">
-        <el-radio v-model="radioVal" class="radio-menu-item" border size="small" label="material">
-          材质参数
-        </el-radio>
-        <el-radio v-model="radioVal" class="radio-menu-item" border size="small" label="catalog">
-          移动目录
-        </el-radio>
-        <el-button-group v-if="radioVal!==''" class="edit-button">
-          <el-button type="primary" size="small" @click="selectMaterial">批量编辑</el-button>
-        </el-button-group>
+        <el-dropdown size="small" split-button type="primary" @click="selectMaterial" @command="command=>radioVal=command">
+          {{ radioVal | dropFilter }}
+          <el-dropdown-menu slot="dropdown">
+            <el-dropdown-item command="">更多功能</el-dropdown-item>
+            <el-dropdown-item command="material">材质参数</el-dropdown-item>
+            <el-dropdown-item command="catalog">移动目录</el-dropdown-item>
+          </el-dropdown-menu>
+        </el-dropdown>
       </div>
 
       <div class="menu-item radio-menu">
         <el-button-group class="brand-button">
           <el-button type="success" size="small" @click="saveProperty">保存</el-button>
           <el-button type="warning" size="small" @click="resetProperty">重置</el-button>
+          <el-button v-show="openBtn" type="primary" size="small" @click="addProperty">添加</el-button>
+          <el-button v-show="openBtn" type="primary" size="small" @click="copyProperty">复制</el-button>
+          <el-button v-show="openBtn" type="primary" size="small" @click="pasteProperty">粘贴</el-button>
+          <el-button type="primary" size="small" :icon="openBtn?'el-icon-arrow-left':'el-icon-arrow-right'" @click="openBtn = !openBtn" />
         </el-button-group>
       </div>
     </div>
@@ -84,7 +86,7 @@
             :on-success="onUploadPicSuccess.bind(null, row)"
             :before-upload="beforePicUpload"
           >
-            <el-image v-if="row.preview_pic" :src="getPicUrl(row.preview_pic)" class="avatar" />
+            <el-image v-if="row.preview_pic" :src="getPicUrl(row.preview_pic)" class="avatar" :lazy="true" />
             <i v-else class="el-icon-plus hotadv-uploader-icon" />
           </el-upload>
         </template>
@@ -102,7 +104,7 @@
             :on-success="onUploadPicSuccess.bind(null, row)"
             :before-upload="beforePicUpload"
           >
-            <el-image v-if="row.preview_pic" :src="getDoorPicUrl(row.folder)" class="avatar" />
+            <el-image v-if="row.preview_pic" :src="getDoorPicUrl(row.folder)" class="avatar" :lazy="true" />
             <i v-else class="el-icon-plus hotadv-uploader-icon" />
           </el-upload>
         </template>
@@ -117,14 +119,16 @@
             :on-success="onUploadPicSuccess.bind(null, row)"
             :before-upload="beforePicUpload"
           >
-            <el-image v-if="row.preview_pic" :src="getDrawerPicUrl(row.folder)" class="avatar" />
+            <el-image v-if="row.preview_pic" :src="getDrawerPicUrl(row.folder)" class="avatar" :lazy="true" />
             <i v-else class="el-icon-plus hotadv-uploader-icon" />
           </el-upload>
         </template>
       </el-table-column>
       <el-table-column align="center" label="ShapeCode" width="100">
         <template slot-scope="{row}">
-          {{ row.door_shape_code }}
+          <router-link :to="`/doorstyle/doorshape?code=${row.door_shape_code}`">
+            {{ row.door_shape_code }}
+          </router-link>
         </template>
       </el-table-column>
 
@@ -189,7 +193,7 @@
 </template>
 
 <script>
-import { getCatalog, getColorList, updateDoorStyle, deleteDoorStyle } from '@/api/doorstyle' /** , addDoorStyle */
+import { getCatalog, getColorList, updateDoorStyle, deleteDoorStyle, addDoorStyle } from '@/api/doorstyle'
 import { getThumbnailUrl, checkPicBeforeUpload } from '@/utils/pic'
 import { getToken } from '@/utils/auth'
 import { editDelete } from '@/utils/edit'
@@ -206,9 +210,23 @@ import MaterialDialog from '@/components/MaterialEdit/dialog/MaterialDialog'
 import CatalogDialog from '@/components/MaterialEdit/dialog/CatalogDialog'
 import CatalogNameDialog from '@/components/MaterialEdit/dialog/CatalogNameDialog'
 import toPinyin from '@/utils/chineseToPinyin'
+import UploadExcel from '@/components/UploadExcel'
+import { copyToClipboard, pasteFromClipboard } from '@/utils/clipboard'
 
 export default {
-  components: { MultiFilter, BrandsFilter, StatusFilter, CommonColumn, SkuStatusColumn, BrandColumn, PicDirColumn, MaterialColumn, MaterialDialog, CatalogDialog, CatalogNameDialog },
+  components: { MultiFilter, BrandsFilter, StatusFilter, CommonColumn, SkuStatusColumn, BrandColumn, PicDirColumn, MaterialColumn, MaterialDialog, CatalogDialog, CatalogNameDialog, UploadExcel },
+  filters: {
+    dropFilter: function(val) {
+      switch (val) {
+        case 'material':
+          return '材质参数'
+        case 'catalog':
+          return '移动目录'
+        default:
+          return '更多功能'
+      }
+    }
+  },
   data() {
     return {
       loadingDoorColor: false,
@@ -227,7 +245,8 @@ export default {
       selection: [],
       selectStatusRes: {}, // 上架状态筛选器的返回值
       selectBrandsRes: {}, // 品牌筛选器的返回值
-      ifUpdate: false // 判断是否刷新数据
+      ifUpdate: false, // 判断是否刷新数据
+      openBtn: false // 编辑按钮打开与否
     }
   },
   computed: {
@@ -368,11 +387,25 @@ export default {
       this.$refs.tbTable.clearSelection() // 清空选项
     },
     selectMaterial() {
-      if (this.selection.length > 0) {
-        if (this.radioVal === 'material') {
-          this.materialDialogVisible = true
-        } else if (this.radioVal === 'catalog') {
-          this.catalogDialogVisible = true
+      if (this.radioVal === '') {
+        this.$confirm('未选择编辑功能', '警告', {
+          showCancelButton: false,
+          confirmButtonText: '确认',
+          type: 'warning'
+        }).catch(() => {})
+      } else {
+        if (this.selection.length > 0) {
+          if (this.radioVal === 'material') {
+            this.materialDialogVisible = true
+          } else if (this.radioVal === 'catalog') {
+            this.catalogDialogVisible = true
+          }
+        } else {
+          this.$confirm('未选择材质', '警告', {
+            showCancelButton: false,
+            confirmButtonText: '确认',
+            type: 'warning'
+          }).catch(() => {})
         }
       }
     },
@@ -400,6 +433,70 @@ export default {
     resetProperty() {
       this.searchText = ''
       this.fetchDoorColor()
+    },
+    addProperty() {
+      const tempData = {
+        id: null,
+        door_series: this.nowCatalog[0],
+        door_price: this.nowCatalog[1],
+        door_shape: this.nowCatalog[2],
+        door_ext4: this.restSelectArr[0][0].name ? this.restSelectArr[0][0].name : '',
+        door_ext5: this.restSelectArr[0][1].name ? this.restSelectArr[0][1].name : '',
+        door_ext6: this.restSelectArr[0][2].name ? this.restSelectArr[0][2].name : '',
+        door_color: '',
+        preview_pic: '',
+        door_shape_code: 'door_000',
+        folder: '',
+        door_thick: '18',
+        status: 0, spzp: 1, wayes: 1, homkoo: 1,
+        pic_file_texture_dir: null,
+        editStatus: 1
+      }
+      this.$confirm('确认添加吗?', '警告', {
+        confirmButtonText: '确认',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(async() => {
+        this.loadingDoorColor = true
+        addDoorStyle(tempData)
+          .then(response => {
+            this.loadingDoorColor = false
+            tempData.id = response
+            this.doorstyleList.unshift(tempData)
+            this.$notify.addOk()
+          })
+          .catch(() => {
+            this.loadingDoorColor = false
+            this.$notify({
+              title: 'Error',
+              message: '添加失败',
+              type: 'error',
+              duration: 2000
+            })
+          })
+      }).catch(() => {})
+    },
+    copyProperty() {
+      if (this.selection.length > 0) {
+        copyToClipboard('door_style_index', this.selection)
+      } else {
+        this.$confirm('未选择材质', '警告', {
+          showCancelButton: false,
+          confirmButtonText: '确认',
+          type: 'warning'
+        }).catch(() => {
+
+        })
+      }
+    },
+    pasteProperty() {
+      const data = pasteFromClipboard('door_style_index')
+      if (data) {
+        data.map(item => {
+          item.editStatus = 1
+        })
+        this.doorstyleList.unshift(...data)
+      }
     },
     editCatalogName() { // 显示修改目录名对话框前的判断，需先保存修改的数据
       const editedArr = this.doorstyleList.filter(item => item.editStatus === 1)
@@ -506,10 +603,12 @@ export default {
       this.catalogs = calCatalog(data)
     },
     async fetchDoorColor() {
-      this.loadingDoorColor = true
-      const { data } = await getColorList(this.allDoorStyle)
-      this.doorstyleList = data
-      this.loadingDoorColor = false
+      if (this.selectArr.length > 0) {
+        this.loadingDoorColor = true
+        const { data } = await getColorList(this.allDoorStyle)
+        this.doorstyleList = data
+        this.loadingDoorColor = false
+      }
     },
     getPicUrl(pic) {
       return getThumbnailUrl(pic) // + '?' + Math.random()
@@ -545,6 +644,9 @@ export default {
           this.loadingDoorColor = false
         })
       })
+    },
+    onExcelSuccess({ results, header }) {
+      this.fetchData()
     }
   }
 }
@@ -596,6 +698,7 @@ export default {
 }
 .menu-list{
   display: flex;
+  left: 0px;
   align-items: center;
 }
 .menu-item{
@@ -733,5 +836,8 @@ export default {
       background-color: #46a6ff;
     }
   }
+}
+.excel-item{
+  margin-right: 5px;
 }
 </style>

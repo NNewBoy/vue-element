@@ -38,11 +38,13 @@ export function deleteDoorStyle(id) {
 }
 
 export function addDoorStyle(data) {
-  return request({
-    url: '/doorstyle/add',
-    method: 'post',
-    params: { data } // 返回新增的id
-  })
+  // return request({
+  //   url: '/doorstyle/add',
+  //   method: 'post',
+  //   params: { data } // 返回新增的id
+  // })
+  return Promise.resolve(111)
+  // return Promise.reject()
 }
 
 // DoorShape
@@ -79,6 +81,14 @@ export function addDoorShape(data) {
     url: '/doorshape/add',
     method: 'post',
     params: { data } // 返回新增的id
+  })
+}
+
+export function getDoorShapePic(doorseries, doorprice) {
+  return request({
+    url: '/doorshape/pic',
+    method: 'get',
+    params: { doorseries, doorprice }
   })
 }
 

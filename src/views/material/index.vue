@@ -21,28 +21,28 @@
       </div>
 
       <div class="menu-item">
-        <el-button type="primary" plain size="small" @click="editCatalogName">编辑目录名</el-button>
-      </div>
+        <upload-excel class="excel-item" :btn-margin="false" btn-size="small" action="/mat/import" :on-success="onExcelSuccess" />
+        <el-button class="excel-item" type="primary" size="small" @click="editCatalogName">编辑目录名</el-button>
 
-      <div class="menu-item radio-menu">
-        <el-radio v-model="radioVal" class="radio-menu-item" border size="small" label="material">
-          材质参数
-        </el-radio>
-        <el-radio v-model="radioVal" class="radio-menu-item" border size="small" label="catalog">
-          移动目录
-        </el-radio>
-        <el-radio v-model="radioVal" class="radio-menu-item" border size="small" label="picture">
-          贴图属性
-        </el-radio>
-        <el-button-group v-if="radioVal!==''" class="edit-button">
-          <el-button type="primary" size="small" @click="selectMaterial">批量编辑</el-button>
-        </el-button-group>
+        <el-dropdown size="small" split-button type="primary" @click="selectMaterial" @command="command=>radioVal=command">
+          {{ radioVal | dropFilter }}
+          <el-dropdown-menu slot="dropdown">
+            <el-dropdown-item command="">更多功能</el-dropdown-item>
+            <el-dropdown-item command="material">材质参数</el-dropdown-item>
+            <el-dropdown-item command="catalog">移动目录</el-dropdown-item>
+            <el-dropdown-item command="picture">贴图属性</el-dropdown-item>
+          </el-dropdown-menu>
+        </el-dropdown>
       </div>
 
       <div class="menu-item radio-menu">
         <el-button-group class="brand-button">
           <el-button type="success" size="small" @click="saveProperty">保存</el-button>
           <el-button type="warning" size="small" @click="resetProperty">重置</el-button>
+          <el-button v-show="openBtn" type="primary" size="small" @click="addProperty">添加</el-button>
+          <el-button v-show="openBtn" type="primary" size="small" @click="copyProperty">复制</el-button>
+          <el-button v-show="openBtn" type="primary" size="small" @click="pasteProperty">粘贴</el-button>
+          <el-button type="primary" size="small" :icon="openBtn?'el-icon-arrow-left':'el-icon-arrow-right'" @click="openBtn = !openBtn" />
         </el-button-group>
       </div>
     </div>
@@ -66,12 +66,12 @@
         width="45"
       />
 
-      <el-table-column align="center" label="ID" width="50">
+      <el-table-column align="center" label="ID" width="40">
         <template slot-scope="scope">
           {{ scope.$index + 1 }}
         </template>
       </el-table-column>
-      <el-table-column align="center" label="图片" width="130px">
+      <el-table-column align="center" label="图片" width="80">
         <template slot-scope="{row}">
           <el-upload
             class="hotadv-uploader"
@@ -153,7 +153,7 @@
 </template>
 
 <script>
-import { getCatalog, getMat, updateMat, deleteMat } from '@/api/material' /** , addMat */
+import { getCatalog, getMat, updateMat, deleteMat, addMat } from '@/api/material'
 import { getThumbnailUrl, checkPicBeforeUpload } from '@/utils/pic'
 import { getToken } from '@/utils/auth'
 import { editDelete } from '@/utils/edit'
@@ -172,9 +172,25 @@ import MaterialPictureColumn from '@/components/MaterialEdit/column/MaterialPict
 import MaterialPictureDialog from '@/components/MaterialEdit/dialog/MaterialPictureDialog'
 import CatalogNameDialog from '@/components/MaterialEdit/dialog/CatalogNameDialog'
 import toPinyin from '@/utils/chineseToPinyin'
+import UploadExcel from '@/components/UploadExcel'
+import { copyToClipboard, pasteFromClipboard } from '@/utils/clipboard'
 
 export default {
-  components: { Pagination, MultiFilter, BrandsFilter, StatusFilter, CommonColumn, SkuStatusColumn, BrandColumn, MaterialColumn, MaterialDialog, CatalogDialog, MaterialPictureColumn, MaterialPictureDialog, CatalogNameDialog },
+  components: { Pagination, MultiFilter, BrandsFilter, StatusFilter, CommonColumn, SkuStatusColumn, BrandColumn, MaterialColumn, MaterialDialog, CatalogDialog, MaterialPictureColumn, MaterialPictureDialog, CatalogNameDialog, UploadExcel },
+  filters: {
+    dropFilter: function(val) {
+      switch (val) {
+        case 'material':
+          return '材质参数'
+        case 'catalog':
+          return '移动目录'
+        case 'picture':
+          return '贴图属性'
+        default:
+          return '更多功能'
+      }
+    }
+  },
   data() {
     return {
       listLoading: false,
@@ -198,7 +214,8 @@ export default {
       selection: [],
       selectStatusRes: {}, // 上架状态筛选器的返回值
       selectBrandsRes: {}, // 品牌筛选器的返回值
-      ifUpdate: false // 判断是否刷新数据
+      ifUpdate: false, // 判断是否刷新数据
+      openBtn: false // 编辑按钮打开与否
     }
   },
   computed: {
@@ -313,13 +330,27 @@ export default {
       this.$refs.tbTable.clearSelection() // 清空选项
     },
     selectMaterial() {
-      if (this.selection.length > 0) {
-        if (this.radioVal === 'material') {
-          this.materialDialogVisible = true
-        } else if (this.radioVal === 'catalog') {
-          this.catalogDialogVisible = true
-        } else if (this.radioVal === 'picture') {
-          this.materialPictureDialogVisible = true
+      if (this.radioVal === '') {
+        this.$confirm('未选择编辑功能', '警告', {
+          showCancelButton: false,
+          confirmButtonText: '确认',
+          type: 'warning'
+        }).catch(() => {})
+      } else {
+        if (this.selection.length > 0) {
+          if (this.radioVal === 'material') {
+            this.materialDialogVisible = true
+          } else if (this.radioVal === 'catalog') {
+            this.catalogDialogVisible = true
+          } else if (this.radioVal === 'picture') {
+            this.materialPictureDialogVisible = true
+          }
+        } else {
+          this.$confirm('未选择材质', '警告', {
+            showCancelButton: false,
+            confirmButtonText: '确认',
+            type: 'warning'
+          }).catch(() => {})
         }
       }
     },
@@ -347,6 +378,54 @@ export default {
     resetProperty() {
       this.searchText = ''
       this.fetchMaterial()
+    },
+    addProperty() {
+      const tempData = { id: null, use_group: this.nowCatalog[0], texture_group: this.nowCatalog[1], name: '', pic_file_name: '', status: 0, spzp: 1, wayes: 1, homkoo: 1, editStatus: 1 }
+      this.$confirm('确认添加吗?', '警告', {
+        confirmButtonText: '确认',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(async() => {
+        this.listLoading = true
+        addMat(tempData)
+          .then(response => {
+            this.listLoading = false
+            tempData.id = response
+            this.mats.unshift(tempData)
+            this.$notify.addOk()
+          })
+          .catch(() => {
+            this.listLoading = false
+            this.$notify({
+              title: 'Error',
+              message: '添加失败',
+              type: 'error',
+              duration: 2000
+            })
+          })
+      }).catch(() => {})
+    },
+    copyProperty() {
+      if (this.selection.length > 0) {
+        copyToClipboard('material_index', this.selection)
+      } else {
+        this.$confirm('未选择材质', '警告', {
+          showCancelButton: false,
+          confirmButtonText: '确认',
+          type: 'warning'
+        }).catch(() => {
+
+        })
+      }
+    },
+    pasteProperty() {
+      const data = pasteFromClipboard('material_index')
+      if (data) {
+        data.map(item => {
+          item.editStatus = 1
+        })
+        this.mats.unshift(...data)
+      }
     },
     editCatalogName() { // 显示修改目录名对话框前的判断，需先保存修改的数据
       const editedArr = this.mats.filter(item => item.editStatus === 1)
@@ -492,6 +571,9 @@ export default {
           this.listLoading = false
         })
       })
+    },
+    onExcelSuccess({ results, header }) {
+      this.fetchCatalog()
     }
   }
 }
@@ -680,5 +762,8 @@ export default {
       background-color: #46a6ff;
     }
   }
+}
+.excel-item{
+  margin-right: 5px;
 }
 </style>

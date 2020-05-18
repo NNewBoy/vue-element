@@ -1,22 +1,41 @@
 <template>
-  <div>
+  <div v-if="visible">
     <input ref="excel-upload-input" class="excel-upload-input" type="file" accept=".xlsx, .xls" @change="handleClick">
-    <div class="drop" @drop="handleDrop" @dragover="handleDragover" @dragenter="handleDragover">
-      Drop excel file here or
-      <el-button :loading="loading" style="margin-left:16px;" size="mini" type="primary" @click="handleUpload">
-        Browse
-      </el-button>
-    </div>
+    <el-button :loading="loading" :style="btnMargin?'margin-left:16px;':''" :size="btnSize" type="primary" @click="handleUpload">
+      上传Excel
+    </el-button>
   </div>
 </template>
 
 <script>
 import XLSX from 'xlsx'
+import { importData } from '@/api/common'
 
 export default {
+  name: 'UploadExcel',
   props: {
     beforeUpload: Function, // eslint-disable-line
-    onSuccess: Function// eslint-disable-line
+    onSuccess: Function, // eslint-disable-line
+    visible: {
+      require: false,
+      type: Boolean,
+      default: true
+    },
+    action: {
+      require: false,
+      type: String,
+      default: ''
+    },
+    btnSize: {
+      require: false,
+      type: String,
+      default: 'mini'
+    },
+    btnMargin: {
+      require: false,
+      type: Boolean,
+      default: true
+    }
   },
   data() {
     return {
@@ -31,7 +50,11 @@ export default {
     generateData({ header, results }) {
       this.excelData.header = header
       this.excelData.results = results
-      this.onSuccess && this.onSuccess(this.excelData)
+
+      importData(this.action, results).then(res => {
+        this.$message.importOk()
+        this.onSuccess && this.onSuccess(this.excelData)
+      })
     },
     handleDrop(e) {
       e.stopPropagation()
@@ -66,8 +89,26 @@ export default {
       if (!rawFile) return
       this.upload(rawFile)
     },
+    checkExcelBeforeUpload(file) {
+      const isLt1M = file.size / 1024 / 1024 < 5
+
+      if (isLt1M) {
+        return true
+      }
+
+      this.$message({
+        message: '文件大小不能超过 5M',
+        type: 'warning',
+        duration: 2000
+      })
+      return false
+    },
     upload(rawFile) {
       this.$refs['excel-upload-input'].value = null // fix can't select the same excel
+
+      if (!this.checkExcelBeforeUpload(rawFile)) {
+        return
+      }
 
       if (!this.beforeUpload) {
         this.readerData(rawFile)
@@ -125,8 +166,8 @@ export default {
 }
 .drop{
   border: 2px dashed #bbb;
-  width: 600px;
-  height: 160px;
+  width: 100px;
+  height: 60px;
   line-height: 160px;
   margin: 0 auto;
   font-size: 24px;

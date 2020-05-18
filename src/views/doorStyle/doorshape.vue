@@ -1,7 +1,7 @@
 <template>
   <div class="app-container">
     <el-backtop :bottom="50" />
-    <el-row>
+    <el-row :gutter="2">
       <el-col :span="2">
         <el-popover
           placement="right"
@@ -36,10 +36,16 @@
         </el-popover>
       </el-col>
       <el-col :span="2">
-        <el-button size="mini" disabled @click="btnAddData">+ 新增</el-button>
+        <el-button size="mini" @click="btnAddData">+ 新增</el-button>
       </el-col>
-      <el-col :span="3">
-        <el-input v-model="inputSearch" prefix-icon="el-icon-search" size="mini" clearable placeholder="查找" @input="search" />
+      <el-col :span="5">
+        <el-input v-model="listQuery.code" prefix-icon="el-icon-search" size="mini" clearable placeholder="查找" />
+      </el-col>
+      <el-col :span="2">
+        <el-button icon="el-icon-search" size="mini" @click="onSearch" />
+      </el-col>
+      <el-col :span="4">
+        <upload-excel action="/doorshape/import" :on-success="onExcelSuccess" />
       </el-col>
     </el-row>
     <div style="height:20px" />
@@ -53,7 +59,7 @@
       fit
       highlight-current-row
     >
-      <el-table-column align="center" label="ID" width="50"><template slot-scope="scope">{{ scope.$index + 1 }}</template></el-table-column>
+      <el-table-column align="center" label="ID" width="40"><template slot-scope="scope">{{ scope.$index + 1 }}</template></el-table-column>
       <el-table-column align="center" label="操作" width="60">
         <template slot-scope="scope">
           <span class="el-tag el-tag--info el-tag--mini" style="cursor: pointer;" @click="btnAlterData(scope.row,scope.$index)">
@@ -63,25 +69,39 @@
           <span v-else class="el-tag el-tag--danger el-tag--mini" style="cursor: pointer;" @click="btnDelete(scope.row,scope.$index)">删除</span>
         </template>
       </el-table-column>
-      <el-table-column align="center" label="图片" width="100">
-        <template slot-scope="scope">
-          <div id="div-preview">
-            <img id="img-preview">
-            <span v-if="scope.row.edit" class="el-tag  el-tag--mini center" @click="uploadPic">上传</span>
-          </div>
+
+      <el-table-column align="center" label="图片" width="120px">
+        <template slot-scope="{row}">
+          <upload-pic
+            :id="row.id"
+            :pic="`kitdat/door/${row.preview_pic}`"
+            :width="100"
+            :height="120"
+            action="/api/doorshape/uploadpic"
+            :on-success="onUploadPicSuccess.bind(null, row)"
+          />
         </template>
       </el-table-column>
+
       <el-table-column v-for="col in tableColumns" :key="col.key" :label="col.name" align="center" :width="col.width">
         <template slot-scope="scope">
           <span v-if="scope.row.edit">
-            <input v-model="scope.row[col.key]" type="text">
-          </span>
-          <span v-else>
             <span v-if="col.key == 'with_handle'">
               <el-checkbox v-model="scope.row[col.key]" />
             </span>
             <span v-else-if="col.key == 'alum_frame_door'">
               <el-checkbox v-model="scope.row[col.key]" />
+            </span>
+            <span v-else>
+              <input v-model="scope.row[col.key]" type="text">
+            </span>
+          </span>
+          <span v-else>
+            <span v-if="col.key == 'with_handle'">
+              <el-checkbox v-model="scope.row[col.key]" disabled />
+            </span>
+            <span v-else-if="col.key == 'alum_frame_door'">
+              <el-checkbox v-model="scope.row[col.key]" disabled />
             </span>
             <span v-else :title="scope.row[col.key]" class="to">{{ scope.row[col.key] }}</span>
           </span>
@@ -96,8 +116,10 @@
 import { getDoorShapeList, updateDoorShape, addDoorShape, deleteDoorShape } from '@/api/doorstyle'
 import { editDelete } from '@/utils/edit'
 import Pagination from '@/components/Pagination'
+import UploadExcel from '@/components/UploadExcel'
+import UploadPic from '@/components/UploadPic'
 
-const constBaseInfoArr = ['代码', '描述', '带拉手', '铝框门', 'minW', 'minH', 'way', '说明']
+const constBaseInfoArr = ['代码', '描述', '带拉手', '铝框门', '最小宽', '最小高', 'way', '说明']
 const constParamG1Arr = ['参数01', '参数描述01', '参数02', '参数描述02', '参数03', '参数描述03', '参数04', '参数描述04', '参数05', '参数描述05', '参数06', '参数描述06']
 const constParamG2Arr = ['参数07', '参数描述07', '参数08', '参数描述08', '参数09', '参数描述09', '参数10', '参数描述10', '参数11', '参数描述11', '参数12', '参数描述12']
 const constInitCheckedArr = constBaseInfoArr.concat(constParamG1Arr)
@@ -109,45 +131,44 @@ const constFieldArr = [
   { key: 'alum_frame_door', name: '铝框门', width: 50 },
   // { key: 'dll', name: 'dll', width: 50 },
   // { key: 'keyword', name: 'keyword', width: 50 },
-  { key: 'min_door_width', name: 'minW', width: 50 },
-  { key: 'min_door_height', name: 'minH', width: 50 },
-  { key: 'way', name: 'way', width: 50 },
+  { key: 'min_door_width', name: '最小宽', width: 0 },
+  { key: 'min_door_height', name: '最小高', width: 0 },
+  { key: 'way', name: 'way', width: 0 },
   { key: 'comment', name: '说明', width: 0 },
-  { key: 'param1', name: '参数01', width: 50 },
-  { key: 'param_desc1', name: '参数描述01', width: 50 },
-  { key: 'param2', name: '参数02', width: 50 },
-  { key: 'param_desc2', name: '参数描述02', width: 50 },
-  { key: 'param3', name: '参数03', width: 50 },
-  { key: 'param_desc3', name: '参数描述03', width: 50 },
-  { key: 'param4', name: '参数04', width: 50 },
-  { key: 'param_desc4', name: '参数描述04', width: 50 },
-  { key: 'param5', name: '参数05', width: 50 },
-  { key: 'param_desc5', name: '参数描述05', width: 50 },
-  { key: 'param6', name: '参数06', width: 50 },
-  { key: 'param_desc6', name: '参数描述06', width: 50 },
-  { key: 'param7', name: '参数07', width: 50 },
-  { key: 'param_desc7', name: '参数描述07', width: 50 },
-  { key: 'param8', name: '参数08', width: 50 },
-  { key: 'param_desc8', name: '参数描述08', width: 50 },
-  { key: 'param9', name: '参数09', width: 50 },
-  { key: 'param_desc9', name: '参数描述09', width: 50 },
-  { key: 'param10', name: '参数10', width: 50 },
-  { key: 'param_desc10', name: '参数描述10', width: 50 },
-  { key: 'param11', name: '参数11', width: 50 },
-  { key: 'param_desc11', name: '参数描述11', width: 50 },
-  { key: 'param12', name: '参数12', width: 50 },
-  { key: 'param_desc12', name: '参数描述12', width: 50 }
+  { key: 'param1', name: '参数01', width: 0 },
+  { key: 'param_desc1', name: '参数描述01', width: 0 },
+  { key: 'param2', name: '参数02', width: 0 },
+  { key: 'param_desc2', name: '参数描述02', width: 0 },
+  { key: 'param3', name: '参数03', width: 0 },
+  { key: 'param_desc3', name: '参数描述03', width: 0 },
+  { key: 'param4', name: '参数04', width: 0 },
+  { key: 'param_desc4', name: '参数描述04', width: 0 },
+  { key: 'param5', name: '参数05', width: 0 },
+  { key: 'param_desc5', name: '参数描述05', width: 0 },
+  { key: 'param6', name: '参数06', width: 0 },
+  { key: 'param_desc6', name: '参数描述06', width: 0 },
+  { key: 'param7', name: '参数07', width: 0 },
+  { key: 'param_desc7', name: '参数描述07', width: 0 },
+  { key: 'param8', name: '参数08', width: 0 },
+  { key: 'param_desc8', name: '参数描述08', width: 0 },
+  { key: 'param9', name: '参数09', width: 0 },
+  { key: 'param_desc9', name: '参数描述09', width: 0 },
+  { key: 'param10', name: '参数10', width: 0 },
+  { key: 'param_desc10', name: '参数描述10', width: 0 },
+  { key: 'param11', name: '参数11', width: 0 },
+  { key: 'param_desc11', name: '参数描述11', width: 0 },
+  { key: 'param12', name: '参数12', width: 0 },
+  { key: 'param_desc12', name: '参数描述12', width: 0 }
 ]
 
 export default {
-  components: { Pagination },
+  components: { Pagination, UploadExcel, UploadPic },
   data() {
     return {
       listLoading: false,
       datas: [],
-      datasOri: [],
       total: 0,
-      listQuery: { page: 1, per_page: 20, name: undefined },
+      listQuery: { code: '', page: 1, per_page: 20 },
       checkBaseInfo: true,
       checkParamG1: true,
       checkParamG2: false,
@@ -175,6 +196,10 @@ export default {
     }
   },
   created() {
+    const code = this.$route.query.code
+    if (code) {
+      this.listQuery.code = code
+    }
     this.fetchDrShpList()
     this.tableColumns = this.tableHeaders.filter(v => this.checkedItemArr.indexOf(v.name) >= 0)
   },
@@ -186,19 +211,10 @@ export default {
       const tmpArr = data.items
       for (let i = 0; i < tmpArr.length; i++) {
         tmpArr[i].edit = false
-        if (tmpArr[i].with_handle === 1) {
-          tmpArr[i].with_handle = true
-        } else {
-          tmpArr[i].with_handle = false
-        }
-        if (tmpArr[i].alum_frame_door === 1) {
-          tmpArr[i].alum_frame_door = true
-        } else {
-          tmpArr[i].alum_frame_door = false
-        }
+        tmpArr[i].with_handle = (tmpArr[i].with_handle === 1)
+        tmpArr[i].alum_frame_door = (tmpArr[i].alum_frame_door === 1)
       }
       this.datas = tmpArr
-      this.datasOri = tmpArr
       this.listLoading = false
       // console.log(data)
     },
@@ -239,21 +255,6 @@ export default {
       this.checkParamG2Indet = checkedCount > 0 && checkedCount < this.paramG2Arr.length
       this.setCheckedItemArrData()
     },
-    search() {
-      if (!this.inputSearch) {
-        this.datas = this.datasOri
-      } else {
-        this.datas = []
-        for (let i = 0; i < this.datasOri.length; i++) {
-          if (this.datasOri[i].door_shape_code.indexOf(this.inputSearch) > -1 ||
-          this.datasOri[i].desc.indexOf(this.inputSearch) > -1 ||
-          this.datasOri[i].way.indexOf(this.inputSearch) > -1 ||
-          this.datasOri[i].comment.indexOf(this.inputSearch) > -1) {
-            this.datas.push(this.datasOri[i])
-          }
-        }
-      }
-    },
     isEditing(index) {
       for (let i = 0; i < this.datas.length; i++) {
         if (this.datas[i].edit && index !== i) {
@@ -268,9 +269,9 @@ export default {
       } else {
         this.listLoading = true
         this.addNew = true
-        // var newRow = { door_shape_code: '', desc: '', new: true, edit: true }
-        // this.datas.push(newRow)
-        // window.scrollTo(0, document.body.scrollHeight)
+        // edit: true, id: '', door_shape_code: '', alum_frame_door: 0, with_handle: 0, browse_desc: '', comment: '', desc: '', keyword: '', min_door_height: '', min_door_width: '', param1: '', param2: '', param3: '', param4: '', param5: '', param6: '', param7: '', param8: '', param9: '', param10: '', param11: '', param12: '', param_desc1: '', param_desc2: '', param_desc3: '', param_desc4: '', param_desc5: '', param_desc6: '', param_desc7: '', param_desc8: '', param_desc9: '', param_desc10: '', param_desc11: '', param_desc12: '', preview_pic: '', way: ''
+        var newRow = { edit: true, door_shape_code: '', alum_frame_door: 0, with_handle: 0, comment: '', desc: '', keyword: '', min_door_height: '', min_door_width: '', param1: '', param2: '', param3: '', param4: '', param5: '', param6: '', param7: '', param8: '', param9: '', param10: '', param11: '', param12: '', param_desc1: '', param_desc2: '', param_desc3: '', param_desc4: '', param_desc5: '', param_desc6: '', param_desc7: '', param_desc8: '', param_desc9: '', param_desc10: '', param_desc11: '', param_desc12: '', preview_pic: '', way: '' }
+        this.datas.unshift(newRow)
         this.listLoading = false
       }
     },
@@ -278,14 +279,45 @@ export default {
       if (row.door_shape_code === '' || row.door_shape_code === null || row.door_shape_code === undefined) {
         this.$message.error('代码不能为空！')
       } else {
+        row.with_handle = (row.with_handle === true) ? 1 : 0
+        row.alum_frame_door = (row.alum_frame_door === true) ? 1 : 0
+        // console.log(row)
         addDoorShape(row)
-        row.edit = false
-        this.addNew = false
+          .then(response => {
+            console.log('response: ' + JSON.stringify(response))
+            this.listLoading = false
+            const re = response
+            if (re['success']) {
+              const data = re['data']
+              if (data) {
+                const id = re['data']['id']
+                if (id) {
+                  row.id = id
+                  this.total += 1
+                  row.edit = false
+                  this.addNew = false
+                  this.$message.info('增加成功！')
+                } else {
+                  this.$message.error('返回 id 为空！！')
+                }
+              } else {
+                this.$message.error('返回 data 为空！')
+              }
+            } else {
+              this.$message.error('增加失败！')
+            }
+          })
+          .catch((e) => {
+            this.$message.error('增加失败：' + e)
+            this.listLoading = false
+            console.log('增加失败：' + e)
+          })
       }
     },
     btnAlterData(row, index) {
+      // console.log(row)
       if (this.addNew) {
-        this.insertData()
+        this.insertData(row)
       } else {
         if (this.isEditing(index)) {
           this.$message.warning('请先保存当前编辑项！')
@@ -311,10 +343,15 @@ export default {
       }
     },
     btnCancel(row, index) {
-      for (const x in row) {
-        row[x] = this.editRow[x]
+      if (this.addNew) {
+        this.addNew = false
+        this.datas.shift()
+      } else {
+        for (const x in row) {
+          row[x] = this.editRow[x]
+        }
+        this.datas[index].edit = false
       }
-      this.datas[index].edit = false
     },
     btnDelete(row, index) {
       editDelete(() => {
@@ -329,10 +366,23 @@ export default {
         })
       })
     },
-    uploadPic() {
-      this.$message.warning('上传图片，功能开发中...')
+    onSearch() {
+      this.listQuery.page = 1
+      this.fetchDrShpList()
+    },
+    onExcelSuccess({ results, header }) {
+      this.fetchDrShpList()
+    },
+    onUploadPicSuccess(row, res, file) {
+      if (res.success) {
+        const tmp = row.preview_pic
+        row.preview_pic = null
+        row.preview_pic = tmp
+        this.$notify.uploadOk()
+      } else {
+        this.$notify.uploadError()
+      }
     }
-
   }
 }
 </script>
@@ -367,14 +417,6 @@ export default {
   #img-preview{
     width: 100%;
     height: 100%;
-  }
-  .center{
-    width: 74px;
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
-    cursor: pointer;
   }
   .to {
     overflow: hidden;

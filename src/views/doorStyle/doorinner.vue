@@ -13,6 +13,7 @@
       :multi-choices="[true,true,false]"
       @getResult="getResult2"
     />
+    <upload-excel action="/doorinner/import" :on-success="onExcelSuccess" :visible="false" />
     <el-table
       v-loading="listLoading"
       :data="doorstyleList"
@@ -93,9 +94,10 @@ import { editDelete, confirmEdit } from '@/utils/edit'
 import MultiMatList from '@/components/MultiMatList'
 import BrandColumn from '@/components/BrandColumn'
 import SkuStatusColumn from '@/components/SkuStatusColumn'
+import UploadExcel from '@/components/UploadExcel'
 
 export default {
-  components: { MultiFilter, MultiMatList, BrandColumn, SkuStatusColumn },
+  components: { MultiFilter, MultiMatList, BrandColumn, SkuStatusColumn, UploadExcel },
   filters: {
     DoorType: function(value) {
       switch (value) {
@@ -235,10 +237,13 @@ export default {
             this.listLoading = false
           })
       })
+    },
+    onAddMat(row) {
+      //
+    },
+    onExcelSuccess({ results, header }) {
+      this.fetchData()
     }
-  },
-  onAddMat(row) {
-    //
   }
 }
 </script>

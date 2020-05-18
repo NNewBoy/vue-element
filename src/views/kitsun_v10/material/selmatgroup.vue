@@ -31,30 +31,35 @@
       </span>
     </div>
     <div class="dir-container">
-      <span class="title-item">排序</span>
-      <el-button-group class="button-group-margin">
-        <el-button
-          :class="{'active': orderField==='name' }"
-          size="mini"
-          type="primary"
-          plain
-          @click="onOrder('name', true)"
-        >名称<i class="el-icon-caret-bottom el-icon--right" /></el-button>
-        <el-button
-          :class="{'active': orderField==='avg_color' }"
-          size="mini"
-          type="primary"
-          plain
-          @click="onOrder('avg_color', false)"
-        >颜色<i class="el-icon-caret-bottom el-icon--right" /></el-button>
-      </el-button-group>
+      <el-col :span="5">
+        <span>排序</span>
+        <el-button-group class="button-group-margin">
+          <el-button
+            :class="{'active': orderField==='name' }"
+            size="mini"
+            type="primary"
+            plain
+            @click="onOrder('name', true)"
+          >名称<i class="el-icon-caret-bottom el-icon--right" /></el-button>
+          <el-button
+            :class="{'active': orderField==='avg_color' }"
+            size="mini"
+            type="primary"
+            plain
+            @click="onOrder('avg_color', false)"
+          >颜色<i class="el-icon-caret-bottom el-icon--right" /></el-button>
+        </el-button-group>
+      </el-col>
+      <el-col :span="5">
+        <brand-select @selectBrand="selectBrand" />
+      </el-col>
     </div>
     <div class="list-border">
       <div class="list-container">
         <div v-for="(o,index) in mats.filter(obj=>{return obj.name.toLowerCase().indexOf(matFilter.toLowerCase())>=0})" :key="index" class="list-item">
           <el-card :class="index===selectedMat ? 'el-card-selected' : ''" @click.native="onSelectMat(index)">
             <div style="text-align: center; margin:0 auto;position: relative;">
-              <el-image :src="getPicUrl(o.pic_file_name)" style="width: 100%; height: 100%;" :title="matInfo(o)" />
+              <el-image :src="getPicUrl(o.pic_file_name)" style="width: 100%; height: 100%;" :title="matInfo(o)" :lazy="true" />
               <span align="center">{{ o.name }}</span>
             </div>
           </el-card>
@@ -74,10 +79,12 @@
 </template>
 
 <script>
-import { getCatalogByObjName, getCatalogByProductPros, getCatalogByLineType, getMat } from '@/api/material'
+import { getCatalogByObjName, getCatalogByProductPros, getCatalogByLineType, getMatByConstraints } from '@/api/material'
 import { getThumbnailUrl } from '@/utils/pic'
+import BrandSelect from '@/components/BrandSelect'
 
 export default {
+  components: { BrandSelect },
   data() {
     return {
       datas: [{ name: '', selected: false, dir2: [] }],
@@ -85,6 +92,7 @@ export default {
       loadingMat: false,
       mats: [],
       matFilter: '',
+      matConstrain: [],
       selectedMat: -1,
       orderField: 'name'
     }
@@ -118,6 +126,7 @@ export default {
   methods: {
     async fetchData() {
       this.$route.params.type = '1' // 模拟
+      this.$route.params.params = '1,2' // 模拟
 
       this.datas = []
       this.selectedDir1 = -1
@@ -127,12 +136,15 @@ export default {
       let dataret = []
       if (paramType === '1') {
         // objname
-        const { data } = await getCatalogByObjName(params)
+        const objProps = params.split(',')
+        const { data } = await getCatalogByObjName(...objProps)
         dataret = data
       } else if (paramType === '2') {
         // product dir
-        const proProps = params.split(',')
-        const { data } = await getCatalogByProductPros(...proProps)
+        const brand = params.substring(0, params.indexOf(','))
+        const products = params.substring(brand.length + 1).split('^')
+        const pros = JSON.stringify(products)
+        const { data } = await getCatalogByProductPros(brand, pros)
         dataret = data
       } else if (paramType === '3') {
         // line style
@@ -171,17 +183,19 @@ export default {
       this.datas[this.selectedDir1].dir2.forEach((element, i) => {
         element.selected = index === i
       })
+      this.matConstrain = this.datas[this.selectedDir1].dir2[index].items
       this.fetchMaterial()
     },
     fetchMaterial() {
       if (this.selectedDir1 < 0) {
         return
       }
-
       this.loadingMat = true
       const dir1 = this.datas[this.selectedDir1]
       const dir2 = dir1.dir2.find(element => element.selected)
-      getMat(dir1.name, dir2.name).then((res) => {
+      const paramType = this.$route.params.type
+      const constraints = this.$route.params.params
+      getMatByConstraints(dir1.name, dir2.name, paramType, constraints).then((res) => {
         this.mats = res.data
         this.loadingMat = false
       }).catch(() => {
@@ -197,8 +211,12 @@ export default {
     onSelectMat(index) {
       this.selectedMat = index
     },
+    onDblClick(index) {
+      this.selectedMat = index
+      this.onSelect()
+    },
     onCancel() {
-
+      window.CloseDialog()
     },
     onSelect() {
       if (this.selectedMat > -1 && this.mats.length > this.selectedMat) {
@@ -223,6 +241,12 @@ export default {
     },
     onDefaultOrder() {
 
+    },
+    selectBrand(brand) {
+      const params = this.$route.params.params.split(',')
+      params[0] = brand
+      this.$route.params.params = params.join(',')
+      this.fetchMaterial()
     }
   }
 }

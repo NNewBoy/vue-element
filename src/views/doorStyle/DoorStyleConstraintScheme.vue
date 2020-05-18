@@ -33,6 +33,7 @@
     >
       保存
     </el-button>
+    <br><br>
     <el-table
       ref="elTable1"
       v-loading="listLoading"
@@ -75,6 +76,15 @@
               @click="onPasteDoorStyle(row)"
             >
               粘贴
+            </el-button>
+            <el-button
+              type="primary"
+              size="mini"
+              icon="el-icon-delete"
+              style="margin-top:0px;"
+              @click="onClearDoorStyle(row)"
+            >
+              清空
             </el-button>
             <el-table
               ref="elTable2"
@@ -126,6 +136,11 @@
         <template slot-scope="{row}">
           <el-input v-model="row.comment" size="small" placeholder="请输入内容" @change="onEdit(row)" />
           <span>{{ row.comment }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="反向约束" width="80" align="center">
+        <template slot-scope="{row}">
+          <el-switch v-model="row.mode" :active-value="1" :inactive-value="0" />
         </template>
       </el-table-column>
       <el-table-column label="门板数量" width="120" align="center">
@@ -271,7 +286,7 @@ export default {
             .then(res => {
               row.editStatus = 0
               this.$notify.addOk()
-              row.id = res.data.id
+              row.id = res.data.id[0]
               this.listLoading = false
             })
             .catch(() => {
@@ -327,6 +342,10 @@ export default {
           row.editStatus = 1
         }
       }
+    },
+    onClearDoorStyle(row) {
+      row.door_styles = []
+      row.editStatus = 1
     },
     onClickTb(row, column, cell, event) {
       this.$nextTick(() => {
