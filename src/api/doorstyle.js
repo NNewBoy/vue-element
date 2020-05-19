@@ -89,6 +89,8 @@ export function getDoorShapePic(doorseries, doorprice) {
     url: '/doorshape/pic',
     method: 'get',
     params: { doorseries, doorprice }
+  }).then((data) => {
+    return data.data
   })
 }
 
@@ -175,5 +177,26 @@ export function delDoorStyleScheme(id) {
     url: '/dsscheme/delete',
     method: 'post',
     params: { id }
+  })
+}
+
+// ByScheme
+export function getCatalogByScheme() {
+  return request({
+    url: '/doorstyle/BySchemeCatalog',
+    method: 'get',
+    params: { token: getToken() }
+  }).then((data) => {
+    return data.data
+  })
+}
+
+export function getColorListByScheme(doorstyle) {
+  return request({
+    url: '/doorstyle/BySchemeList',
+    method: 'get',
+    params: { token: getToken(), doorstyle }
+  }).then((data) => {
+    return data.data
   })
 }

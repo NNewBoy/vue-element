@@ -42,6 +42,7 @@
           <el-button v-show="openBtn" type="primary" size="small" @click="addProperty">添加</el-button>
           <el-button v-show="openBtn" type="primary" size="small" @click="copyProperty">复制</el-button>
           <el-button v-show="openBtn" type="primary" size="small" @click="pasteProperty">粘贴</el-button>
+          <el-button v-show="openBtn" type="primary" size="small" @click="pasteAndAddProperty">添加并粘贴</el-button>
           <el-button type="primary" size="small" :icon="openBtn?'el-icon-arrow-left':'el-icon-arrow-right'" @click="openBtn = !openBtn" />
         </el-button-group>
       </div>
@@ -153,7 +154,7 @@
 </template>
 
 <script>
-import { getCatalog, getMat, updateMat, deleteMat, addMat } from '@/api/material'
+import { getCatalog, getMat, updateMat, deleteMat } from '@/api/material'
 import { getThumbnailUrl, checkPicBeforeUpload } from '@/utils/pic'
 import { getToken } from '@/utils/auth'
 import { editDelete } from '@/utils/edit'
@@ -381,44 +382,71 @@ export default {
     },
     addProperty() {
       const tempData = { id: null, use_group: this.nowCatalog[0], texture_group: this.nowCatalog[1], name: '', pic_file_name: '', status: 0, spzp: 1, wayes: 1, homkoo: 1, editStatus: 1 }
-      this.$confirm('确认添加吗?', '警告', {
-        confirmButtonText: '确认',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }).then(async() => {
-        this.listLoading = true
-        addMat(tempData)
-          .then(response => {
-            this.listLoading = false
-            tempData.id = response
-            this.mats.unshift(tempData)
-            this.$notify.addOk()
-          })
-          .catch(() => {
-            this.listLoading = false
-            this.$notify({
-              title: 'Error',
-              message: '添加失败',
-              type: 'error',
-              duration: 2000
-            })
-          })
-      }).catch(() => {})
+      this.mats.unshift(tempData)
     },
     copyProperty() {
       if (this.selection.length > 0) {
-        copyToClipboard('material_index', this.selection)
+        const temp = JSON.parse(JSON.stringify(this.selection))
+        temp.forEach(el => {
+          el.id = null
+        })
+        copyToClipboard('material_index', temp)
       } else {
         this.$confirm('未选择材质', '警告', {
           showCancelButton: false,
           confirmButtonText: '确认',
           type: 'warning'
-        }).catch(() => {
-
-        })
+        }).catch(() => {})
       }
     },
     pasteProperty() {
+      if (this.selection.length > 0) {
+        const data = pasteFromClipboard('material_index')
+        if (data) {
+          const length = data.length
+          const selectedLength = this.selection.length
+          if (length !== selectedLength) {
+            this.$confirm(
+              `已复制${length}条，可粘贴${selectedLength}条，是否只粘贴前${length >= selectedLength ? selectedLength : length}条`,
+              '复制数量与粘贴数量不一致', {
+                confirmButtonText: '确认',
+                cancelButtonText: '取消',
+                type: 'warning'
+              }).then(() => {
+              if (length > selectedLength) { // 选择多于已复制，粘贴所有已复制
+                for (const index in this.selection) {
+                  for (const item in data[index]) {
+                    if (item !== 'id') { this.selection[index][item] = data[index][item] }
+                  }
+                  this.selection[index].editStatus = 1
+                }
+              } else if (length < selectedLength) { // 选择数x少于已复制数y，粘贴数据为已复制数据的前x条
+                for (const index in data) {
+                  for (const item in data[index]) {
+                    if (item !== 'id') { this.selection[index][item] = data[index][item] }
+                  }
+                  this.selection[index].editStatus = 1
+                }
+              }
+            }).catch(() => {})
+          } else {
+            for (const index in data) {
+              for (const item in data[index]) {
+                if (item !== 'id') { this.selection[index][item] = data[index][item] }
+              }
+              this.selection[index].editStatus = 1
+            }
+          }
+        }
+      } else {
+        this.$confirm('未选择材质', '警告', {
+          showCancelButton: false,
+          confirmButtonText: '确认',
+          type: 'warning'
+        }).catch(() => {})
+      }
+    },
+    pasteAndAddProperty() {
       const data = pasteFromClipboard('material_index')
       if (data) {
         data.map(item => {

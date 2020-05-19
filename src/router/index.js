@@ -142,6 +142,12 @@ export const constantRoutes = [
         meta: { title: 'DoorStyleConstraintScheme', icon: 'table', noCache: true }
       },
       {
+        path: 'select',
+        component: () => import('@/views/kitsun_v10/doorstyle/select'),
+        name: 'select',
+        meta: { title: 'select', icon: 'table', noCache: true }
+      },
+      {
         path: 'doorStyle_example',
         component: () => import('@/views/doorStyle_example/index'),
         name: 'example',

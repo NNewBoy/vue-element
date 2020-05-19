@@ -168,7 +168,7 @@ export default {
       listLoading: false,
       datas: [],
       total: 0,
-      listQuery: { code: '', page: 1, per_page: 20 },
+      listQuery: { code: '', page: 1, per_page: 20 }, /** , code: undefined */
       checkBaseInfo: true,
       checkParamG1: true,
       checkParamG2: false,
