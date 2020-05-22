@@ -15,7 +15,7 @@
  * @function selectBrands 返回对象{check:array,all:boolean},check为所选品牌key的数组，all为是否已全选
  */
 export default {
-  name: 'BrandsCheckbox',
+  name: 'BrandsFilter',
   data() {
     return {
       brandCheckboxVal: []
@@ -71,7 +71,7 @@ export default {
   position: relative;
   overflow: hidden;
   padding-left: 10px;
-  padding-right: 160px;
+  padding-right: 10px;
   margin-left: 110px;
 
   &.no-permission{

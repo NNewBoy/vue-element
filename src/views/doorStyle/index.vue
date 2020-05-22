@@ -13,8 +13,14 @@
       :multi-choices="[false,false,false]"
       @getResult="getResult2"
     />
-    <StatusFilter @selectStatus="selectStatus" />
-    <BrandsFilter @selectBrands="selectBrands" />
+    <el-row>
+      <el-col :span="10">
+        <StatusFilter @selectStatus="selectStatus" />
+      </el-col>
+      <el-col :span="10">
+        <BrandsFilter @selectBrands="selectBrands" />
+      </el-col>
+    </el-row>
     <br>
     <div class="menu-list">
       <div class="menu-item">

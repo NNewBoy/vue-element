@@ -121,9 +121,11 @@
         </template>
       </el-table-column>
       <el-table-column align="center" label="ID" width="80">
-        <template slot-scope="scope">
+        <template slot-scope="{row}">
           <!-- {{ scope.$index + 1 }} -->
-          {{ scope.row.id }}
+          <router-link :to="`/kitsun_v10/doorstyle?scheme=${row.id}`" target="_blank">
+            {{ row.id }}
+          </router-link>
         </template>
       </el-table-column>
       <el-table-column label="名称" width="300">

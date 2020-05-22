@@ -31,7 +31,7 @@
       </span>
     </div>
     <div class="dir-container">
-      <el-col :span="5">
+      <el-col :span="6">
         <span>排序</span>
         <el-button-group class="button-group-margin">
           <el-button
@@ -50,7 +50,7 @@
           >颜色<i class="el-icon-caret-bottom el-icon--right" /></el-button>
         </el-button-group>
       </el-col>
-      <el-col :span="5">
+      <el-col :span="6">
         <brand-select @selectBrand="selectBrand" />
       </el-col>
     </div>

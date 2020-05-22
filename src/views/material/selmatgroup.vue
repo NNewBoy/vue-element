@@ -19,7 +19,7 @@
             <input v-model="row.obj_name" autofocus @change="onInputValChange(row)">
           </span>
           <span v-else>
-            <router-link :to="`/kitsun_v10/kitsun_v10/material/selobj/1/spzp,${row.obj_name}`">
+            <router-link :to="`/kitsun_v10/material/selobj/1/spzp,${row.obj_name}`">
               {{ row.obj_name }}
             </router-link>
           </span>

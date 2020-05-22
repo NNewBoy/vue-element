@@ -1,27 +1,22 @@
 <template>
   <div class="app-container">
     <div class="dir-container">
-      <MultiFilter
+      <MemoryFilter
         :datas="catalogs"
         :filter-names="['门板系列','门板价格']"
         :multi-choices="[false,false]"
         @getResult="getResult"
       />
-      <div class="type-filter-name">
-        门板造型
-      </div>
-      <div class="type-filter-container">
-        <div align="left" class="scroll-body">
-          <Carousel
-            :data="carouselData"
-            :height="150"
-            :autoplay="false"
-            indicator-position="outside"
-            arrow="always"
-            @returnSelection="returnSelection"
-          />
-        </div>
-      </div>
+      <CarouselFilter
+        filter-name="门板造型"
+        :carousel-data="carouselData"
+        :height="150"
+        :autoplay="false"
+        :selected="doorShape"
+        indicator-position="outside"
+        arrow="always"
+        @returnSelection="returnSelection"
+      />
       <div v-loading="listLoading" class="list-border">
         <div class="list-container">
           <div v-for="(o,index) in doorStyleFilter" :key="index" class="list-item">
@@ -40,7 +35,9 @@
         <el-input v-model="search" clearable placeholder="查找" />
       </el-col>
       <el-col :span="6">
-        <brand-select @selectBrand="selectBrand" />
+        <div class="footer-brand">
+          <brand-select @selectBrand="selectBrand" />
+        </div>
       </el-col>
       <el-col :span="12" align="right">
         <el-button type="primary" @click="onCancel">取消</el-button>
@@ -52,14 +49,15 @@
 
 <script>
 import { getCatalog, getColorList, getDoorShapePic, getCatalogByScheme, getColorListByScheme } from '@/api/doorstyle'
-import MultiFilter from '@/components/MultiFilter'
+import MemoryFilter from '@/components/MemoryFilter'
 import { getThumbnailUrl } from '@/utils/pic'
 import toPinyin from '@/utils/chineseToPinyin'
 import BrandSelect from '@/components/BrandSelect'
-import Carousel from '@/components/Carousel'
+import CarouselFilter from '@/components/CarouselFilter'
+import { mapGetters } from 'vuex'
 
 export default {
-  components: { MultiFilter, BrandSelect, Carousel },
+  components: { MemoryFilter, BrandSelect, CarouselFilter },
   data() {
     return {
       listLoading: false,
@@ -72,7 +70,8 @@ export default {
       doorShapePicList: [],
       doorShapePicListCache: [], // doorshape示意图
       doorShape: '', // 当前选中的门板造型
-      doorStyleSchemeId: [''],
+      doorShapeHistory: {}, // 选中的门板造型历史数据
+      doorStyleSchemeId: [],
       brand: '',
       carouselData: [] // 轮播翻页组件数据
     }
@@ -90,7 +89,10 @@ export default {
           toPinyin.getFirstLetter(txt).indexOf(st) >= 0 ||
           toPinyin.chineseToPinYin(txt).toUpperCase().indexOf(st) >= 0
       })
-    }
+    },
+    ...mapGetters([
+      'brands'
+    ])
   },
   watch: {
     doorShape(val) {
@@ -103,12 +105,12 @@ export default {
       this.doorStyleSchemeId.push(schemeId)
     }
     const brand = this.$route.query.brand
-    this.brand = brand
+    this.brand = brand || this.brands[0].key
     this.fetchData()
   },
   methods: {
     async fetchData() {
-      const { data } = await (this.doorStyleSchemeId.length > 0 ? getCatalogByScheme(this.doorStyleSchemeId) : getCatalog())
+      const { data } = await (this.doorStyleSchemeId.length > 0 ? getCatalogByScheme(this.doorStyleSchemeId, this.brand) : getCatalog())
       const calCatalog = (function() {
         return function fun(dirs) {
           const catalogs = []
@@ -145,11 +147,24 @@ export default {
       if (arr.length > 0) {
         this.selectDir = arr[0]
 
+        const getCarouseData = () => {
+          this.carouselData = []
+          for (const item of this.doorShapeList) {
+            this.carouselData.push({ text: item.name, src: this.getDoorShapePicUrl(this.doorShapePicList[item.name]) })
+          }
+          const index = JSON.stringify([this.selectDir.slice(0, 2)])
+          if (!this.doorShapeHistory[index]) {
+            this.doorShapeHistory[index] = this.doorShapeList[0].name
+          }
+          this.doorShape = this.doorShapeHistory[index]
+        }
+
         this.doorShapeList = this.catalogs[this.selectDir[0].index].children[this.selectDir[1].index].children
-        this.doorShape = this.doorShapeList[0].name
+
         const str = this.selectDir[0].name + '\\' + this.selectDir[1].name
         if (Object.keys(this.doorShapePicListCache).indexOf(str) >= 0) {
           this.doorShapePicList = this.doorShapePicListCache[str]
+          getCarouseData()
         } else {
           getDoorShapePic(this.selectDir[0].name, this.selectDir[1].name).then((res) => {
             this.doorShapePicList = []
@@ -158,15 +173,9 @@ export default {
             })
             this.doorShapePicListCache[str] = this.doorShapePicList
             // console.log(this.doorShapePicList)
-          })
-        }
 
-        this.carouselData = []
-        for (const item of this.doorShapeList) {
-          const temp = {}
-          temp.text = item.name
-          temp.src = this.getDoorShapePicUrl(this.doorShapePicList[item.name])
-          this.carouselData.push(temp)
+            getCarouseData()
+          })
         }
       }
       // else {
@@ -175,6 +184,7 @@ export default {
     },
     returnSelection(doorShape) {
       this.doorShape = doorShape
+      this.doorShapeHistory[JSON.stringify([this.selectDir.slice(0, 2)])] = doorShape
       // this.fetchDoorColor()
     },
     async getDoorShapePic() {
@@ -205,6 +215,7 @@ export default {
     },
     selectBrand(brand) {
       this.brand = brand
+      this.fetchData() // 目录都有可能不一样，要重新获取
     }
   }
 }
@@ -294,24 +305,11 @@ export default {
   height: 60px;
   display: block;
 }
-.type-filter-container{
-  position: relative;
-  overflow: hidden;
-  padding-left: 10px;
-  padding-right: 10px;
-  margin-left: 110px;
-}
-.type-filter-name{
-  float: left;
-  padding-left: 10px;
-  padding-top: 16px;
-  max-width: 110px;
-}
-.scroll-body{
-  overflow:auto;
-  margin: 6px 0;
-  border-radius: 4px;
-  border: 1px solid #DDD;
+.footer-brand{
+  height: 40px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 </style>
 

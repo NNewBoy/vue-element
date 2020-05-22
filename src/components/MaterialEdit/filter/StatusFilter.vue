@@ -12,7 +12,7 @@
  * @function selectStatus 返回对象{check:array,all:boolean},check为所选状态value的数组，all为是否已全选
  */
 export default {
-  name: 'StatusCheckbox',
+  name: 'StatusFilter',
   data() {
     return {
       brandCheckboxVal: [],
@@ -68,7 +68,7 @@ export default {
   position: relative;
   overflow: hidden;
   padding-left: 10px;
-  padding-right: 160px;
+  padding-right: 10px;
   margin-left: 110px;
 
   &.no-permission{
