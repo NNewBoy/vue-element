@@ -21,6 +21,17 @@ export function getColorList(doorstyle) {
   })
 }
 
+export function getColorListByScheme(schemeid, doorstyle, brand) {
+  return request({
+    // url: '/doorstyle/listcon',
+    url: '/doorstyle/BySchemeList',
+    method: 'get',
+    params: { schemeid, doorstyle, brand }
+  }).then((data) => {
+    return data.data
+  })
+}
+
 export function updateDoorStyle(data) {
   return request({
     url: '/doorstyle/update',
@@ -186,16 +197,6 @@ export function getCatalogByScheme() {
     url: '/doorstyle/BySchemeCatalog',
     method: 'get',
     params: { token: getToken() }
-  }).then((data) => {
-    return data.data
-  })
-}
-
-export function getColorListByScheme(doorstyle) {
-  return request({
-    url: '/doorstyle/BySchemeList',
-    method: 'get',
-    params: { token: getToken(), doorstyle }
   }).then((data) => {
     return data.data
   })

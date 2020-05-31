@@ -123,7 +123,7 @@
       <el-table-column align="center" label="ID" width="80">
         <template slot-scope="{row}">
           <!-- {{ scope.$index + 1 }} -->
-          <router-link :to="`/kitsun_v10/doorstyle?scheme=${row.id}`" target="_blank">
+          <router-link :to="`/kitsun/doorstyle?scheme=${row.id}`" target="_blank">
             {{ row.id }}
           </router-link>
         </template>

@@ -29,7 +29,7 @@
  */
 import filterDiv from '@/components/TypeFilter'
 export default {
-  name: 'MultiFilter',
+  name: 'MemoryFilter',
   components: { filterDiv },
   props: {
     datas: {

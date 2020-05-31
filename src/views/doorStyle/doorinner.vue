@@ -47,7 +47,12 @@
           {{ row.inner_zone_pic }}
         </template>
       </el-table-column>
-      <el-table-column align="center" label="材料" width="320">
+      <el-table-column align="center" label="默认材料" width="100">
+        <template slot-scope="{row}">
+          <show-material :data="row.default_material" :on-select="onSelectDefaultMat.bind(null, row)" />
+        </template>
+      </el-table-column>
+      <el-table-column align="center" label="可选材料" width="320">
         <template slot-scope="{row}">
           <multi-mat-list :data="row.inner_mat" />
         </template>
@@ -95,9 +100,10 @@ import MultiMatList from '@/components/MultiMatList'
 import BrandColumn from '@/components/BrandColumn'
 import SkuStatusColumn from '@/components/SkuStatusColumn'
 import UploadExcel from '@/components/UploadExcel'
+import ShowMaterial from './components/ShowMaterial'
 
 export default {
-  components: { MultiFilter, MultiMatList, BrandColumn, SkuStatusColumn, UploadExcel },
+  components: { MultiFilter, MultiMatList, BrandColumn, SkuStatusColumn, UploadExcel, ShowMaterial },
   filters: {
     DoorType: function(value) {
       switch (value) {
@@ -243,6 +249,10 @@ export default {
     },
     onExcelSuccess({ results, header }) {
       this.fetchData()
+    },
+    onSelectDefaultMat(row, mat) {
+      row.default_mat_id = mat.id
+      row.default_material = mat
     }
   }
 }

@@ -1,0 +1,407 @@
+export const ProdutTypeOption = [{
+  name: '无',
+  key: -1
+}, {
+  name: '地柜',
+  key: 0
+}, {
+  name: '吊柜',
+  key: 1
+}, {
+  name: '高柜',
+  key: 2
+}, {
+  name: '洗衣机',
+  key: 3
+}, {
+  name: '冰箱',
+  key: 4
+}, {
+  name: '油烟机',
+  key: 5
+}, {
+  name: '装饰柜',
+  key: 6
+}, {
+  name: '星盆',
+  key: 7
+}, {
+  name: '炉灶',
+  key: 8
+}, {
+  name: '拉手',
+  key: 9
+}, {
+  name: '其它',
+  key: 10
+}, {
+  name: '半高柜',
+  key: 11
+}, {
+  name: '烤箱(烤箱定位)',
+  key: 12
+}, {
+  name: '微波炉(内置电器)',
+  key: 13
+}, {
+  name: '消毒柜',
+  key: 14
+}, {
+  name: '洗碗机',
+  key: 15
+}, {
+  name: '铝脚',
+  key: 16
+}, {
+  name: '水位设施',
+  key: 17
+}, {
+  name: '电位设施',
+  key: 18
+}, {
+  name: '气位设施',
+  key: 19
+}, {
+  name: '拉篮',
+  key: 20
+}, {
+  name: '水龙头',
+  key: 21
+}, {
+  name: '独立浴缸',
+  key: 22
+}, {
+  name: '地台浴缸',
+  key: 23
+}, {
+  name: '高淋浴房',
+  key: 24
+}, {
+  name: '挂盆',
+  key: 25
+}, {
+  name: '柱盆',
+  key: 26
+}, {
+  name: '马桶',
+  key: 27
+}, {
+  name: '热水器',
+  key: 28
+}, {
+  name: '衣柜功能件',
+  key: 29
+}, {
+  name: '底架',
+  key: 30
+}, {
+  name: '房门',
+  key: 31
+}, {
+  name: '窗',
+  key: 32
+}, {
+  name: '电饭煲',
+  key: 33
+}, {
+  name: '米箱',
+  key: 34
+}, {
+  name: '垃圾桶',
+  key: 35
+}, {
+  name: '集成炉灶(环保灶)',
+  key: 36
+}, {
+  name: '集成水槽',
+  key: 37
+}, {
+  name: '博古架',
+  key: 38
+}, {
+  name: '酒格',
+  key: 39
+}]
+
+export const ElvaModeOption = [
+  {
+    name: '在地面',
+    key: 0
+  }, {
+    name: '在踢脚板',
+    key: 1
+  }, {
+    name: '位于吊柜离地高度',
+    key: 2
+  }, {
+    name: '在台面上',
+    key: 3
+  }, {
+    name: '在台面上(选柜定位)',
+    key: 4
+  }, {
+    name: '在台面中(选柜定位)',
+    key: 5
+  }, {
+    name: '在台面下(选柜定位)',
+    key: 6
+  }, {
+    name: '在选择的物体上',
+    key: 7
+  }, {
+    name: '在选择的物体下',
+    key: 8
+  }, {
+    name: '在特定的高度上',
+    key: 9
+  }, {
+    name: '在特定高(选柜定位)',
+    key: 10
+  }, {
+    name: '在特定的高度下',
+    key: 11
+  }, {
+    name: '内置电器	',
+    key: 12
+  }, {
+    name: '自由定位(表面吸附)',
+    key: 13
+  }, {
+    name: '背板定位',
+    key: 14
+  }, {
+    name: '电器自动适配大小定位',
+    key: 15
+  }, {
+    name: '在选择的层板上(或下)',
+    key: 16
+  }, {
+    name: '柜层板定位',
+    key: 17
+  }, {
+    name: '墙面定位(底部贴墙)',
+    key: 18
+  }, {
+    name: '地面定位',
+    key: 19
+  }, {
+    name: '拉篮定位',
+    key: 20
+  }, {
+    name: 'DoorBell墙挂式定位',
+    key: 21
+  }, {
+    name: ' 随目标定位位置',
+    key: 22
+  }, {
+    name: '油烟机定位',
+    key: 23
+  }, {
+    name: '在特定高(选2立柱定位)',
+    key: 24
+  }, {
+    name: '在特定高(选3立柱定位)',
+    key: 25
+  }, {
+    name: '选4柱定位',
+    key: 26
+  }, {
+    name: 'Rayes墙挂式定位',
+    key: 27
+  }, {
+    name: '多宝格定位',
+    key: 28
+  }, {
+    name: '罗马柱定位',
+    key: 29
+  }, {
+    name: '立隔板定位',
+    key: 30
+  }, {
+    name: '层板下的横向挂衣杆定位',
+    key: 31
+  }, {
+    name: '层板下的纵向挂衣杆定位',
+    key: 32
+  }, {
+    name: '左装饰条定位',
+    key: 33
+  }, {
+    name: '右装饰条定位',
+    key: 34
+  }, {
+    name: '中装饰条定位',
+    key: 35
+  }, {
+    name: '趟门框定位',
+    key: 36
+  }, {
+    name: '门上定位',
+    key: 37
+  }, {
+    name: '柜两侧定位',
+    key: 38
+  }, {
+    name: 'order床栏杆安装',
+    key: 39
+  }, {
+    name: 'order床安装',
+    key: 40
+  }, {
+    name: 'order床下书桌安装',
+    key: 41
+  }, {
+    name: '油烟机烟板定位',
+    key: 42
+  }, {
+    name: '大衣柜外框定位',
+    key: 43
+  }, {
+    name: '备用',
+    key: 44
+  }, {
+    name: '自由定位(以基点为鼠标点)',
+    key: 45
+  }, {
+    name: '前缘饰板定位',
+    key: 46
+  }, {
+    name: '床身定位',
+    key: 47
+  }, {
+    name: '墙面定位(背后贴墙)',
+    key: 48
+  }, {
+    name: '眉板定位',
+    key: 49
+  }, {
+    name: 'centro床安装',
+    key: 50
+  }, {
+    name: '多维尚书门板、抽屉定位方式',
+    key: 51
+  }, {
+    name: '水电位定位',
+    key: 52
+  }, {
+    name: '转角罗马柱定位',
+    key: 53
+  }, {
+    name: '柜身前定位',
+    key: 54
+  }, {
+    name: '灯箱底板定位',
+    key: 55
+  }, {
+    name: '西门子logo定位',
+    key: 56
+  }, {
+    name: '苏黎世左装饰条定位',
+    key: 57
+  }, {
+    name: '苏黎世右装饰条定位',
+    key: 58
+  }, {
+    name: '苏黎世中装饰条定位',
+    key: 59
+  }, {
+    name: '门板/抽屉定位',
+    key: 60
+  }, {
+    name: '榻榻米门板',
+    key: 61
+  }, {
+    name: '产品前面定位',
+    key: 62
+  }, {
+    name: '产品后面定位',
+    key: 63
+  }, {
+    name: '产品左面定位',
+    key: 64
+  }, {
+    name: '产品右面定位',
+    key: 65
+  }, {
+    name: '产品顶面定位',
+    key: 66
+  }, {
+    name: '顶柜定位',
+    key: 67
+  }, {
+    name: '飘窗顶柜定位',
+    key: 68
+  }, {
+    name: '选板定位',
+    key: 69
+  }, {
+    name: '套格定位',
+    key: 70
+  }, {
+    name: '门板定位',
+    key: 71
+  }, {
+    name: '形门板定位',
+    key: 72
+  }
+]
+
+export const UnitParamTypeOption = [
+  {
+    name: '普通单元',
+    key: 0
+  }, {
+    name: '结构固定单元',
+    key: 1
+  }, {
+    name: '自定义结构单元',
+    key: 2
+  }
+]
+
+export const ProductDirectionOption = [
+  {
+    name: '任意',
+    key: 0
+  }, {
+    name: '左开',
+    key: 1
+  }, {
+    name: '右开',
+    key: 2
+  }
+]
+
+export const DoorOpenDirOption = [
+  {
+    name: '无',
+    key: -1
+  },
+  {
+    name: '左开',
+    key: 0
+  }, {
+    name: '右开',
+    key: 1
+  }, {
+    name: '上翻',
+    key: 2
+  }, {
+    name: '下翻',
+    key: 3
+  }, {
+    name: '滑动',
+    key: 4
+  }
+]
+
+export const TrueFalseOption = [
+  {
+    name: '是',
+    key: 1
+  },
+  {
+    name: '否',
+    key: 0
+  }
+]

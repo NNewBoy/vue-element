@@ -10,6 +10,7 @@ import image from './image'
 import scrollList from './scrollList'
 import material from './material'
 import doorstyle from './doorstyle'
+import product from './product'
 
 const mocks = [
   ...user,
@@ -20,7 +21,8 @@ const mocks = [
   ...image,
   ...scrollList,
   ...material,
-  ...doorstyle
+  ...doorstyle,
+  ...product
 ]
 
 // for front mock

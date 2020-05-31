@@ -208,39 +208,41 @@ export default {
         this.selectedType = []
         this.searchType = []
         this.searchText = ''
-        const selectedIndex = this.data.findIndex(el => el === this.selected)
-        if (this.data.length - 1 < selectedIndex || selectedIndex === -1) {
-          this.$set(this.selectedType, 0, true)
-        } else {
-          this.$set(this.selectedType, selectedIndex, true)
-        }
-        this.$nextTick(() => {
-          this.$refs.selectContent.scrollTop = 0
-          for (const i in this.selectedType) {
-            if (this.selectedType[i]) {
-              const div = this.$refs.selectContentRef.querySelector('#item' + i)
-              this.$refs.selectContent.scrollTop = div.offsetTop - div.clientHeight
-              break
-            }
+        if (val.length > 0) {
+          const selectedIndex = this.data.findIndex(el => el === this.selected)
+          if (this.data.length - 1 < selectedIndex || selectedIndex === -1) {
+            this.$set(this.selectedType, 0, true)
+          } else {
+            this.$set(this.selectedType, selectedIndex, true)
           }
-          if (this.$refs.selectContentRef.offsetHeight > 130) {
-            this.initCondition = true
-          }
-          if (this.data.length > 0) {
-            this.getType() // 初始化默认选第一项
-            for (const item in this.data) {
-              if (this.data[item]) {
-                const spell = toPinyin.chineseToPinYin(this.data[item])
-                const UCspell = spell.toLowerCase()
-                const firstLetter = toPinyin.getFirstLetter(this.data[item])
-                const UCfirstLetter = toPinyin.getFirstLetter(this.data[item]).toLowerCase()
-                this.pinyin[item] = firstLetter + '-' + spell + UCfirstLetter + '-' + UCspell
-              } else {
-                this.pinyin[item] = ''
+          this.$nextTick(() => {
+            this.$refs.selectContent.scrollTop = 0
+            for (const i in this.selectedType) {
+              if (this.selectedType[i]) {
+                const div = this.$refs.selectContentRef.querySelector('#item' + i)
+                this.$refs.selectContent.scrollTop = div.offsetTop - div.clientHeight
+                break
               }
             }
-          }
-        })
+            if (this.$refs.selectContentRef.offsetHeight > 130) {
+              this.initCondition = true
+            }
+            if (this.data.length > 0) {
+              this.getType() // 初始化默认选第一项
+              for (const item in this.data) {
+                if (this.data[item]) {
+                  const spell = toPinyin.chineseToPinYin(this.data[item])
+                  const UCspell = spell.toLowerCase()
+                  const firstLetter = toPinyin.getFirstLetter(this.data[item])
+                  const UCfirstLetter = toPinyin.getFirstLetter(this.data[item]).toLowerCase()
+                  this.pinyin[item] = firstLetter + '-' + spell + UCfirstLetter + '-' + UCspell
+                } else {
+                  this.pinyin[item] = ''
+                }
+              }
+            }
+          })
+        }
       }
     },
     searchText(val) {

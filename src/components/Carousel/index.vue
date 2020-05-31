@@ -107,7 +107,7 @@ export default {
                 const amount = Math.floor((constationWidth - 120) / this.perWidth)
                 this.listData = []
                 val.forEach((item, index) => {
-                  const page = Math.floor(index / amount) // 计算该元素为第几个素组内
+                  const page = Math.floor(index / amount) // 计算该元素为第几个数组内
                   if (!this.listData[page]) { // 判断是否存在
                     this.listData[page] = []
                   }
