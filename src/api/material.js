@@ -1,57 +1,55 @@
 import request from '@/utils/request'
-import { getToken } from '@/utils/auth'
 
 export function getCatalog() {
   return request({
     url: '/mat/catalog',
     method: 'get'
-    // params: { token: getToken() }
-  }).then((data) => {
-    return data.data
   })
 }
 
-export function getCatalogByObjName(objname) {
+export function getCatalogByObjName(brand, objname) {
   return request({
     url: '/mat/catalog/objname',
     method: 'get',
-    params: { objname }
-  }).then((data) => {
-    return data.data
+    params: { brand, objname }
   })
 }
 
-export function getCatalogByProductPros(dir1, dir2, dir3, dir4, modelno) {
+export function getCatalogByProductPros(brand, pros) {
   return request({
     url: '/mat/catalog/productprops',
     method: 'get',
-    params: { dir1, dir2, dir3, dir4, modelno }
-  }).then((data) => {
-    return data.data
+    params: { brand, pros }
   })
 }
 
-export function getCatalogByLineType(linetype, linestyle) {
+export function getCatalogByLineType(brand, linetype, linestyle) {
   return request({
     url: '/mat/catalog/linetype',
     method: 'get',
-    params: { linetype, linestyle }
-  }).then((data) => {
-    return data.data
+    params: { brand, linetype, linestyle }
+  })
+}
+
+export function getCatalogByDoorInner(brand, id, all = false) {
+  return request({
+    url: '/mat/catalog/doorinner',
+    method: 'get',
+    params: { brand, id, all }
   })
 }
 
 export function getMat(use, text, query) {
-  const param = { token: getToken(), use: use, text: text }
-  for (const key in query) {
-    param[key] = query[key]
+  const param = { use: use, text: text }
+  if (query) {
+    for (const key in query) {
+      param[key] = query[key]
+    }
   }
   return request({
     url: '/mat/list',
     method: 'get',
     params: param
-  }).then((data) => {
-    return data.data
   })
 }
 export function getMatByConstraints(dir1, dir2, constrainttype, constraints) {
@@ -60,8 +58,14 @@ export function getMatByConstraints(dir1, dir2, constrainttype, constraints) {
     // url: '/mat/listbyconstraints',
     method: 'get',
     params: { dir1, dir2, constrainttype, constraints }
-  }).then((data) => {
-    return data.data
+  })
+}
+
+export function getMatByDoorInner(brand, id, use, text, all = false) {
+  return request({
+    url: '/mat/list/doorinner',
+    method: 'get',
+    params: { brand, id, use, text, all }
   })
 }
 

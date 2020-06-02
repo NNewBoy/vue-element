@@ -2,7 +2,7 @@
   <div class="app-container">
     <el-table-column label="上架状态" width="100" align="center">
       <template slot-scope="{row}">
-        <el-select v-model="row.status">
+        <el-select v-model="row.status" @change="setEditStatus(row)">
           <el-option
             v-for="(o, i) in statusList"
             :key="i"
@@ -51,6 +51,13 @@ export default {
   created() {
   },
   methods: {
+    setEditStatus(row) {
+      if (row.hasOwnProperty('editStatus')) {
+        row.editStatus = 1
+      } else if (row.hasOwnProperty('changed')) {
+        row.changed = true
+      }
+    }
   }
 }
 </script>

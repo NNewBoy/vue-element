@@ -7,6 +7,26 @@ export function getProductDir(pathName) {
     params: { pathName: pathName }
   })
 }
+export function getAllProductDir() {
+  return request({
+    url: '/product/allproductdir',
+    method: 'get'
+  })
+}
+
+export function getProductList(path, query) {
+  const param = { path }
+  for (const key in query) {
+    param[key] = query[key]
+  }
+
+  return request({
+    url: '/product/list2',
+    method: 'get',
+    params: param
+  })
+}
+
 export function getProductInfo(modelno) {
   return request({
     url: '/product/info',

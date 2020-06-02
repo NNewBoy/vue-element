@@ -13,7 +13,7 @@ export default [
     response: config => {
       return {
         code: 20000,
-        data: res3
+        data: res3.data
       }
     }
   },
@@ -23,7 +23,7 @@ export default [
     response: config => {
       return {
         code: 20000,
-        data: res4
+        data: res4.data
       }
     }
   },
@@ -33,7 +33,7 @@ export default [
     response: config => {
       return {
         code: 20000,
-        data: res
+        data: res.data
       }
     }
   },
@@ -43,7 +43,7 @@ export default [
     response: config => {
       return {
         code: 20000,
-        data: res2
+        data: res2.data
       }
     }
   }

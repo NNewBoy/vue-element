@@ -5,11 +5,11 @@
     </el-tag>
     <el-button-group>
       <el-tooltip content="复制">
-        <el-button type="primary" icon="el-icon-caret-left" size="mini" @click="onCopy" />
+        <el-button type="primary" icon="el-icon-document-copy" size="mini" @click="onCopy" />
       </el-tooltip>
       <el-button type="primary" icon="el-icon-plus" size="mini" @click="onAdd" />
       <el-tooltip content="粘贴">
-        <el-button type="primary" icon="el-icon-caret-right" size="mini" @click="onPaste" />
+        <el-button type="primary" icon="el-icon-document-add" size="mini" @click="onPaste" />
       </el-tooltip>
     </el-button-group>
     <el-dialog title="选择门板方案" :visible.sync="dialogFormVisible" width="90%" height="90%" style="z-index:999999">

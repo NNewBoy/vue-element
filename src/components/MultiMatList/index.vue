@@ -5,11 +5,11 @@
     </el-tag>
     <el-button-group>
       <el-tooltip content="复制">
-        <el-button type="primary" icon="el-icon-caret-left" size="mini" @click="onCopy" />
+        <el-button type="primary" icon="el-icon-document-copy" size="mini" @click="onCopy" />
       </el-tooltip>
       <el-button type="primary" icon="el-icon-plus" size="mini" @click="onAddMat" />
       <el-tooltip content="粘贴">
-        <el-button type="primary" icon="el-icon-caret-right" size="mini" @click="onPaste" />
+        <el-button type="primary" icon="el-icon-document-add" size="mini" @click="onPaste" />
       </el-tooltip>
     </el-button-group>
     <el-dialog title="选择材料" :visible.sync="dialogFormVisible" width="90%" height="90%" style="z-index:999999" :center="false">
@@ -38,6 +38,11 @@ export default {
       require: true,
       type: Boolean,
       default: false
+    },
+    onChange: {
+      require: false,
+      type: Function,
+      default: null
     }
   },
   data() {
@@ -45,7 +50,8 @@ export default {
       dialogFormVisible: false,
       dir1: '',
       dir2: '',
-      materialName: ''
+      materialName: '',
+      selected: null
     }
   },
   computed: {
@@ -53,14 +59,17 @@ export default {
   methods: {
     onDeleteMat(index) {
       this.data.splice(index, 1)
+      this.onChange && this.onChange()
     },
     onAddMat() {
+      this.selected = null
       this.dir1 = ''
       this.dir2 = ''
       this.materialName = ''
       this.dialogFormVisible = true
     },
     onSelMat(row) {
+      this.selected = row
       this.dir1 = row.mat_dir1
       this.dir2 = row.mat_dir2
       this.materialName = row.mat_name
@@ -76,21 +85,43 @@ export default {
         data.forEach(el => {
           this.data.push({ 'mat_dir1': el.mat_dir1, 'mat_dir2': el.mat_dir2, 'mat_name': el.mat_name })
         })
+        this.onChange && this.onChange()
       }
     },
     onSelectMat(data) {
       this.dialogFormVisible = false
-      data.forEach(el => {
-        this.data.push({ 'mat_dir1': el.use_group, 'mat_dir2': el.texture_group, 'mat_name': el.name })
-      })
+      if (this.selected) {
+        this.selected.mat_dir1 = data[0].use_group
+        this.selected.mat_dir2 = data[0].use_group
+        this.selected.mat_name = data[0].name
+      } else {
+        data.forEach(el => {
+          this.data.push({ mat_dir1: el.use_group, mat_dir2: el.texture_group, mat_name: el.name })
+        })
+      }
+      this.onChange && this.onChange()
     },
     onSelectDir1(dir1) {
       this.dialogFormVisible = false
-      this.data.push({ 'mat_dir1': dir1, 'mat_dir2': '', 'mat_name': '' })
+      if (this.selected) {
+        this.selected.mat_dir1 = dir1
+        this.selected.mat_dir2 = ''
+        this.selected.mat_name = ''
+      } else {
+        this.data.push({ 'mat_dir1': dir1, 'mat_dir2': '', 'mat_name': '' })
+      }
+      this.onChange && this.onChange()
     },
     onSelectDir2(dir1, dir2) {
       this.dialogFormVisible = false
-      this.data.push({ 'mat_dir1': dir1, 'mat_dir2': dir2, 'mat_name': '' })
+      if (this.selected) {
+        this.selected.mat_dir1 = dir1
+        this.selected.mat_dir2 = dir2
+        this.selected.mat_name = ''
+      } else {
+        this.data.push({ 'mat_dir1': dir1, 'mat_dir2': dir2, 'mat_name': '' })
+      }
+      this.onChange && this.onChange()
     }
   }
 }

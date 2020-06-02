@@ -1,29 +1,35 @@
 <template>
   <div class="app-container">
-    <LazyFilter
-      filter-name="产品选择"
-      :load="loadFun"
-      :level="4"
-      @getResult="getResult"
-    />
-    <el-row>
-      <el-col :span="10">
-        <StatusFilter @selectStatus="selectStatus" />
-      </el-col>
-      <el-col :span="10">
-        <BrandsFilter @selectBrands="selectBrands" />
-      </el-col>
-    </el-row>
+    <Collapse :init-show="true">
+      <template slot="title">
+        筛选<i class="header-icon el-icon-info" />
+      </template>
+      <LazyFilter
+        filter-name="产品目录"
+        :load="loadFun"
+        :level="4"
+        @getResult="getResult"
+      />
+      <el-row>
+        <el-col :span="10">
+          <StatusFilter @selectStatus="selectStatus" />
+        </el-col>
+        <el-col :span="10">
+          <BrandsFilter @selectBrands="selectBrands" />
+        </el-col>
+      </el-row>
+    </Collapse>
     <br>
     <div class="menu-list">
       <div class="menu-item">
         <el-input
-          v-model="searchText"
+          v-model="listQuery.search"
           clearable
           size="small"
           placeholder="查找"
           prefix-icon="el-icon-search"
         />
+        <el-button type="primary" icon="el-icon-search" size="small" @click="onSearch" />
       </div>
       <div class="menu-item radio-menu">
         <el-button-group class="brand-button">
@@ -36,10 +42,11 @@
     <el-table
       ref="tbTable"
       v-loading="loadingList"
-      max-height="500px"
-      :data="tableDataFilter"
+      v-el-table-infinite-scroll="loadNextPage"
+      :data="dataList"
       :row-style="tableRowStyle"
       element-loading-text="Loading"
+      height="80vh"
       border
       fit
       highlight-current-row
@@ -51,7 +58,7 @@
         type="selection"
         width="45"
       />
-      <el-table-column align="center" label="ID" width="40">
+      <el-table-column align="center" label="ID" width="50">
         <template slot-scope="scope">
           {{ scope.$index + 1 }}
         </template>
@@ -67,23 +74,31 @@
           />
         </template>
       </el-table-column>
-      <CommonColumn label="名称" min-width="200" value="name" />
+      <CommonColumn label="名称" min-width="150" value="name" />
+      <CommonColumn label="型号" min-width="150" value="modelno" />
     </el-table>
+    <!-- <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.per_page" @pagination="fetchData" /> -->
   </div>
 </template>
 
 <script type="text/javascript">
+import elTableInfiniteScroll from 'el-table-infinite-scroll'
 import { editDelete } from '@/utils/edit'
 import { confirmEdit } from '@/utils/edit'
-import { getProductDir } from '@/api/product'
+import { getProductDir, getProductList } from '@/api/product'
 import LazyFilter from '@/components/LazyFilter'
 import CommonColumn from '@/components/MaterialEdit/column/CommonColumn'
 import BrandsFilter from '@/components/MaterialEdit/filter/BrandsFilter'
 import StatusFilter from '@/components/MaterialEdit/filter/StatusFilter'
-import toPinyin from '@/utils/chineseToPinyin'
+import Collapse from '@/components/Collapse'
+// import toPinyin from '@/utils/chineseToPinyin'
+// import Pagination from '@/components/Pagination'
 
 export default {
-  components: { LazyFilter, CommonColumn, BrandsFilter, StatusFilter },
+  directives: {
+    'el-table-infinite-scroll': elTableInfiniteScroll
+  },
+  components: { LazyFilter, CommonColumn, BrandsFilter, StatusFilter, Collapse /*, Pagination*/ },
   data() {
     return {
       searchText: '',
@@ -94,21 +109,37 @@ export default {
       selectedItem: [], // 选中的选项
       selectStatusRes: {}, // 上架状态筛选器的返回值
       selectBrandsRes: {}, // 品牌筛选器的返回值
-      ifUpdate: false // 判断是否刷新数据
+      ifUpdate: false, // 判断是否刷新数据
+      // 翻页参数
+      listQuery: {
+        page: 1,
+        per_page: 20,
+        search: undefined
+      },
+      total: 0
+      // tableHeight: 600
     }
   },
   computed: {
-    tableDataFilter: function() {
-      return this.dataList.filter(el => {
-        const txt = el[this.searchTarget]
-        const st = this.searchText.toUpperCase()
-        return txt.toUpperCase().indexOf(st) >= 0 ||
-          toPinyin.getFirstLetter(txt).indexOf(st) >= 0 ||
-          toPinyin.chineseToPinYin(txt).toUpperCase().indexOf(st) >= 0
-      })
-    }
+    // tableDataFilter: function() {
+    //   return this.dataList.filter(el => {
+    //     const txt = el[this.searchTarget]
+    //     const st = this.searchText.toUpperCase()
+    //     return txt.toUpperCase().indexOf(st) >= 0 ||
+    //       toPinyin.getFirstLetter(txt).indexOf(st) >= 0 ||
+    //       toPinyin.chineseToPinYin(txt).toUpperCase().indexOf(st) >= 0
+    //   })
+    // }
+    // tableHeight() {
+    //   if (this.$refs.tbTable) {
+    //     return window.innerHeight - this.$refs.tbTable.$el.offsetTop - 50
+    //   }
+    //   return 500
+    // }
   },
-  mounted() {},
+  mounted() {
+    // this.tableHeight = window.innerHeight - this.$refs.tbTable.$el.offsetTop - 400
+  },
   methods: {
     async loadFun(node, resolve) {
       let pathName = null
@@ -123,10 +154,13 @@ export default {
       return resolve(res)
     },
     async fetchData() {
+      this.listQuery.page = 1
       if (this.selectedItem.length > 0) {
         this.loadingList = true
-        const { data } = await getProductDir(this.selectedItem.join('/'))
-        this.dataList = data.map(val => { return { name: val.label } })
+        const { data } = await getProductList(this.selectedItem.join('\\'), this.listQuery)
+        data.items.forEach(el => { el.changed = false })
+        this.dataList = data.items
+        this.total = data.total
         this.loadingList = false
       }
     },
@@ -139,7 +173,7 @@ export default {
       }
     },
     tableRowStyle({ row, rowIndex }) {
-      return row.editStatus === 1 ? { 'background-color': 'PeachPuff' } : ''
+      return row.changed === 1 ? { 'background-color': 'PeachPuff' } : ''
     },
     selectStatus(res) {
       this.selectStatusRes = res
@@ -150,7 +184,7 @@ export default {
       this.ifUpdate = true
     },
     saveProperty() {
-      const editedArr = this.dataList.filter(item => item.editStatus === 1)
+      const editedArr = this.dataList.filter(item => item.changed)
       if (editedArr.length > 0) {
         confirmEdit(() => {
           this.loadingList = true
@@ -193,6 +227,18 @@ export default {
         //   this.loadingList = false
         // })
       })
+    },
+    onSearch() {
+      this.listQuery.page = 1
+      this.fetchData()
+    },
+    async loadNextPage() {
+      this.listQuery.page++
+      const { data } = await getProductList(this.selectedItem.join('\\'), this.listQuery)
+      if (data && data.items) {
+        data.items.forEach(el => { el.changed = false })
+        this.dataList = this.dataList.concat(data.items)
+      }
     }
   }
 }

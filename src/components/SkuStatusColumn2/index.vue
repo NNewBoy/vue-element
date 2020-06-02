@@ -53,7 +53,11 @@ export default {
   },
   methods: {
     setEditStatus(row) {
-      row.editStatus = 1
+      if (row.hasOwnProperty('editStatus')) {
+        row.editStatus = 1
+      } else if (row.hasOwnProperty('changed')) {
+        row.changed = true
+      }
     }
   }
 }

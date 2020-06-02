@@ -595,15 +595,20 @@ export default {
     },
     onDelete(row, index) {
       editDelete(() => {
-        this.listLoading = true
-        deleteMat(row.id).then(response => {
-          this.$notify.deleteOk()
-          this.mats.splice(index, 1)
+        if (row.id) {
+          this.listLoading = true
+          deleteMat(row.id).then(response => {
+            this.$notify.deleteOk()
+            this.mats.splice(index, 1)
 
-          this.listLoading = false
-        }).catch(() => {
-          this.listLoading = false
-        })
+            this.listLoading = false
+          }).catch(() => {
+            this.listLoading = false
+          })
+        } else {
+          this.mats.splice(index, 1)
+          this.$notify.deleteOk()
+        }
       })
     },
     onExcelSuccess({ results, header }) {

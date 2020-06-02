@@ -60,9 +60,7 @@ export default {
       menuShow: [true], // 各级菜单显示
       vLoading: [false], // 各级菜单刷新
       nowSelected: [], // 当前选择的选项名
-      nowLevel: 1, // 筛选器级别
-      preSelection: {}, // 上一个选项
-      shouldRecall: false // 下一次选择是否需要匹配
+      nowLevel: 1 // 筛选器级别
     }
   },
   computed: {
@@ -85,16 +83,14 @@ export default {
     this.getMenu([], 0)
   },
   methods: {
-    getKey(selected) { // 保存历史数据
-      for (const i in selected) {
-        if (selected[i]) {
-          const key = JSON.stringify(selected.slice(0, parseInt(i) + 1))
-          this.preSelection[key] = JSON.parse(JSON.stringify(selected))
+    getMenu(params, level) {
+      for (let i = level; i < this.level; i++) {
+        if (i > level) {
+          this.$set(this.menuShow, i, false)
+        } else if (i === level) {
+          this.$set(this.menuShow, i, true)
         }
       }
-    },
-    getMenu(params, level) {
-      this.$set(this.menuShow, level, true)
       this.$set(this.vLoading, level, true)
       this.load(params, (data) => {
         // const temp = []
@@ -104,12 +100,6 @@ export default {
         // this.$set(this.filterData, level, temp)
         this.$set(this.menuList, level, data)
         this.$set(this.vLoading, level, false)
-        if (data.length === 0 || !data) {
-          for (let i = level + 1; i < this.level; i++) {
-            this.$set(this.menuList, i, [])
-          }
-          this.shouldRecall = true
-        }
       })
     },
     getType(arr, level) {
@@ -127,24 +117,10 @@ export default {
         this.$set(this.nowSelected, level, name)
 
         if (level < this.level - 1) {
-          if (this.shouldRecall) { // 当前不是在最高级别筛选器中选择时，匹配历史选择
-            const matchStr = JSON.stringify(this.nowSelected.slice(0, level + 1))
-            const tempSelected = this.preSelection[matchStr]
-            this.shouldRecall = false
-            if (tempSelected) {
-              tempSelected.map((item, index) => {
-                this.$set(this.selected, index, tempSelected[index])
-              })
-              const temp = JSON.parse(JSON.stringify(this.menuList[level]))
-              this.$set(this.menuList, level, temp) // 重新选择
-              return
-            }
-          }
           this.getMenu(this.nowSelected.slice(0, level + 1), level + 1)
         } else if (level === this.level - 1) {
-          this.getKey(this.nowSelected)
+          this.selected.splice(0, this.selected.length)
           this.$emit('getResult', this.nowSelected)
-          this.shouldRecall = true // 下一次选择需要匹配
         }
       } else { // 取消选择 隐藏下级选项
         this.menuShow.forEach((element, index) => {
@@ -153,7 +129,6 @@ export default {
           }
         })
         this.$emit('getResult', []) // 返回空数组
-        this.shouldRecall = true // 下一次选择需要匹配
       }
     }
   }

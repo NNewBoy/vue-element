@@ -1,13 +1,17 @@
 import request from '@/utils/request'
-import { getToken } from '@/utils/auth'
 
 export function getCatalog() {
   return request({
     url: '/doorstyle/catalog',
+    method: 'get'
+  })
+}
+
+export function getCatalogByScheme(schemeid, brand) {
+  return request({
+    url: '/doorstyle/catalogcon',
     method: 'get',
-    params: { token: getToken() }
-  }).then((data) => {
-    return data.data
+    params: { schemeid, brand }
   })
 }
 
@@ -15,9 +19,7 @@ export function getColorList(doorstyle) {
   return request({
     url: '/doorstyle/list',
     method: 'get',
-    params: { token: getToken(), doorstyle }
-  }).then((data) => {
-    return data.data
+    params: { doorstyle }
   })
 }
 
@@ -27,8 +29,6 @@ export function getColorListByScheme(schemeid, doorstyle, brand) {
     url: '/doorstyle/BySchemeList',
     method: 'get',
     params: { schemeid, doorstyle, brand }
-  }).then((data) => {
-    return data.data
   })
 }
 
@@ -100,8 +100,6 @@ export function getDoorShapePic(doorseries, doorprice) {
     url: '/doorshape/pic',
     method: 'get',
     params: { doorseries, doorprice }
-  }).then((data) => {
-    return data.data
   })
 }
 
@@ -110,8 +108,6 @@ export function getInnerCatalog() {
   return request({
     url: '/doorinner/catalog',
     method: 'get'
-  }).then((data) => {
-    return data.data
   })
 }
 
@@ -120,8 +116,6 @@ export function getDoorInnerList(doorstyle) {
     url: '/doorinner/list',
     method: 'get',
     params: { doorstyle }
-  }).then((data) => {
-    return data.data
   })
 }
 
@@ -162,24 +156,30 @@ export function getDoorStyleScheme(search, query) {
     url: '/dsscheme/list',
     method: 'get',
     params: param
-  }).then((data) => {
-    return data.data
   })
 }
 
 export function addDoorStyleScheme(data) {
+  if (!Array.isArray(data)) {
+    data = [data]
+  }
+
   return request({
     url: '/dsscheme/add',
     method: 'post',
-    params: { data } // 返回新增的id
+    data: { data } // 返回新增的id
   })
 }
 
 export function updateDoorStyleScheme(data) {
+  if (!Array.isArray(data)) {
+    data = [data]
+  }
+
   return request({
     url: '/dsscheme/update',
     method: 'post',
-    params: { data }
+    data: { data }
   })
 }
 
@@ -188,16 +188,5 @@ export function delDoorStyleScheme(id) {
     url: '/dsscheme/delete',
     method: 'post',
     params: { id }
-  })
-}
-
-// ByScheme
-export function getCatalogByScheme() {
-  return request({
-    url: '/doorstyle/BySchemeCatalog',
-    method: 'get',
-    params: { token: getToken() }
-  }).then((data) => {
-    return data.data
   })
 }

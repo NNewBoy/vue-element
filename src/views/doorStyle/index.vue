@@ -670,15 +670,20 @@ export default {
     },
     onDelete(row, index) {
       editDelete(() => {
-        this.loadingDoorColor = true
-        deleteDoorStyle(row.id).then(response => {
-          this.$notify.deleteOk()
-          this.doorstyleList.splice(index, 1)
+        if (row.id) {
+          this.loadingDoorColor = true
+          deleteDoorStyle(row.id).then(response => {
+            this.$notify.deleteOk()
+            this.doorstyleList.splice(index, 1)
 
-          this.loadingDoorColor = false
-        }).catch(() => {
-          this.loadingDoorColor = false
-        })
+            this.loadingDoorColor = false
+          }).catch(() => {
+            this.loadingDoorColor = false
+          })
+        } else {
+          this.doorstyleList.splice(index, 1)
+          this.$notify.deleteOk()
+        }
       })
     },
     onExcelSuccess({ results, header }) {

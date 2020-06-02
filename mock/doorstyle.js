@@ -21,7 +21,7 @@ export default [
     response: config => {
       return {
         code: 20000,
-        data: res
+        data: res.data
       }
     }
   },
@@ -31,7 +31,7 @@ export default [
     response: config => {
       return {
         code: 20000,
-        data: res2
+        data: res2.data
       }
     }
   },
@@ -41,7 +41,7 @@ export default [
     response: config => {
       return {
         code: 20000,
-        data: res3
+        data: res3.data
       }
     }
   },
@@ -51,7 +51,7 @@ export default [
     response: config => {
       return {
         code: 20000,
-        data: res4
+        data: res4.data
       }
     }
   },
@@ -61,7 +61,7 @@ export default [
     response: config => {
       return {
         code: 20000,
-        data: res5
+        data: res5.data
       }
     }
   },
@@ -71,7 +71,7 @@ export default [
     response: config => {
       return {
         code: 20000,
-        data: res6
+        data: res6.data
       }
     }
   },
@@ -81,7 +81,7 @@ export default [
     response: config => {
       return {
         code: 20000,
-        data: res7
+        data: res7.data
       }
     }
   },
@@ -91,7 +91,7 @@ export default [
     response: config => {
       return {
         code: 20000,
-        data: res8
+        data: res8.data
       }
     }
   }

@@ -20,22 +20,9 @@
       <div v-loading="listLoading" class="list-border">
         <div class="list-container">
           <div v-for="(o,index) in doorStyleFilter" :key="index" class="list-item">
-            <el-card :class="index===selected ? 'el-card-selected' : ''" @click.native="onClick(index)" @dblclick.native="onDblClick(index)" @contextmenu.prevent.native="openMenu($event)">
+            <el-card :class="index===selected ? 'el-card-selected' : ''" @click.native="onClick(index)" @dblclick.native="onDblClick(index)">
               <div style="text-align: center; margin:0 auto;position: relative;">
-                <div>
-                  <el-image :src="getDoorPreview(o.preview_pic)" style="width: 100%; height: 170px;" :lazy="true" />
-                  <div v-if="o.door_inner" class="door-inner-container">
-                    <div v-for="(inner, iInner) in o.door_inner" :key="iInner">
-                      <el-image
-                        :src="getPicUrl(inner.default_material.pic_file_name)"
-                        class="door-inner-img"
-                        @mouseover="hoverDoorInner=inner"
-                        @mouseleave="hoverDoorInner=null"
-                        @click="onSelectDoorInner(inner)"
-                      />
-                    </div>
-                  </div>
-                </div>
+                <el-image :src="getPicUrl(o.preview_pic)" style="width: 100%; height: 100%;" :lazy="true" />
                 <span align="center">{{ o.door_color }}</span>
               </div>
             </el-card>
@@ -43,21 +30,6 @@
         </div>
       </div>
     </div>
-    <div v-show="visibleMenu" :style="{left:menuLeft+'px',top:menuTop+'px'}" class="contextmenu">
-      <el-button @click="test">test</el-button>
-    </div>
-    <el-dialog title="选择门芯材料" :visible.sync="visibleSelectDoorInner" width="90%" height="90%">
-      <div class="select-door-inner">
-        <single-material-select
-          :refresh="visibleSelectDoorInner"
-          :fetch-catalog="fetchInnerCatalog"
-          :fetch-material="fetchInnerMaterial"
-          :init-selected="initSelectedMat"
-          @select="selectedDoorInner"
-          @close="onCancelDoorInner"
-        />
-      </div>
-    </el-dialog>
     <div class="footer">
       <el-col :span="4">
         <el-input v-model="search" clearable placeholder="查找" />
@@ -67,10 +39,7 @@
           <brand-select @selectBrand="selectBrand" />
         </div>
       </el-col>
-      <el-col :span="8">
-        <door-constraint @cefTest="cefTest" />
-      </el-col>
-      <el-col :span="4" align="right">
+      <el-col :span="12" align="right">
         <el-button type="primary" @click="onCancel">取消</el-button>
         <el-button type="primary" @click="onSelect">确定</el-button>
       </el-col>
@@ -79,19 +48,16 @@
 </template>
 
 <script>
-import { getCatalogByDoorInner, getMatByDoorInner } from '@/api/material'
 import { getCatalog, getColorList, getDoorShapePic, getCatalogByScheme, getColorListByScheme } from '@/api/doorstyle'
 import MemoryFilter from '@/components/MemoryFilter'
 import { getThumbnailUrl } from '@/utils/pic'
 import toPinyin from '@/utils/chineseToPinyin'
 import BrandSelect from '@/components/BrandSelect'
 import CarouselFilter from '@/components/CarouselFilter'
-import DoorConstraint from '@/components/TestComponents/DoorConstraint'
-import SingleMaterialSelect from '@/components/SingleMaterialSelect'
 import { mapGetters } from 'vuex'
 
 export default {
-  components: { MemoryFilter, BrandSelect, CarouselFilter, DoorConstraint, SingleMaterialSelect },
+  components: { MemoryFilter, BrandSelect, CarouselFilter },
   data() {
     return {
       listLoading: false,
@@ -107,15 +73,7 @@ export default {
       doorShapeHistory: {}, // 选中的门板造型历史数据
       doorStyleSchemeId: [],
       brand: '',
-      carouselData: [], // 轮播翻页组件数据
-      // 右键菜单
-      visibleMenu: false,
-      menuLeft: 0,
-      menuTop: 0,
-      hoverDoorInner: null, // 鼠标停留的门芯
-      // 选择门芯材料
-      visibleSelectDoorInner: false,
-      currentDoorInner: null
+      carouselData: [] // 轮播翻页组件数据
     }
   },
   computed: {
@@ -133,27 +91,12 @@ export default {
       })
     },
     ...mapGetters([
-      'brands',
-      'selectdoorparams'
-    ]),
-    initSelectedMat() {
-      if (this.currentDoorInner && this.currentDoorInner.default_material) {
-        return this.currentDoorInner.default_material.use_group + '\\' + this.currentDoorInner.default_material.texture_group + '\\' + this.currentDoorInner.default_material.name
-      } else {
-        return ''
-      }
-    }
+      'brands'
+    ])
   },
   watch: {
     doorShape(val) {
       this.fetchDoorColor()
-    },
-    visibleMenu(value) {
-      if (value) {
-        document.body.addEventListener('click', this.closeMenu)
-      } else {
-        document.body.removeEventListener('click', this.closeMenu)
-      }
     }
   },
   created() {
@@ -199,14 +142,6 @@ export default {
       //   const st = JSON.stringify(ds)
       //   window.SelectDoorStyle(st)
       // }
-    },
-    cefTest() {
-      debugger
-      const td = JSON.parse(this.selectdoorparams)
-      console.log(td.brand)
-      console.log(td.initdoor)
-      console.log(td.widths)
-      console.log(td.heights)
     },
     getResult(arr) {
       if (arr.length > 0) {
@@ -269,12 +204,6 @@ export default {
       this.selected = index
       this.onSelect()
     },
-    getDoorPreview(pic) {
-      if (this.hoverDoorInner && this.hoverDoorInner.inner_zone_pic) {
-        return getThumbnailUrl('kitdat/doorinner/' + this.hoverDoorInner.inner_zone_pic)
-      }
-      return getThumbnailUrl(pic)
-    },
     getPicUrl(pic) {
       return getThumbnailUrl(pic)
     },
@@ -287,47 +216,6 @@ export default {
     selectBrand(brand) {
       this.brand = brand
       this.fetchData() // 目录都有可能不一样，要重新获取
-    },
-    openMenu(event) {
-      // console.log(event)
-      const menuMinWidth = 105
-      const offsetLeft = this.$el.getBoundingClientRect().left // container margin left
-      const offsetWidth = this.$el.offsetWidth // container width
-      const maxLeft = offsetWidth - menuMinWidth // left boundary
-      const left = event.clientX - offsetLeft // 15: margin right
-
-      if (left > maxLeft) {
-        this.menuTop = maxLeft
-      } else {
-        this.menuLeft = left
-      }
-
-      this.menuTop = event.clientY - 60 // fix 位置bug
-      this.visibleMenu = true
-    },
-    closeMenu() {
-      this.visibleMenu = false
-    },
-    test() {
-      console.log('adfsf')
-    },
-    onSelectDoorInner(inner) {
-      this.currentDoorInner = inner
-      this.visibleSelectDoorInner = true
-    },
-    onCancelDoorInner() {
-      this.currentDoorInner = null
-      this.visibleSelectDoorInner = false
-    },
-    selectedDoorInner(mat) {
-      this.currentDoorInner.default_material = mat
-      this.onCancelDoorInner()
-    },
-    async fetchInnerCatalog(brand) {
-      return await getCatalogByDoorInner(brand, this.currentDoorInner.id)
-    },
-    async fetchInnerMaterial(brand, dir1, dir2) {
-      return await getMatByDoorInner(brand, this.currentDoorInner.id, dir1, dir2)
     }
   }
 }
@@ -422,39 +310,6 @@ export default {
   display: flex;
   justify-content: center;
   align-items: center;
-}
-
-.contextmenu {
-  width: 150px;
-  position: absolute;
-  background: #ffffff;
-  border-radius: 5px;
-  display: inline-block;
-}
-
-.door-inner-container {
-  position: absolute;
-  display: flex;
-  justify-content: flex-end;
-  bottom: 15px;
-  width: 100%;
-  height: 50px;
-}
-
-.door-inner-img {
-  width: 40px;
-  height: 40px;
-  margin: 2px;
-  border: 1px solid;
-  border-color:rgb(243, 120, 120);
-  border-radius: 4px;
-}
-
-.select-door-inner {
-  display: block;
-  width: 80%;
-  height: 600px;
-  background-color: #ffffff;
 }
 </style>
 

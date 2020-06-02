@@ -109,6 +109,12 @@ export const constantRoutes = [
         meta: { title: 'Product', icon: 'table', noCache: true }
       },
       {
+        path: 'indexold',
+        component: () => import('@/views/product/indexold'),
+        name: 'ProductExample',
+        meta: { title: 'ProductExample', icon: 'table', noCache: true }
+      },
+      {
         path: 'product1',
         component: () => import('@/views/product1/index'),
         name: 'Product1',

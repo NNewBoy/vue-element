@@ -35,7 +35,7 @@ export default [
       }
       return {
         code: 20000,
-        data: res
+        data: res.data
       }
     }
   }
