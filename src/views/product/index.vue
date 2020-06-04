@@ -1,6 +1,6 @@
 <template>
   <div class="app-container">
-    <Collapse :init-show="true">
+    <Collapse :init-show="true" @onShow="onResize">
       <template slot="title">
         筛选<i class="header-icon el-icon-info" />
       </template>
@@ -31,6 +31,25 @@
         />
         <el-button type="primary" icon="el-icon-search" size="small" @click="onSearch" />
       </div>
+
+      <div class="menu-item">
+        <el-dropdown size="small" split-button type="primary" @click="selectMaterial" @command="command=>radioVal=command">
+          {{ radioVal | dropFilter }}
+          <el-dropdown-menu slot="dropdown">
+            <el-dropdown-item command="">更多属性</el-dropdown-item>
+            <el-dropdown-item command="basic">基础信息</el-dropdown-item>
+            <el-dropdown-item command="catalog">目录</el-dropdown-item>
+            <el-dropdown-item command="size">尺寸</el-dropdown-item>
+            <el-dropdown-item command="params">参数化属性</el-dropdown-item>
+            <el-dropdown-item command="door">门板属性</el-dropdown-item>
+            <el-dropdown-item command="line">线条属性</el-dropdown-item>
+            <el-dropdown-item command="position">定位</el-dropdown-item>
+            <el-dropdown-item command="quote">报价数据</el-dropdown-item>
+            <el-dropdown-item command="other">其他</el-dropdown-item>
+          </el-dropdown-menu>
+        </el-dropdown>
+      </div>
+
       <div class="menu-item radio-menu">
         <el-button-group class="brand-button">
           <el-button type="success" size="small" @click="saveProperty">保存</el-button>
@@ -46,7 +65,7 @@
       :data="dataList"
       :row-style="tableRowStyle"
       element-loading-text="Loading"
-      height="80vh"
+      :height="tableHeight"
       border
       fit
       highlight-current-row
@@ -74,9 +93,83 @@
           />
         </template>
       </el-table-column>
-      <CommonColumn label="名称" min-width="150" value="name" />
-      <CommonColumn label="型号" min-width="150" value="modelno" />
+
+      <CommonColumn label="名称" min-width="200" value="name" />
+      <!-- 基础信息 -->
+      <div v-if="radioVal==='basic'">
+        <CommonColumn label="型号" min-width="200" value="modelno" />
+        <SelectColumn label="产品类型" width="150" value="product_type" :filterable="true" :data-list="ProdutTypeOption" />
+        <SwitchColumn label="可修改尺寸" width="100" value="change_size" />
+        <SelectColumn label="开向" width="100" value="direction" :data-list="ProductDirectionOption" />
+        <CommonColumn label="所属品牌" width="100" value="brand" />
+        <CommonColumn label="模型路径" width="100" value="model_path" />
+        <CommonColumn label="预览图" width="200" value="pic" />
+      </div>
+      <!-- 目录 -->
+      <div v-if="radioVal==='catalog'">
+        <CommonColumn label="目录1" width="100" value="dir1" />
+        <CommonColumn label="目录2" width="100" value="dir2" />
+        <CommonColumn label="目录3" width="100" value="dir3" />
+        <CommonColumn label="目录4" width="100" value="dir4" />
+      </div>
+      <!-- 尺寸 -->
+      <div v-if="radioVal==='size'">
+        <CommonColumn label="宽" width="100" value="l" />
+        <CommonColumn label="深" width="100" value="w" />
+        <CommonColumn label="高" width="100" value="h" />
+      </div>
+      <!-- 参数化属性 -->
+      <div v-if="radioVal==='params'">
+        <CommonColumn label="参数名" width="200" value="paramunit_name" />
+        <SelectColumn label="参数类型" width="150" value="param_type" :data-list="UnitParamTypeOption" />
+      </div>
+      <!-- 门板属性 -->
+      <div v-if="radioVal==='door'">
+        <SwitchColumn label="适用所有门板" width="120" value="all_doorstyle" />
+        <SwitchColumn label="门板反向限制" width="120" value="reverse_permit_door_mode" />
+        <CommonColumn label="门板限制方案" width="120" value="door_style_scheme_id" />
+      </div>
+      <!-- 线条属性 -->
+      <div v-if="radioVal==='line'">
+        <SwitchColumn label="台面眉线" width="100" value="worktop_mx_line" />
+        <SwitchColumn label="踢脚灯线" width="100" value="btm_light_line" />
+      </div>
+      <!-- 定位 -->
+      <div v-if="radioVal==='position'">
+        <SelectColumn label="定位方式" width="120" value="elva_mode" :filterable="true" :data-list="ElvaModeOption" />
+        <CommonColumn label="定位高度" width="100" value="elva" />
+      </div>
+      <!-- 报价数据 -->
+      <div v-if="radioVal==='quote'">
+        <CommonColumn label="编码" width="120" value="code" />
+        <CommonColumn label="规格" width="150" value="standard" />
+        <CommonColumn label="颜色" width="100" value="color" />
+        <CommonColumn label="材料" width="100" value="material" />
+        <CommonColumn label="单位" width="80" value="unit" />
+        <CommonColumn label="单价" width="100" value="price" />
+        <CommonColumn label="备注" width="150" value="comment" />
+        <CommonColumn label="类型" width="100" value="class" />
+        <CommonColumn label="扩展信息" width="100" value="ext1" />
+      </div>
+      <!-- 其他 -->
+      <div v-if="radioVal==='other'">
+        <SwitchColumn label="隐藏" width="100" value="hide" />
+        <CommonColumn label="版本" width="120" value="version" />
+        <SwitchColumn label="参与报价" width="100" value="need_quotation" />
+      </div>
+
     </el-table>
+
+    <CatalogLazyDialog
+      :catalog-dialog-visible="catalogLazyDialogVisible"
+      :material-checkbox-val="selection"
+      :table-data="dataList"
+      :from-catalog="selectedItem"
+      search-target="name"
+      @closeCatalogDialog="closeDialog('catalog')"
+      @returnCatalog="changeCatalog"
+    />
+
     <!-- <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.per_page" @pagination="fetchData" /> -->
   </div>
 </template>
@@ -88,17 +181,45 @@ import { confirmEdit } from '@/utils/edit'
 import { getProductDir, getProductList } from '@/api/product'
 import LazyFilter from '@/components/LazyFilter'
 import CommonColumn from '@/components/MaterialEdit/column/CommonColumn'
+import SelectColumn from '@/components/MaterialEdit/column/SelectColumn'
+import SwitchColumn from '@/components/MaterialEdit/column/SwitchColumn'
 import BrandsFilter from '@/components/MaterialEdit/filter/BrandsFilter'
 import StatusFilter from '@/components/MaterialEdit/filter/StatusFilter'
 import Collapse from '@/components/Collapse'
-// import toPinyin from '@/utils/chineseToPinyin'
+import CatalogLazyDialog from '@/components/MaterialEdit/dialog/CatalogLazyDialog'
 // import Pagination from '@/components/Pagination'
 
 export default {
   directives: {
     'el-table-infinite-scroll': elTableInfiniteScroll
   },
-  components: { LazyFilter, CommonColumn, BrandsFilter, StatusFilter, Collapse /*, Pagination*/ },
+  components: { LazyFilter, CommonColumn, SelectColumn, SwitchColumn, BrandsFilter, StatusFilter, Collapse, CatalogLazyDialog /*, Pagination*/ },
+  filters: {
+    dropFilter: function(val) {
+      switch (val) {
+        case 'basic':
+          return '基础信息'
+        case 'catalog':
+          return '目录'
+        case 'size':
+          return '尺寸'
+        case 'params':
+          return '参数化属性'
+        case 'door':
+          return '门板属性'
+        case 'line':
+          return '线条属性'
+        case 'position':
+          return '定位'
+        case 'quote':
+          return '报价数据'
+        case 'other':
+          return '其他'
+        default:
+          return '更多属性'
+      }
+    }
+  },
   data() {
     return {
       searchText: '',
@@ -106,6 +227,16 @@ export default {
       loadingList: false,
       dataList: [],
       selection: [], // 选中的行
+      radioVal: '', // 选择材料参数
+      basicDialogVisible: false,
+      catalogLazyDialogVisible: false,
+      sizeDialogVisible: false,
+      paramsDialogVisible: false,
+      doorDialogVisible: false,
+      lineDialogVisible: false,
+      positionDialogVisible: false,
+      quoteDialogVisible: false,
+      otherDialogVisible: false,
       selectedItem: [], // 选中的选项
       selectStatusRes: {}, // 上架状态筛选器的返回值
       selectBrandsRes: {}, // 品牌筛选器的返回值
@@ -116,29 +247,58 @@ export default {
         per_page: 20,
         search: undefined
       },
-      total: 0
-      // tableHeight: 600
+      total: 0,
+      tableHeight: 1,
+      ProdutTypeOption: [{ text: '无', value: -1 }, { text: '地柜', value: 0 }, { text: '吊柜', value: 1 }, { text: '高柜', value: 2 }, { text: '洗衣机', value: 3 }, { text: '冰箱', value: 4 }, { text: '油烟机', value: 5 }, { text: '装饰柜', value: 6 }, { text: '星盆', value: 7 }, { text: '炉灶', value: 8 }, { text: '拉手', value: 9 }, { text: '其它', value: 10 }, { text: '半高柜', value: 11 }, { text: '烤箱(烤箱定位)', value: 12 }, { text: '微波炉(内置电器)', value: 13 }, { text: '消毒柜', value: 14 }, { text: '洗碗机', value: 15 }, { text: '铝脚', value: 16 }, { text: '水位设施', value: 17 }, { text: '电位设施', value: 18 }, { text: '气位设施', value: 19 }, { text: '拉篮', value: 20 }, { text: '水龙头', value: 21 }, { text: '独立浴缸', value: 22 }, { text: '地台浴缸', value: 23 }, { text: '高淋浴房', value: 24 }, { text: '挂盆', value: 25 }, { text: '柱盆', value: 26 }, { text: '马桶', value: 27 }, { text: '热水器', value: 28 }, { text: '衣柜功能件', value: 29 }, { text: '底架', value: 30 }, { text: '房门', value: 31 }, { text: '窗', value: 32 }, { text: '电饭煲', value: 33 }, { text: '米箱', value: 34 }, { text: '垃圾桶', value: 35 }, { text: '集成炉灶(环保灶)', value: 36 }, { text: '集成水槽', value: 37 }, { text: '博古架', value: 38 }, { text: '酒格', value: 39 }],
+      ProductDirectionOption: [{ text: '任意', value: 0 }, { text: '左开', value: 1 }, { text: '右开', value: 2 }],
+      UnitParamTypeOption: [{ text: '普通单元', value: 0 }, { text: '结构固定单元', value: 1 }, { text: '自定义结构单元', value: 2 }],
+      ElvaModeOption: [{ text: '在地面', value: 0 }, { text: '在踢脚板', value: 1 }, { text: '位于吊柜离地高度', value: 2 }, { text: '在台面上', value: 3 }, { text: '在台面上(选柜定位)', value: 4 }, { text: '在台面中(选柜定位)', value: 5 }, { text: '在台面下(选柜定位)', value: 6 }, { text: '在选择的物体上', value: 7 }, { text: '在选择的物体下', value: 8 }, { text: '在特定的高度上', value: 9 }, { text: '在特定高(选柜定位)', value: 10 }, { text: '在特定的高度下', value: 11 }, { text: '内置电器	', value: 12 }, { text: '自由定位(表面吸附)', value: 13 }, { text: '背板定位', value: 14 }, { text: '电器自动适配大小定位', value: 15 }, { text: '在选择的层板上(或下)', value: 16 }, { text: '柜层板定位', value: 17 }, { text: '墙面定位(底部贴墙)', value: 18 }, { text: '地面定位', value: 19 }, { text: '拉篮定位', value: 20 }, { text: 'DoorBell墙挂式定位', value: 21 }, { text: ' 随目标定位位置', value: 22 }, { text: '油烟机定位', value: 23 }, { text: '在特定高(选2立柱定位)', value: 24 }, { text: '在特定高(选3立柱定位)', value: 25 }, { text: '选4柱定位', value: 26 }, { text: 'Rayes墙挂式定位', value: 27 }, { text: '多宝格定位', value: 28 }, { text: '罗马柱定位', value: 29 }, { text: '立隔板定位', value: 30 }, { text: '层板下的横向挂衣杆定位', value: 31 }, { text: '层板下的纵向挂衣杆定位', value: 32 }, { text: '左装饰条定位', value: 33 }, { text: '右装饰条定位', value: 34 }, { text: '中装饰条定位', value: 35 }, { text: '趟门框定位', value: 36 }, { text: '门上定位', value: 37 }, { text: '柜两侧定位', value: 38 }, { text: 'order床栏杆安装', value: 39 }, { text: 'order床安装', value: 40 }, { text: 'order床下书桌安装', value: 41 }, { text: '油烟机烟板定位', value: 42 }, { text: '大衣柜外框定位', value: 43 }, { text: '备用', value: 44 }, { text: '自由定位(以基点为鼠标点)', value: 45 }, { text: '前缘饰板定位', value: 46 }, { text: '床身定位', value: 47 }, { text: '墙面定位(背后贴墙)', value: 48 }, { text: '眉板定位', value: 49 }, { text: 'centro床安装', value: 50 }, { text: '多维尚书门板、抽屉定位方式', value: 51 }, { text: '水电位定位', value: 52 }, { text: '转角罗马柱定位', value: 53 }, { text: '柜身前定位', value: 54 }, { text: '灯箱底板定位', value: 55 }, { text: '西门子logo定位', value: 56 }, { text: '苏黎世左装饰条定位', value: 57 }, { text: '苏黎世右装饰条定位', value: 58 }, { text: '苏黎世中装饰条定位', value: 59 }, { text: '门板/抽屉定位', value: 60 }, { text: '榻榻米门板', value: 61 }, { text: '产品前面定位', value: 62 }, { text: '产品后面定位', value: 63 }, { text: '产品左面定位', value: 64 }, { text: '产品右面定位', value: 65 }, { text: '产品顶面定位', value: 66 }, { text: '顶柜定位', value: 67 }, { text: '飘窗顶柜定位', value: 68 }, { text: '选板定位', value: 69 }, { text: '套格定位', value: 70 }, { text: '门板定位', value: 71 }, { text: '形门板定位', value: 72 }]
     }
   },
   computed: {
-    // tableDataFilter: function() {
-    //   return this.dataList.filter(el => {
-    //     const txt = el[this.searchTarget]
-    //     const st = this.searchText.toUpperCase()
-    //     return txt.toUpperCase().indexOf(st) >= 0 ||
-    //       toPinyin.getFirstLetter(txt).indexOf(st) >= 0 ||
-    //       toPinyin.chineseToPinYin(txt).toUpperCase().indexOf(st) >= 0
-    //   })
-    // }
-    // tableHeight() {
-    //   if (this.$refs.tbTable) {
-    //     return window.innerHeight - this.$refs.tbTable.$el.offsetTop - 50
-    //   }
-    //   return 500
-    // }
+
+  },
+  watch: {
+    radioVal(val) {
+      this.$nextTick(() => {
+        this.$refs.tbTable.doLayout()
+      })
+    },
+    ifUpdate(val) { // 根据selectStatusRes和selectBrandsRes判断是否刷新数据
+      if (val) { // 上架状态筛选
+        this.searchText = ''
+        if (Object.keys(this.selectStatusRes).length > 0) {
+          if (this.selectStatusRes.all) {
+            this.fetchData().then(() => {
+              this.brandsFilterFunc()
+            })
+          } else if (this.selectStatusRes.check.length > 0) {
+            this.fetchData().then(() => {
+              const temp = []
+              for (const item of this.dataList) {
+                for (const i of this.selectStatusRes.check) {
+                  if (item.status === i) {
+                    temp.push(item)
+                    break
+                  }
+                }
+              }
+              this.dataList = JSON.parse(JSON.stringify(temp))
+            }).then(() => {
+              this.brandsFilterFunc()
+            })
+          } else if (this.selectStatusRes.check.length === 0) {
+            this.dataList = []
+          }
+        }
+
+        this.ifUpdate = false
+        this.$refs.tbTable.doLayout()
+      }
+    }
   },
   mounted() {
-    // this.tableHeight = window.innerHeight - this.$refs.tbTable.$el.offsetTop - 400
+
   },
   methods: {
     async loadFun(node, resolve) {
@@ -167,9 +327,39 @@ export default {
     getResult(arr) {
       this.selectedItem = JSON.parse(JSON.stringify(arr))
       if (arr.length > 0) {
-        this.fetchData()
+        this.fetchData().then(() => {
+          this.onResize(true)
+        })
       } else {
         this.dataList = []
+      }
+    },
+    brandsFilterFunc() { // 品牌筛选
+      if (Object.keys(this.selectBrandsRes).length > 0) {
+        if (!this.selectBrandsRes.all) {
+          if (this.selectBrandsRes.check.length > 0) {
+            const temp = []
+            for (const item of this.dataList) {
+              for (const i of this.selectBrandsRes.check) {
+                if (item.spzp === 1 && i === 'spzp') {
+                  temp.push(item)
+                  break
+                }
+                if (item.wayes === 1 && i === 'wayes') {
+                  temp.push(item)
+                  break
+                }
+                if (item.homkoo === 1 && i === 'homkoo') {
+                  temp.push(item)
+                  break
+                }
+              }
+            }
+            this.dataList = JSON.parse(JSON.stringify(temp))
+          } else if (this.selectBrandsRes.check.length === 0) {
+            this.dataList = []
+          }
+        }
       }
     },
     tableRowStyle({ row, rowIndex }) {
@@ -183,12 +373,38 @@ export default {
       this.selectBrandsRes = res
       this.ifUpdate = true
     },
+    changeCatalog(catalog) { // 移动目录
+      confirmEdit(() => {
+        for (const item of catalog.id) {
+          const index = this.dataList.findIndex(v => v.id === item)
+          this.dataList[index].changed = 1
+          this.dataList[index].dir1 = catalog.to[0]
+          this.dataList[index].dir2 = catalog.to[1]
+          this.dataList[index].dir3 = catalog.to[2]
+          this.dataList[index].dir4 = catalog.to[3]
+          this.$refs.tbTable.doLayout()
+        }
+        // const editedArr = this.dataList.filter(item => item.changed === 1)
+        this.loadingList = true
+        // updateMat(editedArr)
+        //   .then(response => {
+        this.loadingList = false
+        this.$message.editOk()
+        // this.fetchData()
+        // })
+        // .catch(() => {
+        //   this.loadingList = false
+        //   this.$notify.editError()
+        // })
+      })
+      this.$refs.tbTable.clearSelection() // 清空选项
+    },
     saveProperty() {
       const editedArr = this.dataList.filter(item => item.changed)
       if (editedArr.length > 0) {
         confirmEdit(() => {
           this.loadingList = true
-          // updateDoorStyle(editedArr)
+          // updateMat(editedArr)
           //   .then(response => {
           this.loadingList = false
           this.$message.editOk()
@@ -212,6 +428,65 @@ export default {
           input.focus()
         }
       })
+    },
+    closeDialog(target) {
+      if (target === 'basic') {
+        this.basicDialogVisible = false
+      } else if (target === 'catalog') {
+        this.catalogLazyDialogVisible = false
+      } else if (target === 'size') {
+        this.sizeDialogVisible = false
+      } else if (target === 'params') {
+        this.paramsDialogVisible = false
+      } else if (target === 'door') {
+        this.doorDialogVisible = false
+      } else if (target === 'line') {
+        this.lineDialogVisible = false
+      } else if (target === 'position') {
+        this.positionDialogVisible = false
+      } else if (target === 'quote') {
+        this.quoteDialogVisible = false
+      } else if (target === 'other') {
+        this.otherDialogVisible = false
+      }
+      this.$refs.tbTable.clearSelection() // 清空选项
+    },
+    selectMaterial() {
+      if (this.radioVal === '') {
+        this.$confirm('未选择编辑功能', '警告', {
+          showCancelButton: false,
+          confirmButtonText: '确认',
+          type: 'warning'
+        }).catch(() => {})
+      } else {
+        if (this.selection.length > 0) {
+          if (this.radioVal === 'basic') {
+            this.basicDialogVisible = true
+          } else if (this.radioVal === 'catalog') {
+            this.catalogLazyDialogVisible = true
+          } else if (this.radioVal === 'size') {
+            this.sizeDialogVisible = true
+          } else if (this.radioVal === 'params') {
+            this.paramsDialogVisible = true
+          } else if (this.radioVal === 'door') {
+            this.doorDialogVisible = true
+          } else if (this.radioVal === 'line') {
+            this.lineDialogVisible = true
+          } else if (this.radioVal === 'position') {
+            this.positionDialogVisible = true
+          } else if (this.radioVal === 'quote') {
+            this.quoteDialogVisible = true
+          } else if (this.radioVal === 'other') {
+            this.otherDialogVisible = true
+          }
+        } else {
+          this.$confirm('未选择材质', '警告', {
+            showCancelButton: false,
+            confirmButtonText: '确认',
+            type: 'warning'
+          }).catch(() => {})
+        }
+      }
     },
     handleSelectionChange(selection) {
       this.selection = selection
@@ -239,6 +514,11 @@ export default {
         data.items.forEach(el => { el.changed = false })
         this.dataList = this.dataList.concat(data.items)
       }
+    },
+    onResize(show) {
+      setTimeout(() => {
+        this.tableHeight = window.innerHeight - document.querySelector('.app-main').offsetTop - this.$refs.tbTable.$el.offsetTop - 20
+      }, 500)
     }
   }
 }

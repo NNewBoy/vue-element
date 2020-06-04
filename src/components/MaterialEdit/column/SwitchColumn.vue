@@ -1,9 +1,11 @@
 <template>
-  <div class="app-container">
-    <el-table-column align="center" :label="label" :width="width" :min-width="minWidth">
+  <div id="select_column_container" class="app-container">
+    <el-table-column :label="label" :width="width" :min-width="minWidth" align="center">
       <template slot-scope="{row}">
-        <el-input v-model="row[value]" class="input-one" size="small" placeholder="请输入内容" @change="onChange(row)" />
-        <span>{{ row[value] }}</span>
+        <el-switch
+          :value="Boolean(row[value])"
+          @change="onChange(row)"
+        />
       </template>
     </el-table-column>
   </div>
@@ -11,14 +13,14 @@
 
 <script type="text/javascript">
 /**
+ * 使用改column组件的el-table需加上类名tb-edit
  * @property {String} label 列名
  * @property {String} width 列宽
  * @property {String} minWidth 最小列宽
  * @property {String} value 列绑定的字段名
  */
-
 export default {
-  name: 'CommonColumn',
+  name: 'SwitchColumn',
   props: {
     label: {
       require: true,
@@ -42,25 +44,21 @@ export default {
     }
   },
   data() {
-    return {}
+    return {
+      key: false
+    }
   },
   methods: {
     onChange(row) {
-      row.editStatus = 1
       row.changed = 1
+      const type = typeof row[this.value]
+      if (type === 'boolean') {
+        row[this.value] = !row[this.value]
+      } else if (type === 'number') {
+        row[this.value] = row[this.value] === 0 ? 1 : 0
+      }
     }
   }
 }
 </script>
 
-<style scoped>
-.tb-edit .el-input {
-  display: none
-}
-.tb-edit .current-row .el-input {
-  display: block
-}
-.tb-edit .current-row .el-input+span {
-  display: none
-}
-</style>

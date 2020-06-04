@@ -83,6 +83,7 @@
  */
 import elDragDialog from '@/directive/el-drag-dialog' // base on element-ui
 export default {
+  name: 'MaterialPictureDialog',
   directives: { elDragDialog },
   props: {
     dialogVisible: {

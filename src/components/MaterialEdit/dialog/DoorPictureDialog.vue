@@ -68,6 +68,7 @@
  */
 import elDragDialog from '@/directive/el-drag-dialog' // base on element-ui
 export default {
+  name: 'DoorPictureDialog',
   directives: { elDragDialog },
   props: {
     dialogVisible: {

@@ -74,6 +74,7 @@
 import MultiFilter from '@/components/MultiFilter'
 import elDragDialog from '@/directive/el-drag-dialog' // base on element-ui
 export default {
+  name: 'CatalogNameDialog',
   components: { MultiFilter },
   directives: { elDragDialog },
   props: {

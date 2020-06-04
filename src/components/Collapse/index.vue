@@ -42,7 +42,9 @@ export default {
   methods: {
     onClick() {
       this.show = !this.show
-      this.$emit('onShow', this.show)
+      this.$nextTick(() => {
+        this.$emit('onShow', this.show)
+      })
     }
   }
 }

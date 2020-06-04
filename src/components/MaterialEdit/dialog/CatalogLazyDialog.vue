@@ -27,10 +27,10 @@
         <el-breadcrumb-item v-for="(item,index) in cascaderVal" :key="index">{{ item }}</el-breadcrumb-item>
       </el-breadcrumb>
     </div>
-    <MultiFilter
-      :datas="cascaderDatas"
-      :filter-names="searchTarget==='door_color'?['门板系列','门板价格','门板造型']:['材质分类','材质系列']"
-      :multi-choices="searchTarget==='door_color'?[false,false,false]:[false,false]"
+    <LazyFilter
+      filter-name="产品目录"
+      :load="loadFun"
+      :level="4"
       @getResult="getResult"
     />
 
@@ -51,16 +51,16 @@
  * @property {Array} materialCheckboxVal 当前选择的材质数组
  * @property {Array} tableData 当前表单的数据数组
  * @property {Array} fromCatalog 当前选中的目录数组
- * @property {Array} cascaderDatas 当前目录的数据数组
  * @property {String} searchTarget 搜索时对应的匹配字段，用于判断是材质库或门板库
  * @function closeCatalogDialog 通知父组件关闭对话框
  * @function returnCatalog 返回目录转移数据{id,from,to}，id为选择的材质id数组，from为当前目录数组，to为目标目录数组
  */
-import MultiFilter from '@/components/MultiFilter'
+import LazyFilter from '@/components/LazyFilter'
 import elDragDialog from '@/directive/el-drag-dialog' // base on element-ui
+import { getProductDir } from '@/api/product'
 export default {
-  name: 'CatalogDialog',
-  components: { MultiFilter },
+  name: 'CatalogLazyDialog',
+  components: { LazyFilter },
   directives: { elDragDialog },
   props: {
     catalogDialogVisible: {
@@ -83,13 +83,6 @@ export default {
       }
     },
     fromCatalog: {
-      require: true,
-      type: Array,
-      default() {
-        return []
-      }
-    },
-    cascaderDatas: {
       require: true,
       type: Array,
       default() {
@@ -125,12 +118,20 @@ export default {
     }
   },
   methods: {
-    getResult(arr) {
-      if (arr.length > 0) {
-        this.cascaderVal = arr[0].map(item => item.name)
-      } else {
-        this.cascaderVal = []
+    async loadFun(node, resolve) {
+      let pathName = null
+      if (node.length !== 0) {
+        pathName = node.join('/')
       }
+      const { data } = await getProductDir(pathName)
+      let res = []
+      if (data) {
+        res = data.map(val => val.label)
+      }
+      return resolve(res)
+    },
+    getResult(arr) {
+      this.cascaderVal = JSON.parse(JSON.stringify(arr))
     },
     setVisible() {
       this.$emit('closeCatalogDialog')
