@@ -23,7 +23,7 @@
             <el-card :class="index===selected ? 'el-card-selected' : ''" @click.native="onClick(index)" @dblclick.native="onDblClick(index)" @contextmenu.prevent.native="openMenu($event)">
               <div style="text-align: center; margin:0 auto;position: relative;">
                 <div>
-                  <el-image :src="getDoorPreview(o.preview_pic)" style="width: 100%; height: 170px;" :lazy="true" />
+                  <el-image :src="getDoorPreview(o.preview_pic)" style="width: 100%; height: 170px;" />
                   <div v-if="o.door_inner" class="door-inner-container">
                     <div v-for="(inner, iInner) in o.door_inner" :key="iInner">
                       <el-image
@@ -72,7 +72,7 @@
       </el-col>
       <el-col :span="4" align="right">
         <el-button type="primary" @click="onCancel">取消</el-button>
-        <el-button type="primary" @click="onSelect">确定</el-button>
+        <el-button type="primary" :disabled="selected===-1" @click="onSelect">确定</el-button>
       </el-col>
     </div>
   </div>
@@ -80,7 +80,7 @@
 
 <script>
 import { getCatalogByDoorInner, getMatByDoorInner } from '@/api/material'
-import { getCatalog, getColorList, getDoorShapePic, getCatalogByScheme, getColorListByScheme } from '@/api/doorstyle'
+import { /* getCatalog, getColorList,*/ getDoorShapePic, getCatalogByScheme, getCatalogByProduct, getColorListByScheme, getColorListByProduct } from '@/api/doorstyle'
 import MemoryFilter from '@/components/MemoryFilter'
 import { getThumbnailUrl } from '@/utils/pic'
 import toPinyin from '@/utils/chineseToPinyin'
@@ -134,7 +134,7 @@ export default {
     },
     ...mapGetters([
       'brands',
-      'selectdoorparams'
+      'select_door_params'
     ]),
     initSelectedMat() {
       if (this.currentDoorInner && this.currentDoorInner.default_material) {
@@ -154,6 +154,11 @@ export default {
       } else {
         document.body.removeEventListener('click', this.closeMenu)
       }
+    },
+    select_door_params(value) {
+      // console.log(value)
+      // 约束条件发生变化，刷新页面
+      this.fetchData()
     }
   },
   created() {
@@ -163,11 +168,18 @@ export default {
     }
     const brand = this.$route.query.brand
     this.brand = brand || this.brands[0].key
-    this.fetchData()
+
+    if (this.doorStyleSchemeId.length > 0) {
+      this.fetchData() // 管理页面测试约束方案
+    } else {
+      //
+    }
+  },
+  mounted() {
+    window.VueCreated()
   },
   methods: {
     async fetchData() {
-      const { data } = await (this.doorStyleSchemeId.length > 0 ? getCatalogByScheme(this.doorStyleSchemeId, this.brand) : getCatalog())
       const calCatalog = (function() {
         return function fun(dirs) {
           const catalogs = []
@@ -187,26 +199,40 @@ export default {
         }
       })()
 
+      let data = null
+      if (this.select_door_params && this.select_door_params.modelnos && this.select_door_params.modelnos[0]) {
+        // console.log(this.select_door_params)
+        const rlt = await getCatalogByProduct(this.select_door_params)
+        data = rlt.data
+      } else if (this.doorStyleSchemeId.length > 0) {
+        const rlt = await getCatalogByScheme(this.doorStyleSchemeId, this.brand)
+        data = rlt.data
+      }
       this.catalogs = calCatalog(data)
+      // const { data } = await (this.doorStyleSchemeId.length > 0 ? getCatalogByScheme(this.doorStyleSchemeId, this.brand) : getCatalog())
+
+      // this.catalogs = calCatalog(data)
     },
     onCancel() {
-
+      window.CloseDialog()
     },
     onSelect() {
       // console.log('select: ', this.doorstyleList[this.selected])
-      // if (this.selected > -1 && this.doorstyleList.length > this.selected) {
-      //   const ds = this.doorstyleList[this.selected]
-      //   const st = JSON.stringify(ds)
-      //   window.SelectDoorStyle(st)
-      // }
+      if (this.selected > -1 && this.doorstyleList.length > this.selected) {
+        const ds = this.doorstyleList[this.selected]
+        const st = JSON.stringify(ds)
+        console.log(st)
+        window.SelectDoor(st)
+      }
     },
     cefTest() {
-      debugger
-      const td = JSON.parse(this.selectdoorparams)
-      console.log(td.brand)
-      console.log(td.initdoor)
-      console.log(td.widths)
-      console.log(td.heights)
+      // debugger
+      // console.log(this.select_door_params)
+      // const td = JSON.parse(this.select_door_params)
+      // console.log(td.brand)
+      // console.log(td.initdoor)
+      // console.log(td.widths)
+      // console.log(td.heights)
     },
     getResult(arr) {
       if (arr.length > 0) {
@@ -258,7 +284,16 @@ export default {
     },
     async fetchDoorColor() {
       this.listLoading = true
-      const { data } = await (this.doorStyleSchemeId.length > 0 ? getColorListByScheme(this.doorStyleSchemeId, this.doorStyle, this.brand) : getColorList(this.doorStyle))
+
+      let data = null
+      if (this.select_door_params && this.select_door_params.modelnos && this.select_door_params.modelnos[0]) {
+        const rlt = await getColorListByProduct(this.select_door_params, this.doorStyle)
+        data = rlt.data
+      } else if (this.doorStyleSchemeId.length > 0) {
+        const rlt = await getColorListByScheme(this.doorStyleSchemeId, this.doorStyle, this.brand)
+        data = rlt.data
+      }
+
       this.doorstyleList = data
       this.listLoading = false
     },
@@ -287,6 +322,7 @@ export default {
     selectBrand(brand) {
       this.brand = brand
       this.fetchData() // 目录都有可能不一样，要重新获取
+      this.fetchDoorColor()
     },
     openMenu(event) {
       // console.log(event)

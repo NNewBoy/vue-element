@@ -15,6 +15,22 @@ export function getCatalogByScheme(schemeid, brand) {
   })
 }
 
+export function getCatalogByProduct(params) {
+  return request({
+    url: '/doorstyle/catalogpro',
+    method: 'get',
+    params: { brand: params.brand, modelnos: params.modelnos }
+  })
+}
+
+export function getColorListByProduct(params, doorstyle) {
+  return request({
+    url: '/doorstyle/listpro',
+    method: 'get',
+    params: { doorstyle, brand: params.brand, modelnos: params.modelnos }
+  })
+}
+
 export function getColorList(doorstyle) {
   return request({
     url: '/doorstyle/list',

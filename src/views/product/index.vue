@@ -2,14 +2,10 @@
   <div class="app-container">
     <Collapse :init-show="true" @onShow="onResize">
       <template slot="title">
-        筛选<i class="header-icon el-icon-info" />
+        筛选
+        <i class="header-icon el-icon-info" />
       </template>
-      <LazyFilter
-        filter-name="产品目录"
-        :load="loadFun"
-        :level="4"
-        @getResult="getResult"
-      />
+      <LazyFilter filter-name="产品目录" :load="loadFun" :level="4" @getResult="getResult" />
       <el-row>
         <el-col :span="10">
           <StatusFilter @selectStatus="selectStatus" />
@@ -25,22 +21,27 @@
         <el-input
           v-model="listQuery.search"
           clearable
-          size="small"
+          size="mini"
           placeholder="查找"
           prefix-icon="el-icon-search"
         />
-        <el-button type="primary" icon="el-icon-search" size="small" @click="onSearch" />
+        <el-button type="primary" icon="el-icon-search" size="mini" @click="onSearch" />
       </div>
 
       <div class="menu-item">
-        <el-dropdown size="small" split-button type="primary" @click="selectMaterial" @command="command=>radioVal=command">
+        <el-dropdown
+          size="mini"
+          split-button
+          type="primary"
+          @click="selectMaterial"
+          @command="command=>radioVal=command"
+        >
           {{ radioVal | dropFilter }}
           <el-dropdown-menu slot="dropdown">
-            <el-dropdown-item command="">更多属性</el-dropdown-item>
+            <el-dropdown-item command>更多属性</el-dropdown-item>
             <el-dropdown-item command="basic">基础信息</el-dropdown-item>
             <el-dropdown-item command="catalog">目录</el-dropdown-item>
             <el-dropdown-item command="size">尺寸</el-dropdown-item>
-            <el-dropdown-item command="params">参数化属性</el-dropdown-item>
             <el-dropdown-item command="door">门板属性</el-dropdown-item>
             <el-dropdown-item command="line">线条属性</el-dropdown-item>
             <el-dropdown-item command="position">定位</el-dropdown-item>
@@ -52,114 +53,105 @@
 
       <div class="menu-item radio-menu">
         <el-button-group class="brand-button">
-          <el-button type="success" size="small" @click="saveProperty">保存</el-button>
-          <el-button type="warning" size="small" @click="resetProperty">重置</el-button>
+          <el-button type="success" size="mini" @click="saveProperty">保存</el-button>
+          <el-button type="warning" size="mini" @click="resetProperty">重置</el-button>
+          <el-button v-show="openBtn" type="primary" size="mini" @click="addProperty">添加</el-button>
+          <el-button v-show="openBtn" type="primary" size="mini" @click="copyProperty">复制</el-button>
+          <el-button v-show="openBtn" type="primary" size="mini" @click="pasteProperty">粘贴</el-button>
+          <el-button v-show="openBtn" type="primary" size="mini" @click="pasteAndAddProperty">添加并粘贴</el-button>
+          <el-button type="primary" size="mini" :icon="openBtn?'el-icon-arrow-left':'el-icon-arrow-right'" @click="openBtn = !openBtn" />
         </el-button-group>
       </div>
     </div>
     <br>
-    <el-table
+    <vxe-table
       ref="tbTable"
-      v-loading="loadingList"
-      v-el-table-infinite-scroll="loadNextPage"
+      keep-source
+      edit-config
+      :height="tableHeight+'px'"
+      :loading="loadingList"
       :data="dataList"
-      :row-style="tableRowStyle"
-      element-loading-text="Loading"
-      :height="tableHeight"
-      border
-      fit
-      highlight-current-row
-      class="tb-edit"
-      @selection-change="handleSelectionChange"
-      @cell-click="onClickTb"
+      :mouse-config="{selected: true}"
+      :keyboard-config="{isArrow: true, isDel: true, isEnter: true, isTab: true, isEdit: true, editMethod}"
+      @checkbox-change="handleSelectionChange"
+      @checkbox-all="handleSelectionChange"
     >
-      <el-table-column
-        type="selection"
-        width="45"
-      />
-      <el-table-column align="center" label="ID" width="50">
-        <template slot-scope="scope">
-          {{ scope.$index + 1 }}
-        </template>
-      </el-table-column>
-      <el-table-column label="删除" align="center" width="82" class-name="mini-padding fixed-width">
-        <template slot-scope="{row,$index}">
-          <el-button
-            v-if="row.status!='deleted'"
+      <vxe-table-column type="checkbox" width="45" />
+      <vxe-table-column type="seq" title="ID" width="50" />
+      <vxe-table-column field="name" title="名称" min-width="200" :edit-render="{name: '$input'}" />
+      <vxe-table-column field="modelno" title="型号" min-width="200" :edit-render="{name: '$input'}" />
+
+      <!-- 基础信息 -->
+      <vxe-table-column field="product_type" title="产品类型" width="150" :edit-render="{name: 'myButton', events: {click: onSelected},props: produtTypeOption}" />
+      <vxe-table-column field="change_size" title="可修改尺寸" width="110" :edit-render="{name: 'trueFalseEditSwitch'}" />
+      <vxe-table-column field="direction" title="开向" width="100" :edit-render="{name: '$select', options: productDirectionOption, optionProps: {value: 'key', label: 'name'}}" />
+      <vxe-table-column field="brand" title="所属品牌" width="100" :edit-render="{name: '$input'}" />
+      <vxe-table-column field="model_path" title="模型路径" width="100" :edit-render="{name: '$input'}" />
+      <vxe-table-column field="pic" title="预览图" width="200" :edit-render="{name: '$input'}" />
+      <!-- 目录 -->
+      <vxe-table-column field="dir1" title="目录1" width="100" :edit-render="{name: 'showStatus'}" />
+      <vxe-table-column field="dir2" title="目录2" width="100" :edit-render="{name: 'showStatus'}" />
+      <vxe-table-column field="dir3" title="目录3" width="100" :edit-render="{name: 'showStatus'}" />
+      <vxe-table-column field="dir4" title="目录4" width="100" :edit-render="{name: 'showStatus'}" />
+      <!-- 尺寸 -->
+      <vxe-table-column field="paramunit_name" title="参数名" width="200" :edit-render="{name: '$input'}" />
+      <vxe-table-column field="param_type" title="参数类型" width="150" :edit-render="{name: '$select', options: unitParamTypeOption, optionProps: {value: 'key', label: 'name'}}" />
+      <vxe-table-column field="l" title="宽" width="150" :edit-render="{name: 'ElInputNumber',props: { min: 0 }}" />
+      <vxe-table-column field="w" title="深" width="150" :edit-render="{name: 'ElInputNumber',props: { min: 0 }}" />
+      <vxe-table-column field="h" title="高" width="150" :edit-render="{name: 'ElInputNumber',props: { min: 0 }}" />
+      <!-- 门板属性 -->
+      <vxe-table-column field="all_doorstyle" title="适用所有门板" width="130" :edit-render="{name: 'trueFalseEditSwitch'}" />
+      <vxe-table-column field="reverse_permit_door_mode" title="门板反向限制" width="130" :edit-render="{name: 'trueFalseEditSwitch'}" />
+      <vxe-table-column field="door_style_scheme_id" title="门板限制方案" width="130" :edit-render="{name: '$input', props: {type:'integer'}}" />
+      <!-- 线条属性 -->
+      <vxe-table-column field="worktop_mx_line" title="台面眉线" width="100" :edit-render="{name: 'trueFalseEditSwitch'}" />
+      <vxe-table-column field="btm_light_line" title="踢脚灯线" width="100" :edit-render="{name: 'trueFalseEditSwitch'}" />
+      <!-- 定位 -->
+      <vxe-table-column field="elva_mode" title="定位方式" width="200" :edit-render="{name: 'myButton', events: {click: onSelected}, props: elvaModeOption}" />
+      <vxe-table-column field="elva" title="定位高度" width="150" :edit-render="{name: 'ElInputNumber',props: { min: 0 }}" />
+      <!-- 报价数据 -->
+      <vxe-table-column field="need_quotation" title="参与报价" width="100" :edit-render="{name: 'trueFalseEditSwitch'}" />
+      <vxe-table-column field="code" title="编码" width="120" :edit-render="{name: '$input'}" />
+      <vxe-table-column field="standard" title="规格" width="150" :edit-render="{name: '$input'}" />
+      <vxe-table-column field="color" title="颜色" width="100" :edit-render="{name: '$input'}" />
+      <vxe-table-column field="material" title="材料" width="100" :edit-render="{name: '$input'}" />
+      <vxe-table-column field="unit" title="单位" width="80" :edit-render="{name: '$input'}" />
+      <vxe-table-column field="price" title="单价" width="150" :edit-render="{name: 'ElInputNumber',props: { min: 0 }}" />
+      <vxe-table-column field="comment" title="备注" width="150" :edit-render="{name: '$input'}" />
+      <vxe-table-column field="class" title="类型" width="100" :edit-render="{name: '$input'}" />
+      <vxe-table-column field="ext1" title="扩展信息" width="100" :edit-render="{name: '$input'}" />
+      <!-- 其他 -->
+      <vxe-table-column field="hide" title="隐藏" width="100" :edit-render="{name: 'trueFalseEditSwitch'}" />
+      <vxe-table-column field="version" title="版本" width="120" :edit-render="{name: '$input'}" />
+
+      <vxe-table-column title="删除" width="82">
+        <template v-slot="{ row }">
+          <vxe-button
+            status="danger"
             size="mini"
-            type="danger"
             icon="el-icon-delete"
-            @click="onDelete(row,$index)"
+            @click="onDelete(row)"
           />
         </template>
-      </el-table-column>
+      </vxe-table-column>
+    </vxe-table>
 
-      <CommonColumn label="名称" min-width="200" value="name" />
-      <!-- 基础信息 -->
-      <div v-if="radioVal==='basic'">
-        <CommonColumn label="型号" min-width="200" value="modelno" />
-        <SelectColumn label="产品类型" width="150" value="product_type" :filterable="true" :data-list="ProdutTypeOption" />
-        <SwitchColumn label="可修改尺寸" width="100" value="change_size" />
-        <SelectColumn label="开向" width="100" value="direction" :data-list="ProductDirectionOption" />
-        <CommonColumn label="所属品牌" width="100" value="brand" />
-        <CommonColumn label="模型路径" width="100" value="model_path" />
-        <CommonColumn label="预览图" width="200" value="pic" />
-      </div>
-      <!-- 目录 -->
-      <div v-if="radioVal==='catalog'">
-        <CommonColumn label="目录1" width="100" value="dir1" />
-        <CommonColumn label="目录2" width="100" value="dir2" />
-        <CommonColumn label="目录3" width="100" value="dir3" />
-        <CommonColumn label="目录4" width="100" value="dir4" />
-      </div>
-      <!-- 尺寸 -->
-      <div v-if="radioVal==='size'">
-        <CommonColumn label="宽" width="100" value="l" />
-        <CommonColumn label="深" width="100" value="w" />
-        <CommonColumn label="高" width="100" value="h" />
-      </div>
-      <!-- 参数化属性 -->
-      <div v-if="radioVal==='params'">
-        <CommonColumn label="参数名" width="200" value="paramunit_name" />
-        <SelectColumn label="参数类型" width="150" value="param_type" :data-list="UnitParamTypeOption" />
-      </div>
-      <!-- 门板属性 -->
-      <div v-if="radioVal==='door'">
-        <SwitchColumn label="适用所有门板" width="120" value="all_doorstyle" />
-        <SwitchColumn label="门板反向限制" width="120" value="reverse_permit_door_mode" />
-        <CommonColumn label="门板限制方案" width="120" value="door_style_scheme_id" />
-      </div>
-      <!-- 线条属性 -->
-      <div v-if="radioVal==='line'">
-        <SwitchColumn label="台面眉线" width="100" value="worktop_mx_line" />
-        <SwitchColumn label="踢脚灯线" width="100" value="btm_light_line" />
-      </div>
-      <!-- 定位 -->
-      <div v-if="radioVal==='position'">
-        <SelectColumn label="定位方式" width="120" value="elva_mode" :filterable="true" :data-list="ElvaModeOption" />
-        <CommonColumn label="定位高度" width="100" value="elva" />
-      </div>
-      <!-- 报价数据 -->
-      <div v-if="radioVal==='quote'">
-        <CommonColumn label="编码" width="120" value="code" />
-        <CommonColumn label="规格" width="150" value="standard" />
-        <CommonColumn label="颜色" width="100" value="color" />
-        <CommonColumn label="材料" width="100" value="material" />
-        <CommonColumn label="单位" width="80" value="unit" />
-        <CommonColumn label="单价" width="100" value="price" />
-        <CommonColumn label="备注" width="150" value="comment" />
-        <CommonColumn label="类型" width="100" value="class" />
-        <CommonColumn label="扩展信息" width="100" value="ext1" />
-      </div>
-      <!-- 其他 -->
-      <div v-if="radioVal==='other'">
-        <SwitchColumn label="隐藏" width="100" value="hide" />
-        <CommonColumn label="版本" width="120" value="version" />
-        <SwitchColumn label="参与报价" width="100" value="need_quotation" />
-      </div>
+    <vxe-pager
+      :loading="loadingList"
+      :current-page="listQuery.page"
+      :page-size="listQuery.per_page"
+      :total="total"
+      @page-change="fetchData"
+    />
 
-    </el-table>
-
+    <SelectDialog
+      title="请选择"
+      :dialog-visible="dialogSelected.visible"
+      :table-data="dialogSelected.selection"
+      :selected="dialogSelected.selected"
+      @closeSelectDialog="closeDialog('dialogSelect')"
+      @getSelected="changeParams"
+    />
     <CatalogLazyDialog
       :catalog-dialog-visible="catalogLazyDialogVisible"
       :material-checkbox-val="selection"
@@ -169,31 +161,44 @@
       @closeCatalogDialog="closeDialog('catalog')"
       @returnCatalog="changeCatalog"
     />
+    <VxeCommonDialog
+      :title="commonDialogTitle"
+      :label-width="commonLabelWidth"
+      :dialog-visible="dialogVisible"
+      :selected-form-val="selection"
+      :dialog-form-val-default="commonDialogDefault"
+      :rules="commonDialogRules"
+      search-target="name"
+      @closeDialog="closeDialog('dialog')"
+    />
 
-    <!-- <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.per_page" @pagination="fetchData" /> -->
   </div>
 </template>
 
 <script type="text/javascript">
 import elTableInfiniteScroll from 'el-table-infinite-scroll'
-import { editDelete } from '@/utils/edit'
-import { confirmEdit } from '@/utils/edit'
-import { getProductDir, getProductList } from '@/api/product'
+import { getProductDir, getProductList, updateProduct, deleteProduct } from '@/api/product'
 import LazyFilter from '@/components/LazyFilter'
-import CommonColumn from '@/components/MaterialEdit/column/CommonColumn'
-import SelectColumn from '@/components/MaterialEdit/column/SelectColumn'
-import SwitchColumn from '@/components/MaterialEdit/column/SwitchColumn'
 import BrandsFilter from '@/components/MaterialEdit/filter/BrandsFilter'
 import StatusFilter from '@/components/MaterialEdit/filter/StatusFilter'
 import Collapse from '@/components/Collapse'
-import CatalogLazyDialog from '@/components/MaterialEdit/dialog/CatalogLazyDialog'
-// import Pagination from '@/components/Pagination'
+import CatalogLazyDialog from '@/components/MaterialEdit/dialog/VxeCatalogLazyDialog'
+import SelectDialog from '@/components/MaterialEdit/dialog/VxeSelectDialog'
+import VxeCommonDialog from '@/components/MaterialEdit/dialog/VxeCommonDialog'
+import { copyToClipboard, pasteFromClipboard } from '@/utils/clipboard'
+import {
+  ProdutTypeOption,
+  UnitParamTypeOption,
+  ProductDirectionOption,
+  TrueFalseOption,
+  ElvaModeOption
+} from '@/utils/const'
 
 export default {
   directives: {
     'el-table-infinite-scroll': elTableInfiniteScroll
   },
-  components: { LazyFilter, CommonColumn, SelectColumn, SwitchColumn, BrandsFilter, StatusFilter, Collapse, CatalogLazyDialog /*, Pagination*/ },
+  components: { LazyFilter, BrandsFilter, StatusFilter, Collapse, CatalogLazyDialog, SelectDialog, VxeCommonDialog },
   filters: {
     dropFilter: function(val) {
       switch (val) {
@@ -203,8 +208,6 @@ export default {
           return '目录'
         case 'size':
           return '尺寸'
-        case 'params':
-          return '参数化属性'
         case 'door':
           return '门板属性'
         case 'line':
@@ -222,25 +225,31 @@ export default {
   },
   data() {
     return {
-      searchText: '',
+      columns: [], // 表格所展示列
+      dialogSelected: {
+        row: {},
+        column: {},
+        selection: [],
+        selected: '',
+        visible: false
+      }, // 当前选中项
+      produtTypeOption: ProdutTypeOption,
+      unitParamTypeOption: UnitParamTypeOption,
+      productDirectionOption: ProductDirectionOption,
+      trueFalseOption: TrueFalseOption,
+      elvaModeOption: ElvaModeOption,
       searchTarget: 'name',
       loadingList: false,
       dataList: [],
       selection: [], // 选中的行
       radioVal: '', // 选择材料参数
-      basicDialogVisible: false,
+      dialogVisible: false,
       catalogLazyDialogVisible: false,
-      sizeDialogVisible: false,
-      paramsDialogVisible: false,
-      doorDialogVisible: false,
-      lineDialogVisible: false,
-      positionDialogVisible: false,
-      quoteDialogVisible: false,
-      otherDialogVisible: false,
       selectedItem: [], // 选中的选项
       selectStatusRes: {}, // 上架状态筛选器的返回值
       selectBrandsRes: {}, // 品牌筛选器的返回值
       ifUpdate: false, // 判断是否刷新数据
+      openBtn: false, // 编辑按钮打开与否
       // 翻页参数
       listQuery: {
         page: 1,
@@ -248,25 +257,80 @@ export default {
         search: undefined
       },
       total: 0,
-      tableHeight: 1,
-      ProdutTypeOption: [{ text: '无', value: -1 }, { text: '地柜', value: 0 }, { text: '吊柜', value: 1 }, { text: '高柜', value: 2 }, { text: '洗衣机', value: 3 }, { text: '冰箱', value: 4 }, { text: '油烟机', value: 5 }, { text: '装饰柜', value: 6 }, { text: '星盆', value: 7 }, { text: '炉灶', value: 8 }, { text: '拉手', value: 9 }, { text: '其它', value: 10 }, { text: '半高柜', value: 11 }, { text: '烤箱(烤箱定位)', value: 12 }, { text: '微波炉(内置电器)', value: 13 }, { text: '消毒柜', value: 14 }, { text: '洗碗机', value: 15 }, { text: '铝脚', value: 16 }, { text: '水位设施', value: 17 }, { text: '电位设施', value: 18 }, { text: '气位设施', value: 19 }, { text: '拉篮', value: 20 }, { text: '水龙头', value: 21 }, { text: '独立浴缸', value: 22 }, { text: '地台浴缸', value: 23 }, { text: '高淋浴房', value: 24 }, { text: '挂盆', value: 25 }, { text: '柱盆', value: 26 }, { text: '马桶', value: 27 }, { text: '热水器', value: 28 }, { text: '衣柜功能件', value: 29 }, { text: '底架', value: 30 }, { text: '房门', value: 31 }, { text: '窗', value: 32 }, { text: '电饭煲', value: 33 }, { text: '米箱', value: 34 }, { text: '垃圾桶', value: 35 }, { text: '集成炉灶(环保灶)', value: 36 }, { text: '集成水槽', value: 37 }, { text: '博古架', value: 38 }, { text: '酒格', value: 39 }],
-      ProductDirectionOption: [{ text: '任意', value: 0 }, { text: '左开', value: 1 }, { text: '右开', value: 2 }],
-      UnitParamTypeOption: [{ text: '普通单元', value: 0 }, { text: '结构固定单元', value: 1 }, { text: '自定义结构单元', value: 2 }],
-      ElvaModeOption: [{ text: '在地面', value: 0 }, { text: '在踢脚板', value: 1 }, { text: '位于吊柜离地高度', value: 2 }, { text: '在台面上', value: 3 }, { text: '在台面上(选柜定位)', value: 4 }, { text: '在台面中(选柜定位)', value: 5 }, { text: '在台面下(选柜定位)', value: 6 }, { text: '在选择的物体上', value: 7 }, { text: '在选择的物体下', value: 8 }, { text: '在特定的高度上', value: 9 }, { text: '在特定高(选柜定位)', value: 10 }, { text: '在特定的高度下', value: 11 }, { text: '内置电器	', value: 12 }, { text: '自由定位(表面吸附)', value: 13 }, { text: '背板定位', value: 14 }, { text: '电器自动适配大小定位', value: 15 }, { text: '在选择的层板上(或下)', value: 16 }, { text: '柜层板定位', value: 17 }, { text: '墙面定位(底部贴墙)', value: 18 }, { text: '地面定位', value: 19 }, { text: '拉篮定位', value: 20 }, { text: 'DoorBell墙挂式定位', value: 21 }, { text: ' 随目标定位位置', value: 22 }, { text: '油烟机定位', value: 23 }, { text: '在特定高(选2立柱定位)', value: 24 }, { text: '在特定高(选3立柱定位)', value: 25 }, { text: '选4柱定位', value: 26 }, { text: 'Rayes墙挂式定位', value: 27 }, { text: '多宝格定位', value: 28 }, { text: '罗马柱定位', value: 29 }, { text: '立隔板定位', value: 30 }, { text: '层板下的横向挂衣杆定位', value: 31 }, { text: '层板下的纵向挂衣杆定位', value: 32 }, { text: '左装饰条定位', value: 33 }, { text: '右装饰条定位', value: 34 }, { text: '中装饰条定位', value: 35 }, { text: '趟门框定位', value: 36 }, { text: '门上定位', value: 37 }, { text: '柜两侧定位', value: 38 }, { text: 'order床栏杆安装', value: 39 }, { text: 'order床安装', value: 40 }, { text: 'order床下书桌安装', value: 41 }, { text: '油烟机烟板定位', value: 42 }, { text: '大衣柜外框定位', value: 43 }, { text: '备用', value: 44 }, { text: '自由定位(以基点为鼠标点)', value: 45 }, { text: '前缘饰板定位', value: 46 }, { text: '床身定位', value: 47 }, { text: '墙面定位(背后贴墙)', value: 48 }, { text: '眉板定位', value: 49 }, { text: 'centro床安装', value: 50 }, { text: '多维尚书门板、抽屉定位方式', value: 51 }, { text: '水电位定位', value: 52 }, { text: '转角罗马柱定位', value: 53 }, { text: '柜身前定位', value: 54 }, { text: '灯箱底板定位', value: 55 }, { text: '西门子logo定位', value: 56 }, { text: '苏黎世左装饰条定位', value: 57 }, { text: '苏黎世右装饰条定位', value: 58 }, { text: '苏黎世中装饰条定位', value: 59 }, { text: '门板/抽屉定位', value: 60 }, { text: '榻榻米门板', value: 61 }, { text: '产品前面定位', value: 62 }, { text: '产品后面定位', value: 63 }, { text: '产品左面定位', value: 64 }, { text: '产品右面定位', value: 65 }, { text: '产品顶面定位', value: 66 }, { text: '顶柜定位', value: 67 }, { text: '飘窗顶柜定位', value: 68 }, { text: '选板定位', value: 69 }, { text: '套格定位', value: 70 }, { text: '门板定位', value: 71 }, { text: '形门板定位', value: 72 }]
+      tableHeight: 400,
+      basicDialogDefault: [
+        { name: '产品类型', key: 'product_type', value: -1, span: 12, type: 'dialog', options: ProdutTypeOption, optionProps: { value: 'key', label: 'name' }},
+        { name: '可修改尺寸', key: 'change_size', value: 1, span: 8, type: 'switch', options: TrueFalseOption, optionProps: { value: 'key', label: 'name' }},
+        { name: '开向', key: 'direction', value: 0, span: 8, type: 'select', options: ProductDirectionOption, optionProps: { value: 'key', label: 'name' }},
+        { name: '所属品牌', key: 'brand', value: null, span: 8, type: 'input' },
+        { name: '模型路径', key: 'model_path', value: '', span: 8, type: 'input' },
+        { name: '预览图', key: 'pic', value: '', span: 24, type: 'input' }
+      ],
+      basicDialogRules: {},
+      sizeDialogDefault: [
+        { name: '参数名', key: 'paramunit_name', value: '', span: 12, type: 'input' },
+        { name: '参数类型', key: 'param_type', value: 0, span: 12, type: 'select', options: UnitParamTypeOption, optionProps: { value: 'key', label: 'name' }},
+        { name: '宽', key: 'l', value: 0, span: 8, type: 'input' },
+        { name: '深', key: 'w', value: 0, span: 8, type: 'input' },
+        { name: '高', key: 'h', value: 0, span: 8, type: 'input' }
+      ],
+      sizeDialogRules: {
+        l: [{ trigger: 'change', validator: this.validateFunCanNull }],
+        w: [{ trigger: 'change', validator: this.validateFunCanNull }],
+        h: [{ trigger: 'change', validator: this.validateFunCanNull }]
+      },
+      doorDialogDefault: [
+        { name: '适用所有门板', key: 'all_doorstyle', value: 1, span: 8, type: 'switch', options: TrueFalseOption, optionProps: { value: 'key', label: 'name' }},
+        { name: '门板反向限制', key: 'reverse_permit_door_mode', value: 0, span: 8, type: 'switch', options: TrueFalseOption, optionProps: { value: 'key', label: 'name' }},
+        { name: '门板限制方案', key: 'door_style_scheme_id', value: null, span: 8, type: 'input' }
+      ],
+      doorDialogRules: {
+        door_style_scheme_id: [{ trigger: 'change', validator: this.validateFunCanNull }]
+      },
+      lineDialogDefault: [
+        { name: '台面眉线', key: 'worktop_mx_line', value: 0, span: 13, type: 'switch', options: TrueFalseOption, optionProps: { value: 'key', label: 'name' }},
+        { name: '踢脚灯线', key: 'btm_light_line', value: 0, span: 13, type: 'switch', options: TrueFalseOption, optionProps: { value: 'key', label: 'name' }}
+      ],
+      lineDialogRules: {},
+      positionDialogDefault: [
+        { name: '定位方式', key: 'elva_mode', value: 0, span: 13, type: 'dialog', options: ElvaModeOption, optionProps: { value: 'key', label: 'name' }},
+        { name: '定位高度', key: 'elva', value: 0, span: 13, type: 'input' }
+      ],
+      positionDialogRules: {
+        elva: [{ trigger: 'change', validator: this.validateFunCanNull }]
+      },
+      quoteDialogDefault: [
+        { name: '参与报价', key: 'need_quotation', value: 1, span: 8, type: 'switch', options: TrueFalseOption, optionProps: { value: 'key', label: 'name' }},
+        { name: '编码', key: 'code', value: '', span: 8, type: 'input' },
+        { name: '规格', key: 'standard', value: '0x0x0', span: 8, type: 'input' },
+        { name: '颜色', key: 'color', value: '', span: 8, type: 'input' },
+        { name: '材料', key: 'material', value: '', span: 8, type: 'input' },
+        { name: '单位', key: 'unit', value: '个', span: 8, type: 'input' },
+        { name: '单价', key: 'price', value: 0, span: 8, type: 'input' },
+        { name: '备注', key: 'comment', value: '', span: 8, type: 'input' },
+        { name: '类型', key: 'class', value: '', span: 8, type: 'input' },
+        { name: '扩展信息', key: 'ext1', value: '', span: 8, type: 'input' }
+      ],
+      quoteDialogRules: {
+        price: [{ trigger: 'change', validator: this.validateFunCanNull }]
+      },
+      otherDialogDefault: [
+        { name: '隐藏', key: 'hide', value: 0, span: 13, type: 'switch', options: TrueFalseOption, optionProps: { value: 'key', label: 'name' }},
+        { name: '版本', key: 'version', value: '', span: 13, type: 'input' }
+      ],
+      otherDialogRules: {},
+      commonDialogDefault: [], // 对话框的默认信息
+      commonDialogRules: {}, // 对话框的验证规则
+      commonDialogTitle: '', // 对话框标题
+      commonLabelWidth: 'auto' // 对话框表单标签宽度
     }
-  },
-  computed: {
-
   },
   watch: {
     radioVal(val) {
-      this.$nextTick(() => {
-        this.$refs.tbTable.doLayout()
-      })
+      this.setColumnsVisible()
     },
     ifUpdate(val) { // 根据selectStatusRes和selectBrandsRes判断是否刷新数据
       if (val) { // 上架状态筛选
-        this.searchText = ''
         if (Object.keys(this.selectStatusRes).length > 0) {
           if (this.selectStatusRes.all) {
             this.fetchData().then(() => {
@@ -293,14 +357,29 @@ export default {
         }
 
         this.ifUpdate = false
-        this.$refs.tbTable.doLayout()
+        // this.$refs.tbTable.doLayout()
       }
     }
   },
-  mounted() {
-
+  created() {
+    this.$nextTick(() => {
+      this.columns = this.$refs.tbTable.getColumns()
+      this.setColumnsVisible()
+    })
   },
   methods: {
+    validateFunCanNull(rule, value, callback) { // 对话框表单验证函数
+      if (value) {
+        const reg = /^-?\d+\.?\d*$/
+        if (reg.test(value)) {
+          callback()
+        } else {
+          callback(new Error('请输入数字'))
+        }
+      } else {
+        callback()
+      }
+    },
     async loadFun(node, resolve) {
       let pathName = null
       if (node.length !== 0) {
@@ -313,12 +392,14 @@ export default {
       }
       return resolve(res)
     },
-    async fetchData() {
-      this.listQuery.page = 1
+    async fetchData(params) {
+      if (params) {
+        this.listQuery.page = params.currentPage
+        this.listQuery.per_page = params.pageSize
+      }
       if (this.selectedItem.length > 0) {
         this.loadingList = true
         const { data } = await getProductList(this.selectedItem.join('\\'), this.listQuery)
-        data.items.forEach(el => { el.changed = false })
         this.dataList = data.items
         this.total = data.total
         this.loadingList = false
@@ -362,9 +443,6 @@ export default {
         }
       }
     },
-    tableRowStyle({ row, rowIndex }) {
-      return row.changed === 1 ? { 'background-color': 'PeachPuff' } : ''
-    },
     selectStatus(res) {
       this.selectStatusRes = res
       this.ifUpdate = true
@@ -373,152 +451,289 @@ export default {
       this.selectBrandsRes = res
       this.ifUpdate = true
     },
+    onSelected({ row, column }) {
+      this.dialogSelected.row = row
+      this.dialogSelected.column = column
+      let res = {}
+      if (column.property === 'product_type') {
+        this.dialogSelected.selection = this.produtTypeOption
+      } else if (column.property === 'elva_mode') {
+        this.dialogSelected.selection = this.elvaModeOption
+      }
+      res = this.dialogSelected.selection.find((val) => val.key === row[column.property])
+      this.dialogSelected.selected = res ? res.name : ''
+      this.dialogSelected.visible = true
+    },
+    changeParams(res) {
+      this.dialogSelected.row[this.dialogSelected.column.property] = res.key
+    },
     changeCatalog(catalog) { // 移动目录
-      confirmEdit(() => {
-        for (const item of catalog.id) {
-          const index = this.dataList.findIndex(v => v.id === item)
-          this.dataList[index].changed = 1
-          this.dataList[index].dir1 = catalog.to[0]
-          this.dataList[index].dir2 = catalog.to[1]
-          this.dataList[index].dir3 = catalog.to[2]
-          this.dataList[index].dir4 = catalog.to[3]
-          this.$refs.tbTable.doLayout()
-        }
-        // const editedArr = this.dataList.filter(item => item.changed === 1)
-        this.loadingList = true
-        // updateMat(editedArr)
-        //   .then(response => {
-        this.loadingList = false
-        this.$message.editOk()
-        // this.fetchData()
-        // })
-        // .catch(() => {
-        //   this.loadingList = false
-        //   this.$notify.editError()
-        // })
-      })
-      this.$refs.tbTable.clearSelection() // 清空选项
+      for (const item of this.selection) {
+        item.dir1 = catalog.to[0]
+        item.dir2 = catalog.to[1]
+        item.dir3 = catalog.to[2]
+        item.dir4 = catalog.to[3]
+      }
     },
     saveProperty() {
-      const editedArr = this.dataList.filter(item => item.changed)
-      if (editedArr.length > 0) {
-        confirmEdit(() => {
-          this.loadingList = true
-          // updateMat(editedArr)
-          //   .then(response => {
-          this.loadingList = false
-          this.$message.editOk()
-          this.fetchData()
-          //   })
-          //   .catch(() => {
-          //     this.loadingList = false
-          //     this.$notify.editError()
-          //   })
+      console.log(this.dataList)
+      console.log(this.selection)
+      const insertRecords = this.$refs.tbTable.getInsertRecords()
+      const updateRecords = this.$refs.tbTable.getUpdateRecords()
+      const editedArr = [...insertRecords, ...updateRecords]
+      if (insertRecords.length > 0 || updateRecords.length > 0) {
+        this.$XModal.confirm({
+          message: `新增${insertRecords.length}行，修改${updateRecords.length}行，您确定要保存数据吗?`,
+          maskClosable: true, escClosable: true }).then(type => {
+          if (type === 'confirm') {
+            this.loadingList = true
+            updateProduct(editedArr).then(response => {
+              this.loadingList = false
+              this.$message.editOk()
+              this.fetchData()
+            }).catch(() => {
+              this.loadingList = false
+              this.$XModal.message({ message: '修改失败！', status: 'error' })
+            })
+          }
         })
+      } else {
+        this.$XModal.message({ message: '数据未改动！', status: 'info' })
       }
     },
     resetProperty() {
-      this.searchText = ''
-      this.fetchData()
-    },
-    onClickTb(row, column, cell, event) { // 表格聚焦
-      this.$nextTick(() => {
-        const input = cell.querySelector('input')
-        if (input) {
-          input.focus()
+      // this.fetchData()
+      this.$XModal.confirm({ message: '您确定要重置数据吗?', maskClosable: true, escClosable: true }).then(type => {
+        if (type === 'confirm') {
+          this.$refs.tbTable.revertData()
         }
       })
     },
+    async addProperty() {
+      const tempData = {
+        id: null,
+        dir1: this.selectedItem[0],
+        dir2: this.selectedItem[1],
+        dir3: this.selectedItem[2],
+        dir4: this.selectedItem[3],
+        modelno: '', name: '',
+        l: 0, w: 0, h: 0,
+        product_type: -1, param_type: 0, paramunit_name: '', model_path: '', pic: '',
+        change_size: 1, all_doorstyle: 1, reverse_permit_door_mode: 0,
+        door_style_scheme_id: null, direction: 0, brand: null, worktop_mx_line: 0, btm_light_line: 0,
+        elva_mode: 0, elva: 0, need_quotation: 1, code: '',
+        standard: '0x0x0', color: '', unit: '个',
+        price: 0, material: '', comment: '', class: '', ext1: '', version: null, hide: 0,
+        params: []
+      }
+      const { row: newRow } = await this.$refs.tbTable.insertAt(tempData)
+      await this.$refs.tbTable.setActiveCell(newRow, 'name')
+    },
+    copyProperty() {
+      const selection = JSON.parse(JSON.stringify(this.selection))
+      if (selection.length > 0) {
+        copyToClipboard('product_index', selection)
+        this.$refs.tbTable.clearCheckboxRow()
+        this.selection = []
+      } else {
+        this.$XModal.message({ message: '未选择！', status: 'info' })
+      }
+    },
+    pasteProperty() {
+      const selection = this.selection
+      if (selection.length > 0) {
+        const data = pasteFromClipboard('product_index', true)
+        if (data) {
+          const length = data.length
+          const selectedLength = selection.length
+          if (length !== selectedLength) {
+            this.$XModal.confirm({
+              message: `已复制${length}条，可粘贴${selectedLength}条，是否只粘贴前${length >= selectedLength ? selectedLength : length}条`,
+              maskClosable: true, escClosable: true }).then(type => {
+              if (type === 'confirm') {
+                if (length > selectedLength) { // 选择多于已复制，粘贴所有已复制
+                  for (const index in selection) {
+                    Object.assign(selection[index], data[index])
+                  }
+                } else if (length < selectedLength) { // 选择数x少于已复制数y，粘贴数据为已复制数据的前x条
+                  for (const index in data) {
+                    Object.assign(selection[index], data[index])
+                  }
+                }
+                this.$notify({ title: 'Success', message: '粘贴成功', type: 'success', duration: 2000 })
+              }
+            })
+          } else {
+            for (const index in data) {
+              Object.assign(selection[index], data[index])
+              this.$notify({ title: 'Success', message: '粘贴成功', type: 'success', duration: 2000 })
+            }
+          }
+        }
+        this.$refs.tbTable.clearCheckboxRow()
+        this.selection = []
+      } else {
+        this.$XModal.message({ message: '未选择！', status: 'info' })
+      }
+    },
+    async pasteAndAddProperty() {
+      const data = pasteFromClipboard('product_index')
+      const { row: newRow } = await this.$refs.tbTable.insert(data)
+      await this.$refs.tbTable.setActiveCell(newRow, 'name')
+      this.$refs.tbTable.clearCheckboxRow()
+      this.selection = []
+    },
     closeDialog(target) {
-      if (target === 'basic') {
-        this.basicDialogVisible = false
+      if (target === 'dialog') {
+        this.dialogVisible = false
       } else if (target === 'catalog') {
         this.catalogLazyDialogVisible = false
-      } else if (target === 'size') {
-        this.sizeDialogVisible = false
-      } else if (target === 'params') {
-        this.paramsDialogVisible = false
-      } else if (target === 'door') {
-        this.doorDialogVisible = false
-      } else if (target === 'line') {
-        this.lineDialogVisible = false
-      } else if (target === 'position') {
-        this.positionDialogVisible = false
-      } else if (target === 'quote') {
-        this.quoteDialogVisible = false
-      } else if (target === 'other') {
-        this.otherDialogVisible = false
+      } else if (target === 'dialogSelect') {
+        this.dialogSelected.visible = false
+        return
       }
-      this.$refs.tbTable.clearSelection() // 清空选项
+      this.$refs.tbTable.clearCheckboxRow() // 清空选项
+      this.selection = []
     },
     selectMaterial() {
       if (this.radioVal === '') {
-        this.$confirm('未选择编辑功能', '警告', {
-          showCancelButton: false,
-          confirmButtonText: '确认',
-          type: 'warning'
-        }).catch(() => {})
+        this.$XModal.message({ message: '未选择编辑功能', status: 'info' })
       } else {
+        // 获取所有列配置
         if (this.selection.length > 0) {
           if (this.radioVal === 'basic') {
-            this.basicDialogVisible = true
+            this.commonDialogDefault = this.basicDialogDefault
+            this.commonDialogRules = this.basicDialogRules
+            this.commonDialogTitle = '修改基础信息'
+            this.commonLabelWidth = '80px'
+            this.dialogVisible = true
+          } else if (this.radioVal === 'size') {
+            this.commonDialogDefault = this.sizeDialogDefault
+            this.commonDialogRules = this.sizeDialogRules
+            this.commonDialogTitle = '修改尺寸'
+            this.commonLabelWidth = '65px'
+            this.dialogVisible = true
+          } else if (this.radioVal === 'door') {
+            this.commonDialogDefault = this.doorDialogDefault
+            this.commonDialogRules = this.doorDialogRules
+            this.commonDialogTitle = '修改门板属性'
+            this.commonLabelWidth = '95px'
+            this.dialogVisible = true
+          } else if (this.radioVal === 'line') {
+            this.commonDialogDefault = this.lineDialogDefault
+            this.commonDialogRules = this.lineDialogRules
+            this.commonDialogTitle = '修改线条属性'
+            this.commonLabelWidth = '65px'
+            this.dialogVisible = true
+          } else if (this.radioVal === 'position') {
+            this.commonDialogDefault = this.positionDialogDefault
+            this.commonDialogRules = this.positionDialogRules
+            this.commonDialogTitle = '修改定位'
+            this.commonLabelWidth = '65px'
+            this.dialogVisible = true
+          } else if (this.radioVal === 'quote') {
+            this.commonDialogDefault = this.quoteDialogDefault
+            this.commonDialogRules = this.quoteDialogRules
+            this.commonDialogTitle = '修改报价数据'
+            this.commonLabelWidth = '65px'
+            this.dialogVisible = true
+          } else if (this.radioVal === 'other') {
+            this.commonDialogDefault = this.otherDialogDefault
+            this.commonDialogRules = this.otherDialogRules
+            this.commonDialogTitle = '修改其他属性'
+            this.commonLabelWidth = '45px'
+            this.dialogVisible = true
           } else if (this.radioVal === 'catalog') {
             this.catalogLazyDialogVisible = true
-          } else if (this.radioVal === 'size') {
-            this.sizeDialogVisible = true
-          } else if (this.radioVal === 'params') {
-            this.paramsDialogVisible = true
-          } else if (this.radioVal === 'door') {
-            this.doorDialogVisible = true
-          } else if (this.radioVal === 'line') {
-            this.lineDialogVisible = true
-          } else if (this.radioVal === 'position') {
-            this.positionDialogVisible = true
-          } else if (this.radioVal === 'quote') {
-            this.quoteDialogVisible = true
-          } else if (this.radioVal === 'other') {
-            this.otherDialogVisible = true
           }
         } else {
-          this.$confirm('未选择材质', '警告', {
-            showCancelButton: false,
-            confirmButtonText: '确认',
-            type: 'warning'
-          }).catch(() => {})
+          this.$XModal.message({ message: '未选择！', status: 'info' })
         }
       }
     },
-    handleSelectionChange(selection) {
-      this.selection = selection
+    handleSelectionChange(data) {
+      this.selection = data.records
     },
-    onDelete(row, index) {
-      editDelete(() => {
-        this.loadingList = true
-        // deleteDoorStyle(row.id).then(response => {
-        this.$notify.deleteOk()
-        this.dataList.splice(index, 1)
-        this.loadingList = false
-        // }).catch(() => {
-        //   this.loadingList = false
-        // })
+    onDelete(row) {
+      const index = this.$refs.tbTable.getRowIndex(row)
+      this.$XModal.confirm({ message: '您确定要删除该数据?', maskClosable: true, escClosable: true }).then(type => {
+        if (index < 0) {
+          this.$refs.tbTable.remove(row)
+        } else {
+          this.loadingList = true
+          deleteProduct(row.id).then(response => {
+            this.loadingList = false
+            this.$notify.deleteOk()
+            this.dataList.splice(index, 1)
+          }).catch(() => {
+            this.$XModal.message({ message: '删除失败！', status: 'error' })
+            this.loadingList = false
+          })
+        }
       })
     },
     onSearch() {
       this.listQuery.page = 1
       this.fetchData()
     },
-    async loadNextPage() {
-      this.listQuery.page++
-      const { data } = await getProductList(this.selectedItem.join('\\'), this.listQuery)
-      if (data && data.items) {
-        data.items.forEach(el => { el.changed = false })
-        this.dataList = this.dataList.concat(data.items)
-      }
-    },
     onResize(show) {
       setTimeout(() => {
-        this.tableHeight = window.innerHeight - document.querySelector('.app-main').offsetTop - this.$refs.tbTable.$el.offsetTop - 20
+        this.tableHeight = window.innerHeight - document.querySelector('.app-main').offsetTop - this.$refs.tbTable.$el.offsetTop - 20 - 48 // padding-bottom:20px,vxe-pager:48px
       }, 500)
+    },
+    editMethod({ row, column }) {
+      // 重写默认的覆盖式，改为追加式
+      this.$refs.tbTable.setActiveCell(row, column.property)
+      // 返回 false 阻止默认行为
+      return false
+    },
+    setColumnsVisible() { // 分类显示列
+      this.$refs.tbTable.resetColumn()
+      const columns = this.columns
+      function setVisible(arr) {
+        columns.forEach(column => {
+          if (column.type !== 'checkbox' &&
+            column.type !== 'seq' &&
+            column.title !== '删除' &&
+            column.property !== 'name' &&
+            column.property !== 'modelno') {
+            if (arr.length > 0) {
+              for (const item of arr) {
+                if (column.property === item) {
+                  column.visible = true
+                  break
+                } else {
+                  column.visible = false
+                }
+              }
+            } else {
+              column.visible = false
+            }
+          }
+        })
+      }
+      if (this.radioVal === '') {
+        setVisible([])
+      } else if (this.radioVal === 'basic') {
+        setVisible(['product_type', 'change_size', 'direction', 'brand', 'model_path', 'pic'])
+      } else if (this.radioVal === 'catalog') {
+        setVisible(['dir1', 'dir2', 'dir3', 'dir4'])
+      } else if (this.radioVal === 'size') {
+        setVisible(['paramunit_name', 'param_type', 'l', 'w', 'h'])
+      } else if (this.radioVal === 'door') {
+        setVisible(['all_doorstyle', 'reverse_permit_door_mode', 'door_style_scheme_id'])
+      } else if (this.radioVal === 'line') {
+        setVisible(['worktop_mx_line', 'btm_light_line'])
+      } else if (this.radioVal === 'position') {
+        setVisible(['elva_mode', 'elva'])
+      } else if (this.radioVal === 'quote') {
+        setVisible(['need_quotation', 'code', 'standard', 'color', 'material', 'unit', 'price', 'comment', 'class', 'ext1'])
+      } else if (this.radioVal === 'other') {
+        setVisible(['hide', 'version'])
+      }
+      if (this.$refs.tbTable) {
+        this.$refs.tbTable.refreshColumn()
+      }
     }
   }
 }

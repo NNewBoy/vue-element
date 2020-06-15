@@ -1,13 +1,13 @@
 <template>
   <div class="app-container">
-    <el-table-column :label="label" :width="width" :min-width="minWidth" align="center">
+    <PlTableColumn :label="label" :width="width" :min-width="minWidth" align="center">
       <template slot-scope="{row}">
         <el-switch
           :value="Boolean(row[value])"
           @change="onChange(row)"
         />
       </template>
-    </el-table-column>
+    </PlTableColumn>
   </div>
 </template>
 
@@ -19,8 +19,10 @@
  * @property {String} minWidth 最小列宽
  * @property {String} value 列绑定的字段名
  */
+import { PlTableColumn } from 'pl-table'
 export default {
   name: 'SwitchColumn',
+  components: { PlTableColumn },
   props: {
     label: {
       require: true,

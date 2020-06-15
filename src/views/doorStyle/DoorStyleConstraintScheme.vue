@@ -27,7 +27,7 @@
     <el-button
       type="primary"
       size="mini"
-      icon="el-icon-check"
+      icon="el-icon-document"
       style="margin-top:0px;"
       @click="onSaveAll"
     >
@@ -302,16 +302,20 @@ export default {
     },
     onDelete(row, index) {
       confirmDelete(() => {
-        this.listLoading = true
-        delDoorStyleScheme(row.id)
-          .then(res => {
-            this.$notify.deleteOk()
-            this.datas.splice(index, 1)
-            this.listLoading = false
-          })
-          .catch(() => {
-            this.listLoading = false
-          })
+        if (row.id) {
+          this.listLoading = true
+          delDoorStyleScheme(row.id)
+            .then(res => {
+              this.$notify.deleteOk()
+              this.datas.splice(index, 1)
+              this.listLoading = false
+            })
+            .catch(() => {
+              this.listLoading = false
+            })
+        } else {
+          this.datas.splice(index, 1)
+        }
       })
     },
     onAddDoorStyle(row) {
@@ -322,6 +326,9 @@ export default {
       // console.log(dss)
       if (dss instanceof Array) {
         dss.forEach(el => {
+          el.door_ext4 = '*'
+          el.door_ext5 = '*'
+          el.door_ext6 = '*'
           this.editRow.door_styles.push(el)
         })
       } else {

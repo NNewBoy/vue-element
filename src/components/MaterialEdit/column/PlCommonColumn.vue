@@ -1,26 +1,25 @@
 <template>
   <div class="app-container">
-    <el-table-column :label="label" :width="width" :min-width="minWidth" align="center">
+    <PlTableColumn show-overflow-tooltip align="center" :label="label" :width="width" :min-width="minWidth">
       <template slot-scope="{row}">
-        <el-switch
-          :value="Boolean(row[value])"
-          @change="onChange(row)"
-        />
+        <el-input v-model="row[value]" class="input-one" size="small" placeholder="请输入内容" @change="onChange(row)" />
+        <span>{{ row[value] }}</span>
       </template>
-    </el-table-column>
+    </PlTableColumn>
   </div>
 </template>
 
 <script type="text/javascript">
 /**
- * 使用改column组件的el-table需加上类名tb-edit
  * @property {String} label 列名
  * @property {String} width 列宽
  * @property {String} minWidth 最小列宽
  * @property {String} value 列绑定的字段名
  */
+import { PlTableColumn } from 'pl-table'
 export default {
-  name: 'SwitchColumn',
+  name: 'CommonColumn',
+  components: { PlTableColumn },
   props: {
     label: {
       require: true,
@@ -44,21 +43,25 @@ export default {
     }
   },
   data() {
-    return {
-      key: false
-    }
+    return {}
   },
   methods: {
     onChange(row) {
+      row.editStatus = 1
       row.changed = 1
-      const type = typeof row[this.value]
-      if (type === 'boolean') {
-        row[this.value] = !row[this.value]
-      } else if (type === 'number') {
-        row[this.value] = row[this.value] === 0 ? 1 : 0
-      }
     }
   }
 }
 </script>
 
+<style lang="scss">
+.tb-edit .input-one {
+  display: none
+}
+.tb-edit .current-row .input-one {
+  display: block
+}
+.tb-edit .current-row .input-one+span {
+  display: none
+}
+</style>

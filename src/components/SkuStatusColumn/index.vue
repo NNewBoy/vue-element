@@ -1,8 +1,8 @@
 <template>
   <div class="app-container">
-    <el-table-column label="上架状态" width="100" align="center">
+    <el-table-column label="上架状态" :width="width" align="center">
       <template slot-scope="{row}">
-        <el-select v-model="row.status" @change="setEditStatus(row)">
+        <el-select v-model="row.status" :size="size" @change="setEditStatus(row)">
           <el-option
             v-for="(o, i) in statusList"
             :key="i"
@@ -35,7 +35,14 @@ export default {
     }
   },
   props: {
-
+    size: {
+      type: String,
+      default: 'medium'
+    },
+    width: {
+      type: String,
+      default: '100'
+    }
   },
   data() {
     return {

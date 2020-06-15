@@ -93,7 +93,7 @@
             :on-success="onUploadPicSuccess.bind(null, row)"
             :before-upload="beforePicUpload"
           >
-            <el-image v-if="row.preview_pic" :src="getPicUrl(row.preview_pic)" class="avatar" :lazy="true" />
+            <el-image v-if="row.preview_pic" :src="getPicUrl(row.preview_pic)" class="avatar" />
             <i v-else class="el-icon-plus hotadv-uploader-icon" />
           </el-upload>
         </template>
@@ -111,7 +111,7 @@
             :on-success="onUploadPicSuccess.bind(null, row)"
             :before-upload="beforePicUpload"
           >
-            <el-image v-if="row.preview_pic" :src="getDoorPicUrl(row.folder)" class="avatar" :lazy="true" />
+            <el-image v-if="row.preview_pic" :src="getDoorPicUrl(row.folder)" class="avatar" />
             <i v-else class="el-icon-plus hotadv-uploader-icon" />
           </el-upload>
         </template>
@@ -126,7 +126,7 @@
             :on-success="onUploadPicSuccess.bind(null, row)"
             :before-upload="beforePicUpload"
           >
-            <el-image v-if="row.preview_pic" :src="getDrawerPicUrl(row.folder)" class="avatar" :lazy="true" />
+            <el-image v-if="row.preview_pic" :src="getDrawerPicUrl(row.folder)" class="avatar" />
             <i v-else class="el-icon-plus hotadv-uploader-icon" />
           </el-upload>
         </template>
@@ -642,6 +642,7 @@ export default {
       if (this.selectArr.length > 0) {
         this.loadingDoorColor = true
         const { data } = await getColorList(this.allDoorStyle)
+        data.forEach(el => { el.editStatus = 0 })
         this.doorstyleList = data
         this.loadingDoorColor = false
       }

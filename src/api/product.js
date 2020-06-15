@@ -47,11 +47,20 @@ export function searchProduct(filterText) {
     params: { filterText: filterText }
   })
 }
-export function deleteProduct(modelno) {
+
+export function updateProduct(data) {
+  return request({
+    url: '/product/update',
+    method: 'post',
+    params: { data }
+  })
+}
+
+export function deleteProduct(id) {
   return request({
     url: '/product/delete',
     method: 'post',
-    params: { modelno: modelno }
+    params: { id }
   })
 }
 

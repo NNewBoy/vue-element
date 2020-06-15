@@ -1,6 +1,6 @@
 <template>
   <div class="app-container">
-    <el-table-column :label="label" :width="width" :min-width="minWidth" align="center">
+    <PlTableColumn show-overflow-tooltip :label="label" :width="width" :min-width="minWidth" align="center">
       <template slot-scope="{row}">
         <el-select v-model="row[value]" :filterable="filterable" @change="onChange(row)">
           <el-option
@@ -12,7 +12,7 @@
         </el-select>
         <span class="select-span">{{ getText(row[value]) }}</span>
       </template>
-    </el-table-column>
+    </PlTableColumn>
   </div>
 </template>
 
@@ -26,8 +26,10 @@
  * @property {String} value 列绑定的字段名
  * @property {Boolean} filterable 是否可搜索
  */
+import { PlTableColumn } from 'pl-table'
 export default {
   name: 'SelectColumn',
+  components: { PlTableColumn },
   props: {
     dataList: {
       required: true,
@@ -74,7 +76,7 @@ export default {
 }
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 .tb-edit .el-select {
   display: none
 }

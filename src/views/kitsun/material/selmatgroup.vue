@@ -59,7 +59,7 @@
         <div v-for="(o,index) in mats.filter(obj=>{return obj.name.toLowerCase().indexOf(matFilter.toLowerCase())>=0})" :key="index" class="list-item">
           <el-card :class="index===selectedMat ? 'el-card-selected' : ''" @click.native="onSelectMat(index)">
             <div style="text-align: center; margin:0 auto;position: relative;">
-              <el-image :src="getPicUrl(o.pic_file_name)" style="width: 100%; height: 100%;" :title="matInfo(o)" :lazy="true" />
+              <el-image :src="getPicUrl(o.pic_file_name)" style="width: 100%; height: 100%;" :title="matInfo(o)" />
               <span align="center">{{ o.name }}</span>
             </div>
           </el-card>
@@ -72,7 +72,7 @@
       </el-col>
       <el-col :span="18" align="right">
         <el-button type="primary" @click="onCancel">取消</el-button>
-        <el-button type="primary" @click="onSelect">确定</el-button>
+        <el-button type="primary" :disabled="selectedMat===-1" @click="onSelect">确定</el-button>
       </el-col>
     </div>
   </div>

@@ -1,5 +1,6 @@
 <template>
   <div ref="list_body" class="app-container">
+    <el-backtop :bottom="50" />
     <MultiFilter
       :datas="catalogs"
       :filter-names="['门板系列','门板价格','门板造型']"
@@ -15,12 +16,10 @@
     />
     <div class="div1">
       <li><el-input v-model="searchText" size="mini" prefix-icon="el-icon-search" clearable placeholder="查找" /></li>
-      <li><el-button type="primary" size="mini" icon="el-icon-search" @click="btnSearch" /></li>
       <li><el-button type="primary" icon="el-icon-plus" size="mini" @click="btnAddData">新增</el-button></li>
       <li><el-button type="primary" icon="el-icon-document" size="mini" @click="btnSaveData">保存</el-button></li>
       <li><el-button type="primary" icon="el-icon-refresh" size="mini" @click="btnReset">重置</el-button></li>
       <li><upload-excel action="/doorinner/import" :on-success="onExcelSuccess" :visible="true" /></li>
-      <li><el-button v-show="selRow" type="primary" size="mini" @click="btnCancel">取消选择</el-button></li>
     </div>
     <el-table
       id="table1"
@@ -36,7 +35,7 @@
       @row-click="onRowClick"
       @cell-click="onCellClick"
     >
-      <el-table-column align="center" label="ID" width="50">
+      <el-table-column align="center" label="ID" width="40">
         <template slot-scope="scope">
           {{ scope.$index + 1 }}
         </template>
@@ -59,7 +58,7 @@
           <span>{{ row.inner_zone_no }}</span>
         </template>
       </el-table-column>
-      <el-table-column align="center" label="图片" width="150" :render-header="renderHeaderPic">
+      <el-table-column align="center" label="图片" width="200" :render-header="renderHeaderPic">
         <template slot-scope="{row}">
           <upload-pic
             :id="row.id"
@@ -77,12 +76,12 @@
       <el-table-column align="center" label="默认材料" width="100">
         <template slot-scope="{row}">
           <div @click="onSetDefaultDoorInner(row)">
-            <el-image :src="getPicUrl(row.default_material)" class="pic" :lazy="true" :title="defMatTitle(row)" />
+            <el-image :src="getPicUrl(row.default_material)" class="pic" :title="defMatTitle(row)" />
             <span>{{ row.default_material ? row.default_material.name : "未选择" }}</span>
           </div>
         </template>
       </el-table-column>
-      <el-table-column align="center" label="可选材料" width="320">
+      <el-table-column align="center" label="可选材料" width="350">
         <template slot-scope="{row}">
           <multi-mat-list :data="row.inner_mat" :on-change="onMatListChange.bind(null, row)" />
         </template>
@@ -99,7 +98,7 @@
           <span>{{ row.inner_door_shape_code }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="操作" align="center" width="80"> <!--  最后一列自动后弹 -->
+      <el-table-column label="操作" align="center" width="70"> <!--  最后一列自动后弹 -->
         <template slot-scope="{row,$index}">
           <!-- <el-button
             type="primary"
@@ -118,7 +117,7 @@
       </el-table-column>
 
       <brand-column />
-      <sku-status-column />
+      <sku-status-column size="mini" />
 
     </el-table>
 
@@ -399,10 +398,6 @@ export default {
         })
       }
     },
-    btnCancel() {
-      this.$refs.table1.setCurrentRow()
-      this.selRow = false
-    },
     onRowClick() {
       this.selRow = true
     },
@@ -426,9 +421,6 @@ export default {
     btnReset() {
       this.searchText = ''
       this.fetchData()
-    },
-    btnSearch() {
-      this.$message.error('Search ...')
     },
     onUploadPicSuccess(row, res, file) {
       if (res.success) {
@@ -467,14 +459,17 @@ export default {
 </script>
 
 <style scoped>
-    .div1{
+  .div1{
       height: 50px;
       line-height: 50px;
     }
-  li{
+  .div1 li{
     margin-right: 20px;
     list-style-type: none;
     float: left;
+  }
+  #table1{
+    margin-bottom: 100px;
   }
   #table1 input {
     font-size: 12px;

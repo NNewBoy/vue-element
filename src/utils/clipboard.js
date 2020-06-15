@@ -4,6 +4,19 @@ import Clipboard from 'clipboard'
 const clipboarData = []
 
 export function copyToClipboard(key, data) {
+  if (Array.isArray(data)) {
+    data.forEach(el => {
+      if (Object.prototype.toString.call(el) === '[object Object]') {
+        if (el.hasOwnProperty('id')) {
+          delete el.id
+        }
+        if (el.hasOwnProperty('_XID')) {
+          delete el._XID
+        }
+      }
+    })
+  }
+
   clipboarData[key] = JSON.stringify(data)
   Vue.prototype.$notify({
     title: 'Success',
@@ -13,7 +26,7 @@ export function copyToClipboard(key, data) {
   })
 }
 
-export function pasteFromClipboard(key) {
+export function pasteFromClipboard(key, noNotify) {
   if (!clipboarData.hasOwnProperty(key)) {
     Vue.prototype.$notify({
       title: 'Error',
@@ -23,12 +36,14 @@ export function pasteFromClipboard(key) {
     })
     return null
   }
-  Vue.prototype.$notify({
-    title: 'Success',
-    message: '粘贴成功',
-    type: 'success',
-    duration: 2000
-  })
+  if (!noNotify) {
+    Vue.prototype.$notify({
+      title: 'Success',
+      message: '粘贴成功',
+      type: 'success',
+      duration: 2000
+    })
+  }
 
   return JSON.parse(clipboarData[key])
 }

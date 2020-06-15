@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="lazy-filter-container">
     <div
       v-for="(item,index) in menuList"
       :key="index"
@@ -159,3 +159,13 @@ export default {
   }
 }
 </script>
+<style lang="scss">
+.lazy-filter-container {
+  .type-filter-container{
+    padding-right: 75px;
+  }
+  .selected-control{
+    width: auto;
+  }
+}
+</style>

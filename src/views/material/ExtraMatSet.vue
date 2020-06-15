@@ -63,7 +63,7 @@
     </el-table>
     <div id="addNewData">
       <el-button type="primary" icon="el-icon-plus" @click="onAddRow">新增</el-button><br><br>
-      <el-button type="primary" icon="el-icon-check" @click="onSave">保存</el-button>
+      <el-button type="primary" icon="el-icon-document" @click="onSave">保存</el-button>
     </div>
   </div>
 </template>

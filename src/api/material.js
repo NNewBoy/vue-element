@@ -160,7 +160,7 @@ export function deleteSelMatGroup(id) {
   })
 }
 
-export function editSelMatGroup(data) {
+export function updateSelMatGroup(data) {
   return request({
     url: '/mat/selmatgroup/update',
     method: 'post',

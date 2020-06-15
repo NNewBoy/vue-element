@@ -109,6 +109,18 @@ export const constantRoutes = [
         meta: { title: 'Product', icon: 'table', noCache: true }
       },
       {
+        path: 'indexPl',
+        component: () => import('@/views/product/indexPl'),
+        name: 'ProductPl',
+        meta: { title: 'ProductPl', icon: 'table', noCache: true }
+      },
+      {
+        path: 'infinite',
+        component: () => import('@/views/product/infinite'),
+        name: 'ProductI',
+        meta: { title: 'ProductI', icon: 'table', noCache: true }
+      },
+      {
         path: 'indexold',
         component: () => import('@/views/product/indexold'),
         name: 'ProductExample',
@@ -132,7 +144,7 @@ export const constantRoutes = [
     path: '/material',
     component: Layout,
     name: 'Material',
-    meta: { title: 'Door', icon: 'table', noCache: true },
+    meta: { title: 'Material', icon: 'table', noCache: true },
     redirect: '/material/index',
     children: [
       {
@@ -142,7 +154,13 @@ export const constantRoutes = [
         meta: { title: 'Material', icon: 'table', noCache: true }
       },
       {
-        path: 'selmatgroup',
+        path: 'selmatgroup1',
+        component: () => import('@/views/material/selmatgroup'),
+        name: 'selmatgroupM',
+        meta: { title: 'selmatgroupM', icon: 'table', noCache: true }
+      },
+      {
+        path: 'selmatgroup2',
         component: () => import('@/views/kitsun/material/selmatgroup'),
         name: 'selmatgroup',
         meta: { title: 'selmatgroup', icon: 'table', noCache: true }
