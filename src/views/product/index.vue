@@ -38,7 +38,6 @@
         >
           {{ radioVal | dropFilter }}
           <el-dropdown-menu slot="dropdown">
-            <el-dropdown-item command>更多属性</el-dropdown-item>
             <el-dropdown-item command="basic">基础信息</el-dropdown-item>
             <el-dropdown-item command="catalog">目录</el-dropdown-item>
             <el-dropdown-item command="size">尺寸</el-dropdown-item>
@@ -55,11 +54,10 @@
         <el-button-group class="brand-button">
           <el-button type="success" size="mini" @click="saveProperty">保存</el-button>
           <el-button type="warning" size="mini" @click="resetProperty">重置</el-button>
-          <el-button v-show="openBtn" type="primary" size="mini" @click="addProperty">添加</el-button>
-          <el-button v-show="openBtn" type="primary" size="mini" @click="copyProperty">复制</el-button>
-          <el-button v-show="openBtn" type="primary" size="mini" @click="pasteProperty">粘贴</el-button>
-          <el-button v-show="openBtn" type="primary" size="mini" @click="pasteAndAddProperty">添加并粘贴</el-button>
-          <el-button type="primary" size="mini" :icon="openBtn?'el-icon-arrow-left':'el-icon-arrow-right'" @click="openBtn = !openBtn" />
+          <el-button type="danger" size="mini" @click="onDelete">删除</el-button>
+          <el-button type="primary" size="mini" @click="addProperty">添加</el-button>
+          <el-button type="primary" size="mini" @click="copyProperty">复制</el-button>
+          <el-button type="primary" size="mini" @click="pasteProperty">粘贴</el-button>
         </el-button-group>
       </div>
     </div>
@@ -96,9 +94,9 @@
       <!-- 尺寸 -->
       <vxe-table-column field="paramunit_name" title="参数名" width="200" :edit-render="{name: '$input'}" />
       <vxe-table-column field="param_type" title="参数类型" width="150" :edit-render="{name: '$select', options: unitParamTypeOption, optionProps: {value: 'key', label: 'name'}}" />
-      <vxe-table-column field="l" title="宽" width="150" :edit-render="{name: 'ElInputNumber',props: { min: 0 }}" />
-      <vxe-table-column field="w" title="深" width="150" :edit-render="{name: 'ElInputNumber',props: { min: 0 }}" />
-      <vxe-table-column field="h" title="高" width="150" :edit-render="{name: 'ElInputNumber',props: { min: 0 }}" />
+      <vxe-table-column field="l" title="宽" width="100" :edit-render="{name: '$input', props: {type:'number',min:0}}" />
+      <vxe-table-column field="w" title="深" width="100" :edit-render="{name: '$input', props: {type:'number',min:0}}" />
+      <vxe-table-column field="h" title="高" width="100" :edit-render="{name: '$input', props: {type:'number',min:0}}" />
       <!-- 门板属性 -->
       <vxe-table-column field="all_doorstyle" title="适用所有门板" width="130" :edit-render="{name: 'trueFalseEditSwitch'}" />
       <vxe-table-column field="reverse_permit_door_mode" title="门板反向限制" width="130" :edit-render="{name: 'trueFalseEditSwitch'}" />
@@ -108,7 +106,7 @@
       <vxe-table-column field="btm_light_line" title="踢脚灯线" width="100" :edit-render="{name: 'trueFalseEditSwitch'}" />
       <!-- 定位 -->
       <vxe-table-column field="elva_mode" title="定位方式" width="200" :edit-render="{name: 'myButton', events: {click: onSelected}, props: elvaModeOption}" />
-      <vxe-table-column field="elva" title="定位高度" width="150" :edit-render="{name: 'ElInputNumber',props: { min: 0 }}" />
+      <vxe-table-column field="elva" title="定位高度" width="100" :edit-render="{name: '$input', props: {type:'number',min:0}}" />
       <!-- 报价数据 -->
       <vxe-table-column field="need_quotation" title="参与报价" width="100" :edit-render="{name: 'trueFalseEditSwitch'}" />
       <vxe-table-column field="code" title="编码" width="120" :edit-render="{name: '$input'}" />
@@ -116,7 +114,7 @@
       <vxe-table-column field="color" title="颜色" width="100" :edit-render="{name: '$input'}" />
       <vxe-table-column field="material" title="材料" width="100" :edit-render="{name: '$input'}" />
       <vxe-table-column field="unit" title="单位" width="80" :edit-render="{name: '$input'}" />
-      <vxe-table-column field="price" title="单价" width="150" :edit-render="{name: 'ElInputNumber',props: { min: 0 }}" />
+      <vxe-table-column field="price" title="单价" width="100" :edit-render="{name: '$input', props: {type:'number',min:0}}" />
       <vxe-table-column field="comment" title="备注" width="150" :edit-render="{name: '$input'}" />
       <vxe-table-column field="class" title="类型" width="100" :edit-render="{name: '$input'}" />
       <vxe-table-column field="ext1" title="扩展信息" width="100" :edit-render="{name: '$input'}" />
@@ -124,16 +122,6 @@
       <vxe-table-column field="hide" title="隐藏" width="100" :edit-render="{name: 'trueFalseEditSwitch'}" />
       <vxe-table-column field="version" title="版本" width="120" :edit-render="{name: '$input'}" />
 
-      <vxe-table-column title="删除" width="82">
-        <template v-slot="{ row }">
-          <vxe-button
-            status="danger"
-            size="mini"
-            icon="el-icon-delete"
-            @click="onDelete(row)"
-          />
-        </template>
-      </vxe-table-column>
     </vxe-table>
 
     <vxe-pager
@@ -154,12 +142,10 @@
     />
     <CatalogLazyDialog
       :catalog-dialog-visible="catalogLazyDialogVisible"
-      :material-checkbox-val="selection"
-      :table-data="dataList"
+      :selected-form-val="selection"
       :from-catalog="selectedItem"
       search-target="name"
       @closeCatalogDialog="closeDialog('catalog')"
-      @returnCatalog="changeCatalog"
     />
     <VxeCommonDialog
       :title="commonDialogTitle"
@@ -242,14 +228,13 @@ export default {
       loadingList: false,
       dataList: [],
       selection: [], // 选中的行
-      radioVal: '', // 选择材料参数
+      radioVal: 'basic', // 选择材料参数
       dialogVisible: false,
       catalogLazyDialogVisible: false,
       selectedItem: [], // 选中的选项
       selectStatusRes: {}, // 上架状态筛选器的返回值
       selectBrandsRes: {}, // 品牌筛选器的返回值
       ifUpdate: false, // 判断是否刷新数据
-      openBtn: false, // 编辑按钮打开与否
       // 翻页参数
       listQuery: {
         page: 1,
@@ -270,9 +255,9 @@ export default {
       sizeDialogDefault: [
         { name: '参数名', key: 'paramunit_name', value: '', span: 12, type: 'input' },
         { name: '参数类型', key: 'param_type', value: 0, span: 12, type: 'select', options: UnitParamTypeOption, optionProps: { value: 'key', label: 'name' }},
-        { name: '宽', key: 'l', value: 0, span: 8, type: 'input' },
-        { name: '深', key: 'w', value: 0, span: 8, type: 'input' },
-        { name: '高', key: 'h', value: 0, span: 8, type: 'input' }
+        { name: '宽', key: 'l', value: 0, span: 8, type: 'input', inputType: 'number', min: 0 },
+        { name: '深', key: 'w', value: 0, span: 8, type: 'input', inputType: 'number', min: 0 },
+        { name: '高', key: 'h', value: 0, span: 8, type: 'input', inputType: 'number', min: 0 }
       ],
       sizeDialogRules: {
         l: [{ trigger: 'change', validator: this.validateFunCanNull }],
@@ -282,7 +267,7 @@ export default {
       doorDialogDefault: [
         { name: '适用所有门板', key: 'all_doorstyle', value: 1, span: 8, type: 'switch', options: TrueFalseOption, optionProps: { value: 'key', label: 'name' }},
         { name: '门板反向限制', key: 'reverse_permit_door_mode', value: 0, span: 8, type: 'switch', options: TrueFalseOption, optionProps: { value: 'key', label: 'name' }},
-        { name: '门板限制方案', key: 'door_style_scheme_id', value: null, span: 8, type: 'input' }
+        { name: '门板限制方案', key: 'door_style_scheme_id', value: null, span: 8, type: 'input', inputType: 'integer' }
       ],
       doorDialogRules: {
         door_style_scheme_id: [{ trigger: 'change', validator: this.validateFunCanNull }]
@@ -294,7 +279,7 @@ export default {
       lineDialogRules: {},
       positionDialogDefault: [
         { name: '定位方式', key: 'elva_mode', value: 0, span: 13, type: 'dialog', options: ElvaModeOption, optionProps: { value: 'key', label: 'name' }},
-        { name: '定位高度', key: 'elva', value: 0, span: 13, type: 'input' }
+        { name: '定位高度', key: 'elva', value: 0, span: 13, type: 'input', inputType: 'number', min: 0 }
       ],
       positionDialogRules: {
         elva: [{ trigger: 'change', validator: this.validateFunCanNull }]
@@ -306,7 +291,7 @@ export default {
         { name: '颜色', key: 'color', value: '', span: 8, type: 'input' },
         { name: '材料', key: 'material', value: '', span: 8, type: 'input' },
         { name: '单位', key: 'unit', value: '个', span: 8, type: 'input' },
-        { name: '单价', key: 'price', value: 0, span: 8, type: 'input' },
+        { name: '单价', key: 'price', value: 0, span: 8, type: 'input', inputType: 'number', min: 0 },
         { name: '备注', key: 'comment', value: '', span: 8, type: 'input' },
         { name: '类型', key: 'class', value: '', span: 8, type: 'input' },
         { name: '扩展信息', key: 'ext1', value: '', span: 8, type: 'input' }
@@ -322,11 +307,13 @@ export default {
       commonDialogDefault: [], // 对话框的默认信息
       commonDialogRules: {}, // 对话框的验证规则
       commonDialogTitle: '', // 对话框标题
-      commonLabelWidth: 'auto' // 对话框表单标签宽度
+      commonLabelWidth: 'auto', // 对话框表单标签宽度
+      updateRow: [] // 已修改的数据
     }
   },
   watch: {
     radioVal(val) {
+      this.getUpdateRow()
       this.setColumnsVisible()
     },
     ifUpdate(val) { // 根据selectStatusRes和selectBrandsRes判断是否刷新数据
@@ -467,19 +454,20 @@ export default {
     changeParams(res) {
       this.dialogSelected.row[this.dialogSelected.column.property] = res.key
     },
-    changeCatalog(catalog) { // 移动目录
-      for (const item of this.selection) {
-        item.dir1 = catalog.to[0]
-        item.dir2 = catalog.to[1]
-        item.dir3 = catalog.to[2]
-        item.dir4 = catalog.to[3]
-      }
+    getUpdateRow() {
+      this.$refs.tbTable.getUpdateRecords().forEach(val => {
+        if (this.updateRow.indexOf(val['_XID']) === -1) {
+          this.updateRow.push(val['_XID'])
+        }
+      })
     },
     saveProperty() {
-      console.log(this.dataList)
-      console.log(this.selection)
+      this.getUpdateRow() // 保存已修改的目标
       const insertRecords = this.$refs.tbTable.getInsertRecords()
-      const updateRecords = this.$refs.tbTable.getUpdateRecords()
+      const updateRecords = []
+      for (const item of this.updateRow) {
+        updateRecords.push(this.$refs.tbTable.getRowById(item))
+      }
       const editedArr = [...insertRecords, ...updateRecords]
       if (insertRecords.length > 0 || updateRecords.length > 0) {
         this.$XModal.confirm({
@@ -489,6 +477,7 @@ export default {
             this.loadingList = true
             updateProduct(editedArr).then(response => {
               this.loadingList = false
+              this.updateRow = []
               this.$message.editOk()
               this.fetchData()
             }).catch(() => {
@@ -502,7 +491,7 @@ export default {
       }
     },
     resetProperty() {
-      // this.fetchData()
+      this.updateRow = []
       this.$XModal.confirm({ message: '您确定要重置数据吗?', maskClosable: true, escClosable: true }).then(type => {
         if (type === 'confirm') {
           this.$refs.tbTable.revertData()
@@ -541,11 +530,11 @@ export default {
     },
     pasteProperty() {
       const selection = this.selection
-      if (selection.length > 0) {
-        const data = pasteFromClipboard('product_index', true)
-        if (data) {
-          const length = data.length
-          const selectedLength = selection.length
+      const data = pasteFromClipboard('product_index', true)
+      if (data) {
+        const length = data.length
+        const selectedLength = selection.length
+        if (selectedLength > 0) {
           if (length !== selectedLength) {
             this.$XModal.confirm({
               message: `已复制${length}条，可粘贴${selectedLength}条，是否只粘贴前${length >= selectedLength ? selectedLength : length}条`,
@@ -569,19 +558,19 @@ export default {
               this.$notify({ title: 'Success', message: '粘贴成功', type: 'success', duration: 2000 })
             }
           }
+        } else {
+          this.$XModal.confirm({ message: '未选择目标，将添加行后粘贴', maskClosable: true, escClosable: true }).then(type => {
+            if (type === 'confirm') {
+              this.$refs.tbTable.insert(data).then(({ row: newRow }) => {
+                this.$refs.tbTable.setActiveCell(newRow, 'name')
+                this.$notify({ title: 'Success', message: '添加并粘贴成功', type: 'success', duration: 2000 })
+              })
+            }
+          })
         }
         this.$refs.tbTable.clearCheckboxRow()
         this.selection = []
-      } else {
-        this.$XModal.message({ message: '未选择！', status: 'info' })
       }
-    },
-    async pasteAndAddProperty() {
-      const data = pasteFromClipboard('product_index')
-      const { row: newRow } = await this.$refs.tbTable.insert(data)
-      await this.$refs.tbTable.setActiveCell(newRow, 'name')
-      this.$refs.tbTable.clearCheckboxRow()
-      this.selection = []
     },
     closeDialog(target) {
       if (target === 'dialog') {
@@ -655,22 +644,40 @@ export default {
       this.selection = data.records
     },
     onDelete(row) {
-      const index = this.$refs.tbTable.getRowIndex(row)
-      this.$XModal.confirm({ message: '您确定要删除该数据?', maskClosable: true, escClosable: true }).then(type => {
-        if (index < 0) {
-          this.$refs.tbTable.remove(row)
-        } else {
-          this.loadingList = true
-          deleteProduct(row.id).then(response => {
-            this.loadingList = false
-            this.$notify.deleteOk()
-            this.dataList.splice(index, 1)
-          }).catch(() => {
-            this.$XModal.message({ message: '删除失败！', status: 'error' })
-            this.loadingList = false
-          })
-        }
-      })
+      if (this.selection.length > 0) {
+        this.$XModal.confirm({ message: '您确定要删除数据?', maskClosable: true, escClosable: true }).then(type => {
+          if (type === 'confirm') {
+            const target = []
+            for (const item of this.selection) {
+              const index = this.$refs.tbTable.getRowIndex(item)
+              if (index < 0) {
+                this.$refs.tbTable.remove(item)
+              } else {
+                target.push(item.id)
+              }
+            }
+            if (target.length > 0) {
+              this.loadingList = true
+              deleteProduct(target).then(response => {
+                for (const item of this.selection) {
+                  const tempIndex = this.updateRow.indexOf(item['_XID'])
+                  if (tempIndex > -1) {
+                    this.updateRow.splice(tempIndex, 1)
+                  }
+                }
+                this.loadingList = false
+                this.$notify.deleteOk()
+                this.fetchData()
+              }).catch(() => {
+                this.$XModal.message({ message: '删除失败！', status: 'error' })
+                this.loadingList = false
+              })
+            }
+          }
+        })
+      } else {
+        this.$XModal.message({ message: '未选择！', status: 'info' })
+      }
     },
     onSearch() {
       this.listQuery.page = 1

@@ -32,7 +32,7 @@
             <el-checkbox class="dialog-checkbox" :label="index">{{ }}</el-checkbox>
             <el-form-item class="dialog-form-item" :label="item.name" :prop="item.key">
               <div v-if="item.type==='input'">
-                <el-input v-model="dialogFormVal[item.key]" :disabled="paramsCheckboxVal.indexOf(index)===-1" />
+                <vxe-input v-model="dialogFormVal[item.key]" :type="item.inputType" :min="item.min" :max="item.max" :disabled="paramsCheckboxVal.indexOf(index)===-1" />
               </div>
               <div v-else-if="item.type==='select'">
                 <el-select v-model="dialogFormVal[item.key]" placeholder="请选择">
@@ -424,5 +424,8 @@ export default {
       background-color: #46a6ff;
     }
   }
+}
+.vxe-input{
+  width:100%
 }
 </style>

@@ -14,7 +14,7 @@
       <div class="selected-condition">
         <span>目标：</span>
         <a
-          v-for="(item, index) in materialCheckboxVal"
+          v-for="(item, index) in selectedFormVal"
           :key="index"
           href="javascript:;"
           @click="deleteMaterialItem(index)"
@@ -56,12 +56,10 @@
 <script type="text/javascript">
 /**
  * @property {Boolean} catalogDialogVisible 对话框显示与否
- * @property {Array} materialCheckboxVal 当前选择的材质数组
- * @property {Array} tableData 当前表单的数据数组
+ * @property {Array} selectedFormVal 当前选择的材质的所有参数的对象数组
  * @property {Array} fromCatalog 当前选中的目录数组
  * @property {String} searchTarget 搜索时对应的匹配字段，用于判断是材质库或门板库
  * @function closeCatalogDialog 通知父组件关闭对话框
- * @function returnCatalog 返回目录转移数据{id,from,to}，id为选择的材质id数组，from为当前目录数组，to为目标目录数组
  */
 import LazyFilter from '@/components/LazyFilter'
 import elDragDialog from '@/directive/el-drag-dialog' // base on element-ui
@@ -76,14 +74,7 @@ export default {
       type: Boolean,
       default: false
     },
-    materialCheckboxVal: {
-      require: true,
-      type: Array,
-      default() {
-        return []
-      }
-    },
-    tableData: {
+    selectedFormVal: {
       require: true,
       type: Array,
       default() {
@@ -119,7 +110,7 @@ export default {
         this.setVisible()
       }
     },
-    materialCheckboxVal(val) {
+    selectedFormVal(val) {
       if (val.length === 0) {
         this.visible = false
       }
@@ -146,7 +137,7 @@ export default {
       this.key++
     },
     deleteMaterialItem(index) {
-      this.materialCheckboxVal.splice(index, 1)
+      this.selectedFormVal.splice(index, 1)
     },
     clickCancel() {
       this.visible = false
@@ -158,12 +149,13 @@ export default {
         this.setVisible()
         return
       }
-      const resId = []
-      for (const item of this.materialCheckboxVal) {
-        resId.push(item.id)
+      for (const item of this.selectedFormVal) {
+        item.dir1 = this.cascaderVal[0]
+        item.dir2 = this.cascaderVal[1]
+        item.dir3 = this.cascaderVal[2]
+        item.dir4 = this.cascaderVal[3]
       }
       this.setVisible()
-      this.$emit('returnCatalog', { id: resId, from: this.fromCatalog, to: this.cascaderVal })
     }
   }
 }

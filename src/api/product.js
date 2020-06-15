@@ -57,10 +57,13 @@ export function updateProduct(data) {
 }
 
 export function deleteProduct(id) {
-  return request({
-    url: '/product/delete',
-    method: 'post',
-    params: { id }
+  // return request({
+  //   url: '/product/delete',
+  //   method: 'post',
+  //   params: { id }
+  // })
+  return new Promise(resolve => {
+    resolve()
   })
 }
 
